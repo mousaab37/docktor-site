@@ -17,17 +17,31 @@ Before task 1, the owner must:
 | 5 | [task5.md](task5.md) | Floating compare button old ↔ new; fix the 5 baseline errors; **full animation engine** (roll, mega menu, parallax, drift, fill words, sticky steps, marquee, clip) | ✅ done (reviewed) |
 | 6 | [task6.md](task6.md) | Types + sample data; landing part 1 (hero, statement + stats, services, about) | ✅ done (reviewed) |
 | 7 | [task7.md](task7.md) | Landing part 2 (how-to-book steps, band, certificates, clinics + map + hours, testimonials, articles, contact) | ✅ done (reviewed) |
-| 7a | [task7a.md](task7a.md) | Fix: map traps page scroll on mobile (two-finger pan) | todo |
+| 7a | [task7a.md](task7a.md) | Fix: map traps page scroll on mobile (two-finger pan) | ✅ done (`7f963ab`) |
 
-## Phase 2 — Database, public data, login
+## Phase 2 — Dashboard first (no login, dev only, in-memory data)
+
+The owner asked to build the dashboard **before** the database and login. Every page talks to a `ContentRepo` interface (task 8). Today it's an in-memory store seeded from `sample-data.ts`, and the landing page reads the same store, so edits show on `/` right away. `/dashboard` returns **404 in production** until login is added (task 16).
+
+| # | File | What it delivers | Status |
+|---|---|---|---|
+| 8 | [task8.md](task8.md) | Validation schemas, `ContentRepo` + memory store, dev-only gate, `DashboardLayout` (8 sections), UI kit, Overview | todo |
+| 9 | [task9.md](task9.md) | Statistics + Testimonials (list/add/edit/delete/order/show-hide): the pattern every other section copies | todo |
+| 10 | [task10.md](task10.md) | Certificates, with image upload inside the form | todo |
+| 11 | [task11.md](task11.md) | Clinics, with the map location picker | todo |
+| 12 | [task12.md](task12.md) | Working hours editor (per clinic, up to 3 intervals per day) | todo |
+| 13 | [task13.md](task13.md) | Blog: Arabic RTL editor (Tiptap), drafts and publish, HTML sanitizer, public `/blog` + `/blog/[slug]` | todo |
+| 14 | [task14.md](task14.md) | SEO settings (8th section), sitemap, robots, privacy, 404, JSON-LD | todo |
+
+## Phase 3 — Database + login (at the end, as the owner asked)
 
 | # | File | What it delivers | Owner action needed | Status |
 |---|---|---|---|---|
-| — | [db/](../../db/README.md) | **Written and tested by the planner:** `01-setup.sql` (schema, RLS, storage), `02-add-doctor.sql`, `03-check.sql`, Arabic guide `README.md` | Owner follows `db/README.md` for each client (copy and paste, about 10 min) | ✅ ready |
-| 8 | [task8.md](task8.md) | `db/90-sample-data.sql` (dev seed, same rows as `sample-data.ts`) | Owner runs it on the **dev** project only | todo |
-| 9 | [task9.md](task9.md) | Landing page reads from Supabase; image URLs; graceful fallback; cache headers | `.env` must be filled first | todo |
-| 10 | [task10.md](task10.md) | Login, logout, server-side protected `/dashboard` with the 8-section shell | Doctor user + `dashboard_users` row must exist | todo |
-| 11 | [task11.md](task11.md) | `npm run verify:security`: 16 automated RLS/storage checks (PRD §7.4) | Create `.env.test.local` with the doctor's test login | todo |
+| — | [db/](../../db/README.md) | **Written and tested by the planner:** `01-setup.sql` (schema, RLS, storage), `02-add-doctor.sql`, `03-check.sql`, Arabic guide | Owner follows `db/README.md` per client (copy and paste, about 10 min) | ✅ ready |
+| 15 | [task15.md](task15.md) | `db/90-sample-data.sql` (dev seed, same rows as `sample-data.ts`) | — | todo |
+| 16 | [task16.md](task16.md) | Login/logout; server-side auth replaces the dev gate | Dev Supabase project set up with `db/README.md` + `.env` filled | todo |
+| 17 | [task17.md](task17.md) | Supabase repo for public pages, dashboard writes and image Storage | Run `db/90-sample-data.sql` on the dev project | todo |
+| 18 | [task18.md](task18.md) | `npm run verify:security`: 16 automated RLS/storage checks (PRD §7.4) | `.env.test.local` with the doctor's test login | todo |
 
 Security model: content tables are readable by the public only when active/published. **All writes require `public.is_dashboard_user()`**, which means being logged in **and** listed in `dashboard_users`. This is protection in addition to "signups disabled".
 
@@ -49,6 +63,4 @@ The message is `ts(2322) boolean is not assignable to string`. Don't fix them. F
 - Add `wrangler.jsonc` (name, compatibility_date, `nodejs_compat`, cron trigger) when deployment and the health-check worker are set up. Build and dev work without it for now.
 
 - Real edge caching on Cloudflare (Workers responses aren't CDN-cached by default; `s-maxage` alone isn't enough). Decide on the Cache API or caching rules at deploy time.
-- Article HTML sanitization is part of the Phase 3 blog editor task.
-
-Phase 3 (dashboard CRUD) and later phases are written after the Phase 2 results are reviewed.
+- Health-check cron worker (PRD §13), backup and restore docs (PRD §14), deployment guide per doctor (PRD §12). These are written after Phase 3.

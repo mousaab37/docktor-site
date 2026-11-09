@@ -1,69 +1,43 @@
-# Task 9 — Public pages read from Supabase
+# Task 9 — Dashboard: Statistics + Testimonials (list / add / edit / delete / order / show-hide)
 
 ## Goal
-Switch `src/lib/data.ts` from sample data to Supabase. The landing page must keep working when the database is down or not configured: empty sections hide themselves, and the page never crashes.
+The two simplest sections, built with the **list + form pattern** that every later section reuses.
 
 ## Before you start
-- Task 8 is done, and the **owner has followed `db/README.md`**: run `db/01-setup.sql`, `db/02-add-doctor.sql` and `db/90-sample-data.sql`, with `db/03-check.sql` all green, and filled `.env`. If `.env` has no `PUBLIC_SUPABASE_URL`, stop and report it.
-- Read the official guide for `@supabase/ssr` and `supabase-js` v2. Use the find-skills skill if needed.
+- Task 8 is done. Use `getRepo()`, the validation schemas, `DashboardLayout` and the components in `src/components/dashboard/`. Follow the form pattern described at the top of `DashboardLayout.astro`.
 
-## Files
+## Pages
 
-### 1. `src/lib/supabase/public.ts`
-- `export function getPublicClient(): SupabaseClient | null`
-- Uses `createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } })` from `@supabase/supabase-js`. No cookies, so public pages stay cacheable.
-- Reads `import.meta.env.PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`. If either is missing, return `null`.
-- Create the client once per isolate and reuse it.
+### Statistics
+| Route | Content |
+|---|---|
+| `/dashboard/statistics` | A list of **all** statistics (active and hidden), in `display_order`. Each row: the value (big), the label, `StatusBadge`, and `RowActions` (edit, ↑, ↓, delete). "إضافة إحصائية" button at the top. `EmptyState` when the list is empty. |
+| `/dashboard/statistics/new` | A form: label, value (`dir="ltr"`, hint "رقم أو نص قصير مثل 15+"), description (optional), the toggle "ظاهر في الموقع" (on by default). |
+| `/dashboard/statistics/[id]` | The same form, pre-filled. Unknown id → 404. |
 
-### 2. `src/lib/storage.ts`
-```ts
-export function publicImageUrl(path: string | null, bucket: "certificates" | "articles"): string | null
-```
-- `null` → `null`.
-- A value starting with `/` → return it unchanged (a local file under `/public`, used by the seed).
-- A value starting with `http` → return it unchanged.
-- Otherwise → `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`.
+- POST intents on the list page: `move` (`id`, `direction`) and `delete` (`id`). Then redirect with `?ok=moved` or `?ok=deleted`.
+- POST on the form pages: `save` → create or update, then redirect to the list with `?ok=saved`.
+- On the list page, a small grey note under the title: "الأرقام تُدخل يدويًا ولا يتحقق منها الموقع." (PRD §5.2).
 
-### 3. `src/lib/types.ts` (small edit)
-- `SeoSetting.scope`: `"global" | "blog" | "privacy"`
-- Add `og_image: string | null` to `SeoSetting`
+### Testimonials
+The same pattern, at `/dashboard/testimonials`, `/new` and `/[id]`.
+- Form: display name (hint "يُفضَّل الأحرف الأولى فقط، مثل م. ع."), text (textarea, with the counter up to 1000), date (optional, `type="date"`), and the toggle "منشور في الموقع" (**off** by default).
+- Above the form, a notice box: "انشر رأي المريض فقط بعد أخذ إذنه." (PRD §5.7).
+- List row: the first 120 characters of the text, then the name, date, badge and actions.
 
-### 4. `src/lib/data.ts` (rewrite the bodies; keep the signatures)
-- Keep the existing 5 functions and add `getSeoSetting(scope)`.
-- Each function:
-  1. `const db = getPublicClient()`. If it is `null`: in **DEV**, return the filtered sample data, and `console.warn` once "Supabase not configured — using sample data". In **production**, return `[]` (or `null`).
-  2. Query with `.select(...)`: only the columns `types.ts` needs, with the same filters as today (`is_active`, `is_published`, `status = 'published'`) **also in the query**, even though RLS enforces them. Order by `display_order`; articles by `published_at desc` with `.limit(limit)`.
-  3. Clinics with hours, in one query: `.from("clinics").select("*, working_hours(*)").eq("is_active", true)`, then sort the hours in TypeScript by weekday and interval_order.
-  4. **Normalize times**: Postgres returns `"09:00:00"`. Cut the seconds so `opening_time` and `closing_time` are `"HH:MM"`.
-  5. On a Supabase error, `console.error` the message and return `[]` (or `null`). **Never throw** to the page.
-- Remove the `// TODO(phase2)` comments. Keep `sample-data.ts`; it's still used by the DEV fallback.
-
-### 5. Use `publicImageUrl` in components
-- `CertificatesSection.astro`: `image_path`, with bucket `certificates`.
-- `ArticlesSection.astro`: `featured_image`, with bucket `articles`.
-
-### 6. SEO from the database
-- In `src/pages/index.astro`, load `getSeoSetting("global")` together with the rest.
-- Pass `title`, `description` and `ogImage` to `PublicLayout` when they are set; otherwise the config defaults still apply, as today.
-
-### 7. Cache headers — `src/middleware.ts` (new)
-```ts
-export const onRequest = defineMiddleware(async (ctx, next) => { … });
-```
-- After `next()`, for `GET` responses whose path starts with `/dashboard`, `/login`, `/logout` or `/api`: set `Cache-Control: private, no-store`.
-- For other `GET` HTML responses with status 200: set `Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=86400`.
-- Don't touch responses that already have a `Cache-Control` header.
-- Task 10 extends this same file with auth. Write it so a second step can be added cleanly: export small named helpers, then compose them with `sequence()` from `astro:middleware`.
+## Behavior shared by both
+- After any change, `/` shows it on reload. The landing page reads the same repo.
+- Validation errors appear under each field, in Arabic, with the typed values kept.
+- Moving the first item up or the last item down does nothing, with no error. The buttons for those cases are disabled.
 
 ## Acceptance criteria
-- [ ] With `.env` filled: `/` shows the **seed** rows from Supabase. Prove it: change one statistic label in the Supabase Table Editor, reload, and see the change. Mention this in the result file.
-- [ ] The inactive and draft seed rows don't appear.
-- [ ] Rename `.env` temporarily: in dev, `/` still renders using sample data, with one console warning. Restore `.env` afterwards.
-- [ ] Set a wrong anon key temporarily: `/` still renders, the DB sections are hidden, and the error is logged. Restore it.
-- [ ] Hours show as `9:00 ص`, not `9:00:00`.
-- [ ] Response headers: `/` has the public cache header, and `/dev/styleguide` (dev only) is fine either way.
-- [ ] `npm run check` reports 0 errors, and `npm run build` passes. `.env` isn't committed.
-- [ ] One commit: `task9: public data from supabase, storage urls, cache headers`.
+- [ ] Add, edit, hide, show, reorder and delete a statistic, and check `/` each time (the hero facts and the green statement panel).
+- [ ] The same for testimonials (the testimonials section on `/`). An unpublished testimonial never appears on `/`.
+- [ ] An empty label shows "هذا الحقل مطلوب". An 81-character label shows the max-length error.
+- [ ] Delete asks for confirmation.
+- [ ] Mobile 375px: the lists and forms are usable, with no horizontal scroll.
+- [ ] `npm run check` reports 0 errors, and `npm run build` passes.
+- [ ] One commit: `task9: dashboard statistics and testimonials`.
 
 ## Out of scope
-- No login, no dashboard, no writes (task 10 and Phase 3).
+Other sections. No Supabase. No login.

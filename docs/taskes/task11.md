@@ -1,60 +1,43 @@
-# Task 11 — Security verification script (PRD §7.4)
+# Task 11 — Dashboard: Clinics (with map location picker)
 
 ## Goal
-An automated script that proves the database rules hold, run against the doctor's Supabase project. It's re-run after every schema change and before every handover.
+CRUD for clinics. The doctor sets each clinic's location by clicking or dragging a marker on a map (PRD §5.4).
 
 ## Before you start
-- Task 10 is done and `git status` is clean.
-- `.env` has the public URL and anon key.
-- The owner puts the doctor's test login in **`.env.test.local`** (git-ignored by the existing `.env.*` rule):
-  ```
-  TEST_DOCTOR_EMAIL=...
-  TEST_DOCTOR_PASSWORD=...
-  ```
-  If the file is missing, the script skips the "as doctor" checks with a clear message and still runs the anonymous ones.
+- Task 10 is done. Reuse the patterns.
+- Read `src/components/public/ClinicMap.astro` (lazy Leaflet, `circleMarker`, `dir="ltr"`, OSM attribution, the mobile two-finger fix from task 7a).
 
-## Files
+## New component: `src/components/dashboard/MapPicker.astro`
+- Props: `lat: number | null`, `lng: number | null`, `latName = "latitude"`, `lngName = "longitude"`.
+- Renders two number inputs (latitude, longitude; `dir="ltr"`, `step="any"`) and a 360px map below them (`dir="ltr"`).
+- Client script (Leaflet, lazily imported like `ClinicMap`):
+  - Start view: the current point at zoom 16; otherwise Riyadh (24.7136, 46.6753) at zoom 11. Add `// TODO: default center from config`.
+  - **Click** on the map → move the marker there and fill both inputs, with 6 decimals.
+  - Use a **draggable** marker (`L.marker` with a `divIcon` styled as a forest dot with a white ring; avoid the default icon images). Dragging it updates the inputs.
+  - Typing in the inputs moves the marker (on `change`).
+  - A "مسح الموقع" button clears both inputs and removes the marker.
+  - A "موقعي الحالي" button uses `navigator.geolocation` when it's available. Handle a refusal with an Arabic message.
+- OSM attribution must be visible.
+- **No geocoding / address search** for now (PRD open decision #4). Add a comment saying so.
 
-### 1. `scripts/verify-security.ts`
-- Run with `npx tsx scripts/verify-security.ts`. Add `tsx` as a dev dependency and a `"verify:security"` script in `package.json`.
-- Load the env files with Node's `process.loadEnvFile` (both `.env` and `.env.test.local` when present). No new dotenv dependency.
-- Use **only the anon key**. The service-role key must never appear.
-- Print one line per check (`✅` or `❌`, plus a name), then a summary. Exit with code 1 if any check fails.
-- Every row the script creates uses a `title`/`label` starting with `__verify__`, and is deleted at the end in a `finally` block, even if a check fails.
+## Pages
+| Route | Content |
+|---|---|
+| `/dashboard/clinics` | Cards: name, address, phone, `StatusBadge`, a small static note "📍 تم تحديد الموقع" or "لم يُحدَّد الموقع", and actions: edit, "ساعات العمل" (→ `/dashboard/hours?clinic={id}`), delete. "إضافة عيادة" button. |
+| `/dashboard/clinics/new` and `/[id]` | Name, address (textarea), phone (`dir="ltr"`), WhatsApp (`dir="ltr"`, hint "أرقام فقط مع رمز الدولة، مثل 966500000000. اتركه فارغًا لاستخدام رقم الطبيب الرئيسي"), description, `MapPicker`, and the toggle "ظاهرة في الموقع". |
 
-**Anonymous checks** (an anon client with no session):
-1. `select` on `articles` returns **no** row with `status = 'draft'`. Before this, insert a draft as the doctor if the credentials exist; otherwise rely on the seed draft.
-2. `select` on `statistics`, `certificates` and `clinics` returns no row with `is_active = false`.
-3. `select` on `testimonials` returns no row with `is_published = false`.
-4. `select` on `working_hours` returns no row whose clinic is inactive.
-5. `insert` into each of the 7 content tables **fails** (an error, or 0 rows).
-6. `update` of an existing `statistics` row changes **0 rows**. Read it back and compare.
-7. `delete` of an existing `clinics` row deletes **0 rows**. Read it back.
-8. `select * from dashboard_users` returns nothing or an error.
-9. Uploading a 1×1 PNG to the `certificates` bucket **fails**.
-10. `rpc("is_dashboard_user")` returns `false`.
-
-**Doctor checks** (sign in with the test credentials):
-
-11. `rpc("is_dashboard_user")` returns `true`.
-12. Insert, update and delete a `__verify__` row in `statistics` succeed.
-13. Insert a draft article: an anon client can't see it, the doctor can. Publish it: `published_at` gets set by the trigger, and anon can now see it. Then delete it.
-14. Upload a 1×1 PNG to `certificates/__verify__.png`: it succeeds, the public URL answers 200, and deleting it succeeds.
-15. Uploading a `.txt` file to `certificates` **fails** (mime type limit).
-16. Insert `working_hours` with `opening_time` after `closing_time` **fails** (check constraint).
-
-### 2. `docs/security-checks.md` (Arabic, short)
-- What the script checks, in one line per check.
-- How to run it: create `.env.test.local`, then `npm run verify:security`.
-- What to do if a check fails: don't deploy, and send the output to the planner.
+- Delete: the confirm text is "سيتم حذف العيادة وكل ساعات عملها. هل أنت متأكد؟". The repo removes the hours too.
+- No ordering for clinics: the list is sorted by name.
 
 ## Acceptance criteria
-- [ ] `npm run verify:security` prints all 16 checks green against the owner's project. Paste the output into the result file.
-- [ ] Without `.env.test.local`: checks 1–10 run, and 11–16 are reported as skipped. The exit code is 0 if 1–10 pass.
-- [ ] After a run, no `__verify__` rows or files are left (check in the Supabase UI).
-- [ ] `git status` doesn't show `.env.test.local`.
+- [ ] Add a clinic by clicking the map: it appears on `/` in the clinics section, on the public map, and in the contact list. Its WhatsApp message contains its name.
+- [ ] Drag the marker, save, and reopen: the point is kept. Clear the location, save: the public map skips it, and the "الاتجاهات" button disappears.
+- [ ] Only one of latitude or longitude filled → the error "أدخل خط العرض والطول معًا أو اتركهما فارغين".
+- [ ] Hide a clinic: it disappears from `/` along with its hours. The hero badge count changes ("في عيادة واحدة").
+- [ ] Delete removes the clinic and its hours.
+- [ ] Mobile 375px: the form works, and the map works with the two-finger rule.
 - [ ] `npm run check` reports 0 errors, and `npm run build` passes.
-- [ ] One commit: `task11: security verification script`.
+- [ ] One commit: `task11: dashboard clinics with map picker`.
 
 ## Out of scope
-- Don't change anything in `db/`. If a check fails because of the SQL, report it to the planner and set Status to `blocked`.
+Working hours (task 12). Geocoding.
