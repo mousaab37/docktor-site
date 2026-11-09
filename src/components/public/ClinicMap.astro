@@ -53,7 +53,11 @@ const withCoords = Astro.props.clinics
       const [{ default: L }] = await Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]);
       const color =
         getComputedStyle(document.documentElement).getPropertyValue("--brand-primary").trim() || "#0B3B2E";
-      const map = L.map(el, { scrollWheelZoom: false });
+      // On phones one finger scrolls the page; two fingers pan the map. Desktop is unchanged.
+      const touch = L.Browser.mobile;
+      // `tap` is a real Leaflet 1.x option that @types/leaflet does not declare, so it is added to the type here.
+      const options: L.MapOptions & { tap?: boolean } = { scrollWheelZoom: false, dragging: !touch, tap: false };
+      const map = L.map(el, options);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "© OpenStreetMap contributors",
@@ -72,6 +76,30 @@ const withCoords = Astro.props.clinics
 
       if (points.length === 1) map.setView(points[0], 15);
       else map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
+
+      if (touch) {
+        const hint = document.createElement("div");
+        hint.className = "map-hint";
+        hint.setAttribute("aria-hidden", "true");
+        hint.textContent = "استخدم إصبعين لتحريك الخريطة";
+        el.appendChild(hint);
+        let shown = false;
+        el.addEventListener(
+          "touchstart",
+          (e) => {
+            if (e.touches.length >= 2) {
+              map.dragging.enable();
+            } else if (!shown) {
+              shown = true;
+              hint.classList.add("show");
+              window.setTimeout(() => hint.classList.remove("show"), 1500);
+            }
+          },
+          { passive: true },
+        );
+        el.addEventListener("touchend", () => map.dragging.disable(), { passive: true });
+        el.addEventListener("touchcancel", () => map.dragging.disable(), { passive: true });
+      }
     }
   });
 </script>

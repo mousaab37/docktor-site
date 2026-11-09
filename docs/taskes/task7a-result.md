@@ -1,0 +1,15 @@
+# Task 7a — Result
+- Commit: see `git log` (task7a: map mobile scroll fix)
+- Status: done
+- Files changed: src/components/public/ClinicMap.astro; src/styles/global.css (`.map-hint` rules, as the task asks); docs/taskes/task7a-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: open `/` in a phone-sized pane (375px, mobile user agent) and scroll to the clinic map.
+- Checked in the browser pane:
+  - Mobile emulation (Android user agent, 375px): the map is created with dragging off (no `leaflet-grab` class) and the hint element exists.
+  - Synthetic touch events: one finger → the hint gets `.show` and loses it after 1.5s; two fingers → dragging turns on (`leaflet-grab`); `touchend` → dragging turns off again.
+  - Desktop: dragging stays on (`leaflet-grab`), no hint element is created, 2 markers, scroll-wheel zoom still off.
+- Not checked: a real finger on a real phone. The pane has no touch-point emulation (`maxTouchPoints` is 0), so the touch events were dispatched from script; the one-finger page scroll and two-finger pan were not exercised with real gestures. The zoom buttons were clicked, but I did not compare the zoom level before and after. The fade is a CSS opacity transition (`transition: none` under reduced motion), not observed visually because the pane pauses animations when hidden.
+- Notes for planner:
+  - `tap: false` is a real Leaflet 1.x option but is missing from `@types/leaflet`, so the options object is typed as `L.MapOptions & { tap?: boolean }` (commented in the code) to keep `astro check` at 0 errors.
+  - "Touch device" is decided with `L.Browser.mobile` (the same flag the task uses for `dragging`).
+  - The hint appears only on the first one-finger touch per map; two-finger touches never show it.
