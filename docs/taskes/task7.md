@@ -26,6 +26,7 @@ export function formatTime(hhmm: string): string   // "16:30" → "4:30 م", "09
 
 ### 3. `HowToBookSection.astro` (`id="how"`). Copy of `SectionVisit.astro` (A17)
 - `.sec-head`: eyebrow "كيف تحجز", title "من رسالة واتساب <em>إلى موعدك</em>".
+- Use the `steps-*` CSS classes and the `data-steps`/`data-step`/`data-shot`/`data-vnum` attributes from task 5. Copy the markup from the demo on `/dev/styleguide`.
 - `[data-steps]` grid: a sticky photo stack with 4 `[data-shot]`, the counter `[data-vnum]` and `/ 04`; then 4 `[data-step]` items, each with number, title, text and tags. On mobile, show the inline photo per step, as in the original.
 - Steps (Arabic):
   1. "اختر العيادة": choose the nearest clinic and its hours. Shot `/img/reception.webp`.

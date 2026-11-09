@@ -66,6 +66,9 @@ All text is Arabic. **Copy the structure and classes of the original component, 
    - Below the box: two `.plist` lists side by side, "التعليم" and "الخبرة", with the hover effect (A21). Languages as `.tags`.
 
 ## Part C — `src/pages/index.astro` (replace the old one)
+- The new file **doesn't** import `CompareButton` directly. The temporary `<CompareButton to="new" />` from task 5 goes away with the old content, and `PublicLayout` already renders `<CompareButton to="old" />`.
+- In `src/components/dev/CompareButton.astro`, change `const NEW_HOME = "/dev/styleguide";` to `const NEW_HOME = "/";`. Then check that the round trip `/` ↔ `/dev/reference` keeps the section.
+- Use the class names that task 5 actually created (see `task5-result.md`): the sticky steps use the `steps-*` classes, and `.roll` uses 1.4em. Don't add new copies of these rules.
 - `PublicLayout` with no props.
 - Load the data with `Promise.all`: statistics, clinics.
 - Order: `HeroSection`, `StatementSection`, `ServicesSection`, `AboutSection`.
