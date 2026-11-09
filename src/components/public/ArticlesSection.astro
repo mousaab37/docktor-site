@@ -1,0 +1,40 @@
+---
+import type { Article } from "@/lib/types";
+
+interface Props {
+  articles: Article[];
+}
+
+const { articles } = Astro.props;
+const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
+---
+{articles.length > 0 && (
+  <section class="sec" id="articles" aria-labelledby="art-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">المقالات</span>
+          <h2 class="h2" id="art-h" data-split>أحدث <em>المقالات</em></h2>
+        </div>
+        <p class="lead rv">معلومات صحية مبسّطة يكتبها الطبيب لمرضاه.</p>
+      </div>
+      <div class="art-grid">
+        {articles.map((a, i) => (
+          <a class="card art-card rv" href={`/blog/${a.slug}`} style={i > 0 ? `--d:${i}` : undefined}>
+            <div class="ph">
+              {a.featured_image && <img src={a.featured_image} alt="" width="1600" height="1067" loading="lazy" />}
+            </div>
+            <div class="art-b">
+              {a.published_at && <time datetime={a.published_at}>{dateFmt.format(new Date(a.published_at))}</time>}
+              <h3>{a.title}</h3>
+              {a.excerpt && <p>{a.excerpt}</p>}
+            </div>
+          </a>
+        ))}
+      </div>
+      <div class="art-more rv">
+        <a class="btn btn-ghost" href="/blog"><span class="roll"><span data-t="كل المقالات">كل المقالات</span></span></a>
+      </div>
+    </div>
+  </section>
+)}

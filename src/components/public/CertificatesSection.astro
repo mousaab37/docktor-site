@@ -1,0 +1,37 @@
+---
+import type { Certificate } from "@/lib/types";
+
+interface Props {
+  certificates: Certificate[];
+}
+
+const { certificates } = Astro.props;
+const year = (iso: string | null) => (iso ? String(new Date(iso).getUTCFullYear()) : null);
+---
+{certificates.length > 0 && (
+  <section class="sec" id="certificates" aria-labelledby="cert-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">الشهادات</span>
+          <h2 class="h2" id="cert-h" data-split>الشهادات <em>والتدريب</em></h2>
+        </div>
+        <p class="lead rv">المؤهلات العلمية والدورات التدريبية للطبيب.</p>
+      </div>
+      <div class="team">
+        {certificates.map((c, i) => (
+          <figure class="doc rv" style={i > 0 ? `margin:0;--d:${i}` : "margin:0"}>
+            <div class="ph clip" style={i > 0 ? `--d:${i}` : undefined}>
+              {year(c.issue_date) && <span class="days"><bdi>{year(c.issue_date)}</bdi></span>}
+              {c.image_path && <img src={c.image_path} alt={c.title} width="800" height="1200" loading="lazy" />}
+            </div>
+            <figcaption>
+              <h3>{c.title}</h3>
+              {c.issuing_organization && <p>{c.issuing_organization}</p>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

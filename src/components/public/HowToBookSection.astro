@@ -1,0 +1,65 @@
+---
+import BookingNotice from "./BookingNotice.astro";
+
+const steps = [
+  {
+    title: "اختر العيادة",
+    text: "اختر أقرب عيادة إليك وراجع ساعات الدوام قبل أن تراسلنا.",
+    tags: ["العيادة الأقرب", "ساعات الدوام"],
+    shot: "/img/reception.webp",
+  },
+  {
+    title: "أرسل رسالة واتساب",
+    text: "اضغط زر واتساب في بطاقة العيادة وستجد رسالة جاهزة تحمل اسم العيادة.",
+    tags: ["رسالة جاهزة", "اسم العيادة"],
+    shot: "/img/telehealth.webp",
+  },
+  {
+    title: "ننتظر تأكيد العيادة",
+    text: "ترد عليك العيادة لتأكيد الوقت المناسب. لا يُعدّ الموعد مؤكدًا قبل ذلك.",
+    tags: ["ردّ العيادة", "تأكيد الوقت"],
+    shot: "/img/gp.webp",
+  },
+  {
+    title: "احضر في موعدك",
+    text: "احضر قبل الموعد بدقائق قليلة، وأحضر معك أي تقارير أو أدوية تستخدمها.",
+    tags: ["قبل الموعد بدقائق", "التقارير والأدوية"],
+    shot: "/img/checkup.webp",
+  },
+];
+---
+<section class="sec" id="how" data-steps aria-labelledby="how-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">كيف تحجز</span>
+        <h2 class="h2" id="how-h" data-split>من رسالة واتساب <em>إلى موعدك</em></h2>
+      </div>
+      <p class="lead rv">أربع خطوات بسيطة، ولا حاجة لإنشاء حساب أو تعبئة نموذج.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="steps-media">
+        {steps.map((s, k) => (
+          <div class={k === 0 ? "ph on" : "ph"} data-shot={k}>
+            <img src={s.shot} alt="" width="1600" height="1067" loading="lazy" />
+          </div>
+        ))}
+        <div class="steps-count" aria-hidden="true"><span data-vnum>01</span><small>/ 04</small></div>
+      </div>
+      <div>
+        <div class="steps-list">
+          {steps.map((s, k) => (
+            <article class={k === 0 ? "steps-item on" : "steps-item"} data-step={k}>
+              <span class="steps-n">0{k + 1}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+              <ul class="tags">{s.tags.map((t) => <li>{t}</li>)}</ul>
+              <div class="ph"><img src={s.shot} alt="" width="1600" height="1067" loading="lazy" /></div>
+            </article>
+          ))}
+        </div>
+        <div style="margin-top:28px"><BookingNotice /></div>
+      </div>
+    </div>
+  </div>
+</section>

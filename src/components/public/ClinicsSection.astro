@@ -1,0 +1,62 @@
+---
+import { doctorConfig } from "@/config";
+import { clinicMessage } from "@/lib/whatsapp";
+import type { ClinicWithHours } from "@/lib/types";
+import BookingNotice from "./BookingNotice.astro";
+import ClinicMap from "./ClinicMap.astro";
+import HoursTable from "./HoursTable.astro";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  clinics: ClinicWithHours[];
+}
+
+const { clinics } = Astro.props;
+const { contact, whatsapp } = doctorConfig;
+---
+{clinics.length > 0 && (
+  <section class="sec" id="clinics" aria-labelledby="clinics-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">العيادات</span>
+          <h2 class="h2" id="clinics-h" data-split>أين تجدنا <em>ومتى</em></h2>
+        </div>
+        <p class="lead rv">اختر العيادة الأقرب وراسلنا على واتساب. ستجد اسم العيادة في الرسالة الجاهزة.</p>
+      </div>
+
+      <div class="clinics-grid">
+        {clinics.map((c, i) => (
+          <article class="card clinic-card rv" style={i > 0 ? `--d:${i}` : undefined}>
+            <div class="clinic-card-b">
+              <h3>{c.name}</h3>
+              <p class="addr">{c.address}</p>
+              {c.phone && <p><a class="plain" href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}><bdi dir="ltr">{c.phone}</bdi></a></p>}
+              {c.description && <p>{c.description}</p>}
+              <HoursTable hours={c.working_hours} caption={`ساعات عمل ${c.name}`} />
+              <div class="cta-row">
+                <WhatsAppButton
+                  number={c.whatsapp ?? contact.whatsapp}
+                  message={clinicMessage(whatsapp.clinicMessage, c.name)}
+                  label="احجز عبر واتساب"
+                  size="sm"
+                />
+                {c.latitude !== null && c.longitude !== null && (
+                  <a
+                    class="btn btn-ghost btn-sm"
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${c.latitude},${c.longitude}`}
+                    target="_blank"
+                    rel="noopener"
+                  ><span class="roll"><span data-t="الاتجاهات">الاتجاهات</span></span></a>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div class="rv" style="margin-top:20px"><ClinicMap clinics={clinics} /></div>
+      <div style="margin-top:20px"><BookingNotice /></div>
+    </div>
+  </section>
+)}

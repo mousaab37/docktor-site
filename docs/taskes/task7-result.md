@@ -1,0 +1,28 @@
+# Task 7 — Result
+- Commit: see `git log` (task7: landing part 2 (steps, band, clinics, map, certificates, testimonials, articles, contact))
+- Status: done
+- Files changed:
+  - New libs: src/lib/hours.ts, src/lib/arabic.ts
+  - New components (src/components/public/): BookingNotice, HowToBookSection, BandSection, HoursTable, ClinicMap, ClinicsSection, CertificatesSection, TestimonialsSection, ArticlesSection, ContactSection (all `.astro`)
+  - Edited: src/pages/index.astro (all 11 sections, data loaded with `Promise.all`), src/lib/nav.ts (new link list), src/components/public/HeroSection.astro (`clinicsPhrase` + compact `BookingNotice`), src/styles/global.css (part 2 rules; the hero `.note` rule was removed)
+  - docs/taskes/task7-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/`. Compare each section with `/dev/reference` using the floating button.
+- Checked in the browser pane:
+  - Order: hero, stats, services, how, band, about, certificates, clinics, testimonials, articles, contact. Nav links: `/#about /#services /#how /#clinics /#articles /#contact`.
+  - Sticky steps: counter and the active step and photo change together (`03` → step 3 and shot 3 when scrolled there). Band runs with `run-rtl`, 12 spans (list rendered twice). Certificate cards open (`.in`) with years on the badges.
+  - Hours: week starts Saturday; Friday and the closed Saturday show "مغلق"; Monday shows two intervals; today (Monday) is highlighted.
+  - Clinic WhatsApp links contain the clinic name; directions links use the coordinates.
+  - Map: 0 tile requests and no Leaflet request at the top of the page; after scrolling near it, tiles load, 2 markers in the brand colour `#0B3B2E`, popup shows the clinic name, attribution "© OpenStreetMap contributors", scroll-wheel zoom off.
+  - Hero badge: "يستقبل المرضى في عيادتين". The notice appears 4 times (hero compact, how, clinics, contact) with identical text.
+  - No hidden row appears in the HTML (inactive statistic/certificate/clinic, unpublished testimonial, draft article). 3 articles, 6 testimonials, 4 certificates.
+  - Compare button: `#how` → `/dev/reference#visit`; `/dev/reference#book` → `/#contact`.
+  - 375px: no horizontal scroll, steps show the inline photo per step (sticky photo hidden), map is 320px tall and full width, certificates are 2 columns.
+- Not checked: hover effects (clip image zoom, roll button, `.days` turning lime) because `:hover` cannot be forced in the pane; `#certificates` → `#doctors` mapping was not clicked (same table entry as `#about`, which was tested in task 6); reduced motion for the new sections (they reuse the task 5 rules).
+- Notes for planner:
+  - The article cards link to `/blog/{slug}` and "كل المقالات" to `/blog`: these are **404 until Phase 4**.
+  - On phones Leaflet keeps its default touch dragging, so a finger on the map pans the map instead of scrolling the page; the zoom buttons work. If this annoys users, switch to two-finger dragging (a small Leaflet option) in a later task.
+  - The testimonials masonry keeps the original `columns` layout, so the reading order is by columns (top to bottom, right to left in RTL).
+  - Testimonial avatar shows the first letter of `display_name`.
+  - The pane pauses animation frames when hidden: scroll-driven checks only updated after a screenshot woke it. Not a site bug.
+  - The old dev server on port 4321 (PID 38616) is still running.

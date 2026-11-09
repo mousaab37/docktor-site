@@ -3,8 +3,8 @@
 export const sectionLinks = [
   { href: "/#about", label: "نبذة" },
   { href: "/#services", label: "الخدمات" },
-  { href: "/#clinics", label: "العيادات والمواعيد" },
-  { href: "/#certificates", label: "الشهادات" },
+  { href: "/#how", label: "كيف تحجز" },
+  { href: "/#clinics", label: "العيادات" },
   { href: "/#articles", label: "المقالات" },
   { href: "/#contact", label: "تواصل" },
 ] as const;

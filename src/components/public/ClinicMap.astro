@@ -1,0 +1,77 @@
+---
+interface MapClinic {
+  id: string;
+  name: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+interface Props {
+  clinics: MapClinic[];
+}
+
+const withCoords = Astro.props.clinics
+  .filter((c) => c.latitude !== null && c.longitude !== null)
+  .map((c) => ({ id: c.id, name: c.name, lat: c.latitude, lng: c.longitude }));
+---
+{withCoords.length > 0 && (
+  <div
+    class="clinic-map"
+    dir="ltr"
+    data-clinic-map
+    data-clinics={JSON.stringify(withCoords)}
+    role="region"
+    aria-label="خريطة العيادات"
+  ></div>
+)}
+
+<script>
+  // Leaflet is loaded only when the map is near the viewport, so there are no tile requests before that.
+  // TODO: choose the production tile provider (PRD open decision #4)
+  interface Pin {
+    id: string;
+    name: string;
+    lat: number;
+    lng: number;
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-clinic-map]").forEach((el) => {
+    const pins: Pin[] = JSON.parse(el.dataset.clinics ?? "[]");
+    if (!pins.length) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        void start();
+      },
+      { rootMargin: "300px 0px" },
+    );
+    io.observe(el);
+
+    async function start() {
+      const [{ default: L }] = await Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]);
+      const color =
+        getComputedStyle(document.documentElement).getPropertyValue("--brand-primary").trim() || "#0B3B2E";
+      const map = L.map(el, { scrollWheelZoom: false });
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      const points: [number, number][] = [];
+      pins.forEach((p) => {
+        const popup = document.createElement("div");
+        popup.dir = "rtl";
+        popup.textContent = p.name; // textContent: the name is never parsed as HTML
+        L.circleMarker([p.lat, p.lng], { radius: 10, color, fillColor: color, fillOpacity: 0.85, weight: 2 })
+          .addTo(map)
+          .bindPopup(popup);
+        points.push([p.lat, p.lng]);
+      });
+
+      if (points.length === 1) map.setView(points[0], 15);
+      else map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
+    }
+  });
+</script>

@@ -1,0 +1,53 @@
+---
+import { doctorConfig } from "@/config";
+import { waLink } from "@/lib/whatsapp";
+import type { ClinicWithHours } from "@/lib/types";
+import BookingNotice from "./BookingNotice.astro";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  clinics: ClinicWithHours[];
+}
+
+const { clinics } = Astro.props;
+const { contact, doctor, whatsapp } = doctorConfig;
+const socialNames: Record<string, string> = {
+  instagram: "إنستغرام", x: "إكس", facebook: "فيسبوك", tiktok: "تيك توك",
+  youtube: "يوتيوب", linkedin: "لينكدإن", snapchat: "سناب شات",
+};
+---
+<section class="sec book" id="contact" aria-labelledby="contact-h">
+  <div class="wrap book-grid">
+    <div class="book-l">
+      <span class="eyebrow">تواصل</span>
+      <h2 class="h2" id="contact-h" data-split>تواصل <em>معنا</em></h2>
+      <p class="lead">أسرع طريقة للحجز أو الاستفسار هي رسالة واتساب. لا توجد نماذج ولا حسابات على هذا الموقع.</p>
+      <dl class="info">
+        <div><dt>الهاتف</dt><dd><a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}><bdi dir="ltr">{contact.phone}</bdi></a></dd></div>
+        <div><dt>واتساب</dt><dd><a href={waLink(contact.whatsapp, whatsapp.defaultMessage)} target="_blank" rel="noopener"><bdi dir="ltr">+{contact.whatsapp}</bdi></a></dd></div>
+        {contact.email && <div><dt>البريد</dt><dd><a href={`mailto:${contact.email}`}><bdi dir="ltr">{contact.email}</bdi></a></dd></div>}
+        {contact.socials.length > 0 && (
+          <div>
+            <dt>التواصل الاجتماعي</dt>
+            <dd>
+              {contact.socials.map((s, i) => (
+                <>{i > 0 && " · "}<a href={s.url} target="_blank" rel="noopener">{socialNames[s.platform] ?? s.platform}</a></>
+              ))}
+            </dd>
+          </div>
+        )}
+        {clinics.map((c) => (
+          <div><dt>{c.name}</dt><dd><a href="/#clinics">{c.address}</a></dd></div>
+        ))}
+      </dl>
+      <BookingNotice />
+    </div>
+
+    <div class="form-card contact-card rv">
+      <div class="ph contact-photo"><img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" loading="lazy" /></div>
+      <p class="contact-line">أسرع طريقة للتواصل</p>
+      <p class="contact-sub">{doctor.honorific} {doctor.fullName} · {doctor.specialty}</p>
+      <WhatsAppButton class="contact-cta" label="ابدأ المحادثة على واتساب" />
+    </div>
+  </div>
+</section>

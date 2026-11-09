@@ -3,18 +3,40 @@ import PublicLayout from "@/layouts/PublicLayout.astro";
 import HeroSection from "@/components/public/HeroSection.astro";
 import StatementSection from "@/components/public/StatementSection.astro";
 import ServicesSection from "@/components/public/ServicesSection.astro";
+import HowToBookSection from "@/components/public/HowToBookSection.astro";
+import BandSection from "@/components/public/BandSection.astro";
 import AboutSection from "@/components/public/AboutSection.astro";
-import { getActiveClinicsWithHours, getActiveStatistics } from "@/lib/data";
+import CertificatesSection from "@/components/public/CertificatesSection.astro";
+import ClinicsSection from "@/components/public/ClinicsSection.astro";
+import TestimonialsSection from "@/components/public/TestimonialsSection.astro";
+import ArticlesSection from "@/components/public/ArticlesSection.astro";
+import ContactSection from "@/components/public/ContactSection.astro";
+import {
+  getActiveCertificates,
+  getActiveClinicsWithHours,
+  getActiveStatistics,
+  getLatestArticles,
+  getPublishedTestimonials,
+} from "@/lib/data";
 
-const [statistics, clinics] = await Promise.all([getActiveStatistics(), getActiveClinicsWithHours()]);
+const [statistics, clinics, certificates, testimonials, articles] = await Promise.all([
+  getActiveStatistics(),
+  getActiveClinicsWithHours(),
+  getActiveCertificates(),
+  getPublishedTestimonials(),
+  getLatestArticles(3),
+]);
 ---
 <PublicLayout>
   <HeroSection clinics={clinics} statistics={statistics} />
   <StatementSection statistics={statistics} />
   <ServicesSection />
+  <HowToBookSection />
+  <BandSection />
   <AboutSection />
-  {/*
-    Task 7 adds, in this order: how-to-book steps, band, clinics (map + hours),
-    certificates, testimonials, articles, contact.
-  */}
+  <CertificatesSection certificates={certificates} />
+  <ClinicsSection clinics={clinics} />
+  <TestimonialsSection testimonials={testimonials} />
+  <ArticlesSection articles={articles} />
+  <ContactSection clinics={clinics} />
 </PublicLayout>

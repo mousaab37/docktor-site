@@ -1,0 +1,41 @@
+---
+import { formatTime, groupHours, weekdayNames } from "@/lib/hours";
+import type { WorkingHour } from "@/lib/types";
+
+interface Props {
+  hours: WorkingHour[];
+  caption?: string;
+}
+
+const { hours, caption = "ساعات العمل" } = Astro.props;
+const days = groupHours(hours);
+---
+<table class="hours">
+  <caption class="sr-only">{caption}</caption>
+  <tbody>
+    {days.map((d) => (
+      <tr data-weekday={d.weekday}>
+        <th scope="row">{weekdayNames[d.weekday]}</th>
+        <td class={d.closed ? "closed" : undefined}>
+          {d.closed ? "مغلق" : d.intervals.map((iv, i) => (
+            <>
+              {i > 0 && <span class="sep"> و </span>}
+              <span class="iv"><bdi>{formatTime(iv.from)}</bdi> – <bdi>{formatTime(iv.to)}</bdi></span>
+            </>
+          ))}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+<script>
+  // Highlight today's row (0 = Sunday, like data-weekday).
+  const today = String(new Date().getDay());
+  document.querySelectorAll<HTMLElement>("table.hours tr[data-weekday]").forEach((row) => {
+    if (row.dataset.weekday === today) {
+      row.classList.add("today");
+      row.setAttribute("aria-current", "date");
+    }
+  });
+</script>

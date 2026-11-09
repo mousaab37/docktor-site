@@ -1,0 +1,13 @@
+---
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+---
+<p class={compact ? "sos sos-compact" : "sos"}>
+  {!compact && (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="8" /><path d="M10 5.5v5.5M10 13.6v.9" /></svg>
+  )}
+  <span>إرسال رسالة عبر واتساب لا يعني تأكيد الموعد. ستتواصل معك العيادة لتأكيد الموعد.</span>
+</p>

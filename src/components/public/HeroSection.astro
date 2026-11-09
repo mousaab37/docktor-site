@@ -1,6 +1,8 @@
 ---
 import { doctorConfig } from "@/config";
 import type { ClinicWithHours, Statistic } from "@/lib/types";
+import { clinicsPhrase } from "@/lib/arabic";
+import BookingNotice from "./BookingNotice.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
@@ -19,7 +21,7 @@ const facts = statistics.slice(0, 3);
         <img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" fetchpriority="high" data-par="0.08" />
       </div>
       {clinics.length > 0 && (
-        <span class="badge"><span class="pulse" aria-hidden="true"></span>يستقبل المرضى في <bdi>{clinics.length}</bdi> {clinics.length === 1 ? "عيادة" : "عيادات"}</span>
+        <span class="badge"><span class="pulse" aria-hidden="true"></span>يستقبل المرضى {clinicsPhrase(clinics.length)}</span>
       )}
     </div>
     <div class="hero-text">
@@ -33,7 +35,7 @@ const facts = statistics.slice(0, 3);
           <WhatsAppButton />
           <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="العيادات والمواعيد">العيادات والمواعيد</span></span></a>
         </div>
-        <p class="note">رسالة واتساب لا تعني تأكيد الموعد، فالموعد يتأكد بردّ العيادة.</p>
+        <BookingNotice compact />
         {facts.length > 0 && (
           <ul class="facts">
             {facts.map((f) => <li><b>{f.value}</b>{f.label}</li>)}

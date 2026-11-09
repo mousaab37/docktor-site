@@ -1,0 +1,38 @@
+---
+import type { Testimonial } from "@/lib/types";
+
+interface Props {
+  testimonials: Testimonial[];
+}
+
+const { testimonials } = Astro.props;
+const monthYear = new Intl.DateTimeFormat("ar", { year: "numeric", month: "long" });
+const initial = (name: string) => Array.from(name.trim())[0] ?? "";
+---
+{testimonials.length > 0 && (
+  <section class="sec reviews" id="testimonials" aria-labelledby="rev-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">آراء</span>
+          <h2 class="h2" id="rev-h" data-split>آراء <em>المرضى</em></h2>
+        </div>
+      </div>
+      <div class="rv-grid">
+        {testimonials.map((t, i) => (
+          <figure class="quote rv" style={i % 3 > 0 ? `--d:${i % 3}` : undefined}>
+            <svg viewBox="0 0 34 26" fill="currentColor" aria-hidden="true"><path d="M0 26V15.6C0 6.8 4.6 1.6 13.4 0l1.4 3.8C9.8 5.2 7.6 8 7.4 12H14v14H0zm20 0V15.6C20 6.8 24.6 1.6 33.4 0l1.4 3.8C29.8 5.2 27.6 8 27.4 12H34v14H20z" /></svg>
+            <blockquote>{t.content}</blockquote>
+            <figcaption>
+              <span class="ini" aria-hidden="true">{initial(t.display_name)}</span>
+              <span>
+                <b>{t.display_name}</b>
+                {t.testimonial_date && <time datetime={t.testimonial_date}>{monthYear.format(new Date(t.testimonial_date))}</time>}
+              </span>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
