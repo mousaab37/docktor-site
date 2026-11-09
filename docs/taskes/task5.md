@@ -93,7 +93,7 @@ All text is Arabic. Every section has an `id` that matches `nav.ts`.
 - [ ] Header links to `#about`, `#services` and `#stats` scroll to the right sections. Links to sections that don't exist yet do nothing, which is OK.
 - [ ] Mobile (375px): no horizontal scroll, and the hero stacks.
 - [ ] `reference/` isn't built: `npm run build` passes and `dist/` has nothing from it.
-- [ ] `npm run check` passes.
+- [ ] `npm run check` reports **0 errors**. The 5 baseline errors disappear because the old files move to `reference/`. If `astro check` still scans `reference/`, add it to the check's ignore list and say so in the result file.
 - [ ] The view-source of `/` shows `lang="ar" dir="rtl"`, the canonical link and the OG tags.
 - [ ] One commit: `task5: landing page part 1, types, sample data, archive template`.
 

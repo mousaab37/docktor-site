@@ -96,7 +96,7 @@ Port the following from `public/site.js` to typed TypeScript, as one exported `i
 - [ ] Scrolling: the header turns solid, hides and comes back, and the `.rv` boxes reveal.
 - [ ] With reduced motion turned on in DevTools, everything is visible right away.
 - [ ] `/` still shows the old page.
-- [ ] `npm run build` and `npm run check` pass.
+- [ ] `npm run build` passes. `npm run check` shows only the 5 known baseline errors (see `README.md`), with none in new files.
 - [ ] One commit: `task4: public layout, header, footer, whatsapp, motion`.
 
 ## Out of scope

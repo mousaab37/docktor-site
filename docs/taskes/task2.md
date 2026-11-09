@@ -85,7 +85,7 @@ export type { DoctorConfig } from "./doctor.schema";
 ```
 
 ## Acceptance criteria
-- [ ] `npm run check` and `npm run build` pass.
+- [ ] `npm run build` passes. `npm run check` shows only the 5 known baseline errors (see `README.md`), with none in new files.
 - [ ] Changing `brand.primary` to `"green"` makes the build fail with a Zod error. Test it, then **revert** it. Mention the test in the result file.
 - [ ] Nothing imports the config yet, which is fine.
 - [ ] One commit: `task2: doctor config + zod schema`.

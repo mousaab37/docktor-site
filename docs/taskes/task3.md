@@ -127,7 +127,7 @@ It must render:
 - [ ] http://localhost:4321/dev/styleguide renders right-to-left in Arabic fonts, using the template colors.
 - [ ] `/` still shows the old Averin page, unchanged.
 - [ ] Under 900px wide, nothing overflows horizontally.
-- [ ] `npm run build` and `npm run check` pass.
+- [ ] `npm run build` passes. `npm run check` shows only the 5 known baseline errors (see `README.md`), with none in new files.
 - [ ] One commit: `task3: design system, arabic fonts, base layout, styleguide`.
 
 ## Out of scope
