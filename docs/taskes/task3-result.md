@@ -1,0 +1,14 @@
+# Task 3 — Result
+- Commit: see `git log` (task3: design system, arabic fonts, base layout, styleguide)
+- Status: done
+- Files changed: src/styles/global.css, src/layouts/BaseLayout.astro, src/pages/dev/styleguide.astro, docs/taskes/task3-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (only the 5 known baseline errors in SectionHeader/SectionVisit; none in new files)
+- How to verify: `npm run dev`, open http://localhost:4321/dev/styleguide (dev only; returns 404 in production). `/` still shows the old Averin page.
+- Checked in the browser pane: `dir=rtl`; body font IBM Plex Sans Arabic (400/500/600 loaded); headings Noto Naskh Arabic 700; `<em>` is not italic; brand variables come from the config; `.rv` and `data-split` end in the visible state; no horizontal overflow at 600px width; `/` still renders the old page.
+- Notes for planner:
+  - Class names follow the task (`.btn-ghost`, `.btn-sm`, `.card`), not the template's `.btn.ghost`.
+  - `--wrap`, `--gut` and `--ph` are defined in `:root` of global.css (the task did not list them, but `.wrap` and `.ph` need them). `--ph` references `--color-mint`.
+  - `.dark` also gets `border-radius: var(--radius-card)` (as the template `.bold` block had it). Footer in task 4 may want to override this.
+  - The dev server takes about 15–20 seconds to start (Cloudflare adapter + dependency optimization); the first request can fail before then.
+  - `npm run check` also prints 2 warnings in `public/site.js` (old template file, not touched).
+  - Gotcha for the next tasks: `global.css` is not imported by the old `Base.astro`, so the old page is unaffected; any page using `BaseLayout` gets Tailwind's reset.

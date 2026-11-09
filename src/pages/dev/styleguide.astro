@@ -1,0 +1,70 @@
+---
+if (!import.meta.env.DEV) return new Response(null, { status: 404 });
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const swatches = [
+  ["bg", "#FBFCF8"], ["surface", "#FFFFFF"], ["ink", "#0D2B22"], ["ink-2", "#3F564D"],
+  ["line", "#D9E2D8"], ["forest", "var(--color-forest)"], ["forest-2", "var(--color-forest-2)"],
+  ["lime", "var(--color-lime)"], ["lime-2", "var(--color-lime-2)"], ["mint", "#E4F0E2"], ["tint", "#EEF6DF"],
+];
+---
+<BaseLayout title="دليل الأنماط" noindex>
+  <main class="wrap sec" style="overflow-x:clip">
+    <p class="eyebrow">دليل الأنماط (للتطوير فقط)</p>
+    <h1 class="h1">رعاية صحية <em>لكل الأسرة</em></h1>
+    <p class="lead">هذا نص تمهيدي تجريبي لاختبار الخط العربي والاتجاه من اليمين إلى اليسار وارتفاع السطر. رقم الهاتف: <bdi dir="ltr">+966 50 000 0000</bdi></p>
+
+    <h2 class="h2">الألوان</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-block:24px">
+      {swatches.map(([name, color]) => (
+        <div>
+          <div style={`background:${color};height:64px;border-radius:12px;border:1px solid var(--color-line)`}></div>
+          <small dir="ltr">{name}</small>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="h2">العناوين والنص</h2>
+    <p>نص الفقرة العادي: يقدّم هذا الموقع معلومات عن العيادة والخدمات وأوقات الدوام. رسالة واتساب لا تعني تأكيد الموعد.</p>
+
+    <h2 class="h2">الأزرار</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-block:24px">
+      <a class="btn" href="#">احجز عبر واتساب</a>
+      <a class="btn btn-ghost" href="#">اعرف المزيد</a>
+      <a class="btn btn-sm" href="#">زر صغير</a>
+      <a class="btn btn-ghost btn-sm" href="#">زر صغير شفاف</a>
+    </div>
+    <div class="dark" style="padding:32px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <span class="eyebrow">على خلفية داكنة</span>
+      <h2 class="h2" style="margin:0 12px">عنوان <em>مميز</em></h2>
+      <a class="btn" href="#">احجز عبر واتساب</a>
+      <a class="btn btn-ghost" href="#">اعرف المزيد</a>
+      <a class="btn btn-ghost btn-sm" href="#">صغير</a>
+    </div>
+
+    <h2 class="h2">الوسوم والبطاقات</h2>
+    <ul class="tags" style="margin-block:16px"><li>طب الأسرة</li><li>فحص دوري</li><li>تحاليل</li></ul>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:20px;margin-block:24px">
+      <article class="card">
+        <div class="ph"><img src="/img/gp.webp" alt="كشف عام" width="800" height="550" loading="lazy" /></div>
+        <div style="padding:20px 14px 10px"><h3>الكشف العام</h3><p>فحص وتشخيص الحالات الشائعة.</p></div>
+      </article>
+      <div class="ph" style="aspect-ratio:16/11;border-radius:18px;border:1px solid var(--color-line)"></div>
+    </div>
+
+    <h2 class="h2" data-split="blur">عنوان بظهور تدريجي</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:16px;margin-block:24px">
+      <div class="card rv" style="--d:0;padding:24px">صندوق ١</div>
+      <div class="card rv" style="--d:1;padding:24px">صندوق ٢</div>
+      <div class="card rv" style="--d:2;padding:24px">صندوق ٣</div>
+    </div>
+  </main>
+  <script is:inline>
+    // Dev only: split words for the blur heading, then show the final state. The real motion script comes in task 4.
+    document.querySelectorAll("[data-split]").forEach((el) => {
+      const words = el.textContent.trim().split(/\s+/);
+      el.innerHTML = words.map((w, i) => '<span class="w"><span class="wi" style="--i:' + i + '">' + w + "</span></span>").join(" ");
+    });
+    requestAnimationFrame(() => document.querySelectorAll(".rv, [data-split]").forEach((el) => el.classList.add("in")));
+  </script>
+</BaseLayout>
