@@ -1,0 +1,37 @@
+---
+import { doctorConfig } from "@/config";
+import type { Statistic } from "@/lib/types";
+
+interface Props {
+  statistics: Statistic[];
+}
+
+const { statistics } = Astro.props;
+const { doctor } = doctorConfig;
+const isNumeric = (v: string) => /^\d+$/.test(v.trim());
+---
+<section class="bold dark" id="stats" aria-labelledby="why-h">
+  <div class="wrap">
+    <span class="eyebrow rv">لماذا {doctor.honorific} {doctor.fullName}</span>
+  </div>
+  <h2 class="big" id="why-h">
+    <span class="ln wrap" data-drift="-1">رعاية تُصغي إليك.</span>
+    <span class="ln l2 wrap" data-drift="1">ولعائلتك كلها.</span>
+  </h2>
+  <div class="wrap bold-grid">
+    <p class="fill" data-fill>{doctor.bio[0]}</p>
+    {statistics.length > 0 && (
+      <div>
+        <ul class="stats">
+          {statistics.map((s, i) => (
+            <li class="rv" style={i > 0 ? `--d:${i}` : undefined}>
+              <b>{isNumeric(s.value) ? <span data-count={s.value.trim()}>{s.value}</span> : <span>{s.value}</span>}</b>
+              <span>{s.label}</span>
+            </li>
+          ))}
+        </ul>
+        <p class="stats-note">أرقام يُدخلها الطبيب يدويًا</p>
+      </div>
+    )}
+  </div>
+</section>

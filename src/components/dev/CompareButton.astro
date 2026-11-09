@@ -7,8 +7,7 @@ interface Props {
 
 const { to } = Astro.props;
 const show = import.meta.env.DEV;
-// The Arabic landing page replaces "/" in task 6. Until then the new site lives in the style guide.
-const NEW_HOME = "/dev/styleguide";
+const NEW_HOME = "/";
 const OLD_HOME = "/dev/reference";
 const label = to === "old" ? "EN ↗ النسخة الأصلية" : "AR ↗ Arabic version";
 const href = to === "old" ? OLD_HOME : NEW_HOME;

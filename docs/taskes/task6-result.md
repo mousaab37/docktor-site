@@ -1,0 +1,29 @@
+# Task 6 — Result
+- Commit: see `git log` (task6: landing part 1 (hero, statement, services, about), types, sample data)
+- Status: done
+- Files changed:
+  - New: src/lib/types.ts, src/lib/sample-data.ts, src/lib/data.ts
+  - New: src/components/public/{HeroSection,StatementSection,ServicesSection,AboutSection}.astro
+  - Replaced: src/pages/index.astro (new Arabic landing page; the old one still lives in src/pages/dev/reference.astro)
+  - Edited: src/components/dev/CompareButton.astro (`NEW_HOME = "/"`), src/styles/global.css (hero, statement, services, about, plist, mobile rules)
+  - docs/taskes/task6-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/`. Use the floating button to jump to `/dev/reference` and back.
+- Checked in the browser pane:
+  - `/` is the new Arabic page. View-source has `lang="ar" dir="rtl"`, canonical `https://example.com/`, `og:*` and `twitter:card`.
+  - Hero: photo opens (`.in` on `.hero-media`), H1 words blur in, badge "يستقبل المرضى في 2 عيادات" with the pulse dot, 3 facts, WhatsApp button and the note that a WhatsApp message does not confirm the appointment.
+  - Statement: drift lines move in opposite directions (mirrored for RTL), all fill words light up, counters reach 12 / 3500 / 2.
+  - Services: 5 cards, first is dark; arrow points left; footer has only the "استفسر" WhatsApp link (no price).
+  - About: clinic box with parallax photo, "التعليم" and "الخبرة" lists, languages as tags.
+  - Filtering: none of the inactive/unpublished sample rows appear in the HTML (hidden statistic, certificate, clinic, testimonial, draft article); stats show 3, the badge counts 2 clinics.
+  - 375px: no horizontal scroll, the hero text comes before the photo.
+  - Compare round trip: from `/` at `#about` the button opened `/dev/reference#doctors` and landed on that section; from `/dev/reference` at `#services` it opened `/#services` and landed on it.
+- Not checked: the arrow's hover rotation to 45deg (CSS only, `:hover` cannot be forced in the pane); reduced motion for the new sections (they reuse the task 5 rules, which were tested).
+- Notes for planner:
+  - Service cards use the original classes `.svc`, `.svc-b`, `.svc-f`, `.go`, `.feat`, written fresh in global.css (task 5 did not create them). The existing `.card` class from task 3 is not used by the landing page.
+  - The hero badge pluralizes ("عيادة" for one, "عيادات" otherwise).
+  - Added to the hero a small `.note` line under the CTA row (WhatsApp does not confirm an appointment), because AGENTS.md requires the site to say so. Task 7's contact section should repeat it.
+  - The about section's "عن الطبيب" heading is an `<h2>` styled like the original clinic title; `.go` links use `target="_blank" rel="noopener"`.
+  - `getActiveClinicsWithHours` also sorts each clinic's hours by weekday then `interval_order`.
+  - The sample data has the Saturday open for the second clinic only; Friday is closed for both.
+  - In the pane, screenshots of emulated widths other than the default were cropped (the pane's device pixel ratio is 1.25), so layout was verified with element geometry as well. The dev server on port 4321 is still the old one (PID 38616).

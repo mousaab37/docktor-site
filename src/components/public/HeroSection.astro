@@ -1,0 +1,45 @@
+---
+import { doctorConfig } from "@/config";
+import type { ClinicWithHours, Statistic } from "@/lib/types";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  clinics: ClinicWithHours[];
+  statistics: Statistic[];
+}
+
+const { clinics, statistics } = Astro.props;
+const { doctor } = doctorConfig;
+const facts = statistics.slice(0, 3);
+---
+<section class="hero" aria-labelledby="hero-h">
+  <div class="wrap hero-grid">
+    <div class="hero-media ph" data-hero>
+      <div class="zoom">
+        <img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" fetchpriority="high" data-par="0.08" />
+      </div>
+      {clinics.length > 0 && (
+        <span class="badge"><span class="pulse" aria-hidden="true"></span>يستقبل المرضى في <bdi>{clinics.length}</bdi> {clinics.length === 1 ? "عيادة" : "عيادات"}</span>
+      )}
+    </div>
+    <div class="hero-text">
+      <div>
+        <span class="eyebrow">{doctor.specialty}</span>
+        <h1 class="h1" id="hero-h" data-split="blur">{doctor.honorific} {doctor.fullName}<br /><em>{doctor.specialty}</em></h1>
+      </div>
+      <div>
+        <p class="lead">{doctor.shortIntro}</p>
+        <div class="cta-row">
+          <WhatsAppButton />
+          <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="العيادات والمواعيد">العيادات والمواعيد</span></span></a>
+        </div>
+        <p class="note">رسالة واتساب لا تعني تأكيد الموعد، فالموعد يتأكد بردّ العيادة.</p>
+        {facts.length > 0 && (
+          <ul class="facts">
+            {facts.map((f) => <li><b>{f.value}</b>{f.label}</li>)}
+          </ul>
+        )}
+      </div>
+    </div>
+  </div>
+</section>

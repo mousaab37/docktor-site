@@ -1,0 +1,56 @@
+---
+import { doctorConfig } from "@/config";
+
+const { doctor } = doctorConfig;
+const rest = doctor.bio.slice(1);
+---
+<section class="sec" id="about" aria-labelledby="about-h">
+  <div class="wrap">
+    <div class="clinic rv">
+      <div class="clinic-t">
+        <span class="eyebrow">نبذة</span>
+        <h2 id="about-h">عن الطبيب</h2>
+        {rest.map((p) => <p>{p}</p>)}
+        <div><a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="العيادات والمواعيد">العيادات والمواعيد</span></span></a></div>
+      </div>
+      <div class="ph"><img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" loading="lazy" data-par="0.06" /></div>
+    </div>
+
+    {(doctor.education.length > 0 || doctor.experience.length > 0) && (
+      <div class="plist-grid">
+        {doctor.education.length > 0 && (
+          <div class="plist rv">
+            <h3>التعليم</h3>
+            <ul>
+              {doctor.education.map((e) => (
+                <li>
+                  <div><b>{e.degree}</b><span>{e.institution}</span></div>
+                  {e.year && <em><bdi>{e.year}</bdi></em>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {doctor.experience.length > 0 && (
+          <div class="plist rv" style="--d:1">
+            <h3>الخبرة</h3>
+            <ul>
+              {doctor.experience.map((x) => (
+                <li>
+                  <div><b>{x.role}</b><span>{x.place}</span></div>
+                  <em><bdi>{x.period}</bdi></em>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    )}
+    {doctor.languages.length > 0 && (
+      <div class="about-langs rv">
+        <h3>اللغات</h3>
+        <ul class="tags">{doctor.languages.map((l) => <li>{l}</li>)}</ul>
+      </div>
+    )}
+  </div>
+</section>

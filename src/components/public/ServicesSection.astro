@@ -1,0 +1,39 @@
+---
+import { doctorConfig } from "@/config";
+import { waLink } from "@/lib/whatsapp";
+
+const { services, contact } = doctorConfig;
+---
+<section class="sec" id="services" aria-labelledby="svc-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">الخدمات</span>
+        <h2 class="h2" id="svc-h" data-split>ما نقدّمه <em>لك ولأسرتك</em></h2>
+      </div>
+      <p class="lead rv">رعاية أولية شاملة بخطة واضحة. للاستفسار عن أي خدمة راسلنا على واتساب.</p>
+    </div>
+    <div class="svc-grid">
+      {services.map((s, i) => (
+        <article class={i === 0 ? "svc feat rv" : "svc rv"} style={i > 0 ? `--d:${i % 3}` : undefined}>
+          <div class="ph">
+            {s.image && <img src={s.image.src} alt={s.image.alt} width="1600" height="1067" loading="lazy" />}
+          </div>
+          <div class="svc-b">
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+            <div class="svc-f">
+              <a class="go" href={waLink(contact.whatsapp, `أود الاستفسار عن خدمة: ${s.title}`)} target="_blank" rel="noopener">
+                استفسر
+                <i>
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M13 8H3M7 4L3 8l4 4" /></svg>
+                </i>
+                <span class="sr-only"> عن خدمة {s.title} عبر واتساب</span>
+              </a>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
