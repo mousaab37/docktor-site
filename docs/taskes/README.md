@@ -13,7 +13,7 @@ Before task 1, the owner must:
 | 1 | [task1.md](task1.md) | Packages, Cloudflare adapter, Tailwind wiring, TS config, env example | ✅ done (reviewed) |
 | 2 | [task2.md](task2.md) | `doctor.config.ts` + Zod schema (onboarding data) | ✅ done (reviewed) |
 | 3 | [task3.md](task3.md) | Arabic fonts, design tokens, base CSS, `BaseLayout`, dev style guide | ✅ done (reviewed) |
-| 4 | [task4.md](task4.md) | Public layout: header, mobile menu, footer, WhatsApp helper, basic motion (+ `/dev/reference` = original site) | in progress |
+| 4 | [task4.md](task4.md) | Public layout: header, mobile menu, footer, WhatsApp helper, basic motion (+ `/dev/reference` = original site) | ✅ done (reviewed) |
 | 5 | [task5.md](task5.md) | Floating compare button old ↔ new; fix the 5 baseline errors; **full animation engine** (roll, mega menu, parallax, drift, fill words, sticky steps, marquee, clip) | todo |
 | 6 | [task6.md](task6.md) | Types + sample data; landing part 1 (hero, statement + stats, services, about) | todo |
 | 7 | [task7.md](task7.md) | Landing part 2 (how-to-book steps, band, certificates, clinics + map + hours, testimonials, articles, contact) | todo |

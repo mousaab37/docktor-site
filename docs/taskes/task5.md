@@ -15,7 +15,7 @@ In `src/components/SectionHeader.astro:43` and `src/components/SectionVisit.astr
 ## Part B — `src/components/dev/CompareButton.astro`
 - Renders **only** when `import.meta.env.DEV` is true; otherwise it outputs nothing.
 - Props: `to: "old" | "new"`.
-- A fixed pill in the bottom inline-end corner (`z-index: 200`), dark ink background, white text, shadow, system font. Labels:
+- A fixed pill in the bottom inline-end corner, with dark ink background, white text, a shadow and the system font. Reuse the existing `.dev-float` CSS and keep `z-index: 50`, so it stays **under** the open mobile menu (task 4 already set this). Labels:
   - `to="old"`: `EN ↗ النسخة الأصلية`
   - `to="new"`: `AR ↗ Arabic version`
 - On click (small inline script), go to the other site **keeping the matching section**. Map the current `location.hash`:
@@ -30,9 +30,9 @@ In `src/components/SectionHeader.astro:43` and `src/components/SectionVisit.astr
   | anything else | top of page |
 
   The reverse direction uses the same table (`#doctors` goes to `#about`, `#book` goes to `#contact`, `#visit` goes to `#how`).
-- Use it in two places:
-  - `BaseLayout.astro`: `<CompareButton to="old" />` just before `</body>`. Every new page gets it.
-  - `src/pages/dev/reference.astro`: replace the hand-made "Back to the new Arabic site" link with `<CompareButton to="new" />`.
+- Use it in two places. These **replace** the plain links that task 4 added:
+  - `src/layouts/PublicLayout.astro`: replace the `<a class="dev-float" href="/dev/reference">` block with `<CompareButton to="old" />`.
+  - `src/pages/dev/reference.astro`: replace its back link with `<CompareButton to="new" />`.
 
 ## Part C — Motion engine parity (`src/scripts/motion.ts` + `global.css`)
 Implement these rows from `animation-inventory.md`. The selectors and data attributes stay the **same as the original**, so section components can copy the original markup.
@@ -56,7 +56,7 @@ Add a demo block to `/dev/styleguide` for **each** item: roll button, mega menu 
 - [ ] The floating button appears on `/dev/styleguide` and `/`, and also on `/dev/reference`. It goes back and forth, keeping the section where a mapping exists.
 - [ ] `npm run build` output: the button isn't rendered in production. Run `npm run build && npm run preview` and check `/`.
 - [ ] Every Part C row works on `/dev/styleguide`, and side by side it feels the same as `/dev/reference`.
-- [ ] Reduced motion: everything is visible right away, and the marquee and drift are stopped.
+- [ ] Reduced motion: everything is visible right away, and the marquee and drift are stopped. Test it for real (DevTools → Rendering → "Emulate CSS prefers-reduced-motion: reduce"); task 4 didn't test this. Cover the task 4 animations too.
 - [ ] `npm run check` reports **0 errors**, and `npm run build` passes.
 - [ ] One commit: `task5: compare button, animation engine parity`.
 
