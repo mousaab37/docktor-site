@@ -15,7 +15,7 @@ Before task 1, the owner must:
 | 3 | [task3.md](task3.md) | Arabic fonts, design tokens, base CSS, `BaseLayout`, dev style guide | ✅ done (reviewed) |
 | 4 | [task4.md](task4.md) | Public layout: header, mobile menu, footer, WhatsApp helper, basic motion (+ `/dev/reference` = original site) | ✅ done (reviewed) |
 | 5 | [task5.md](task5.md) | Floating compare button old ↔ new; fix the 5 baseline errors; **full animation engine** (roll, mega menu, parallax, drift, fill words, sticky steps, marquee, clip) | ✅ done (reviewed) |
-| 6 | [task6.md](task6.md) | Types + sample data; landing part 1 (hero, statement + stats, services, about) | todo |
+| 6 | [task6.md](task6.md) | Types + sample data; landing part 1 (hero, statement + stats, services, about) | ✅ done (reviewed) |
 | 7 | [task7.md](task7.md) | Landing part 2 (how-to-book steps, band, certificates, clinics + map + hours, testimonials, articles, contact) | todo |
 
 **Owner's priority:** match the original's **animations and simplicity**. Every animation is listed in [animation-inventory.md](animation-inventory.md). The original site stays available at `/dev/reference` (dev only), with a floating button to switch. The old template files are **kept**, not moved.

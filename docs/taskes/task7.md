@@ -75,7 +75,17 @@ export function formatTime(hhmm: string): string   // "16:30" → "4:30 م", "09
 - Text side: eyebrow, title "تواصل <em>معنا</em>", lead, a `.info` `dl` (phone, WhatsApp, email if set, socials, each clinic name and address → `#clinics`), then `BookingNotice`.
 - Card side (`.form-card` look): a big WhatsApp CTA card with the doctor photo, the line "أسرع طريقة للتواصل" and a large `WhatsAppButton`.
 
-### 12. `src/pages/index.astro`
+### 12. Polish from the task 6 review
+- **Hero badge grammar.** Today it reads "يستقبل المرضى في 2 عيادات", which is wrong Arabic. Add `src/lib/arabic.ts` with `export function clinicsPhrase(n: number): string`:
+  - 1 → `في عيادة واحدة`
+  - 2 → `في عيادتين`
+  - 3–10 → `في {n} عيادات`
+  - 11 and above → `في {n} عيادة`
+
+  Use it in `HeroSection`.
+- **The WhatsApp notice.** Task 6 added a short line under the hero CTA. Replace it with the shared `BookingNotice` component (compact variant: a `compact` prop with smaller text and no box) so the wording is identical everywhere.
+
+### 13. `src/pages/index.astro`
 - Load all the data in parallel: statistics, clinics, certificates, testimonials, articles (3).
 - Final order, following the original's rhythm: Hero, Statement, Services, HowToBook, Band, About, Certificates, Clinics, Testimonials, Articles, Contact.
 - Update `src/lib/nav.ts` to: نبذة `#about`, الخدمات (mega), كيف تحجز `#how`, العيادات `#clinics`, المقالات `#articles`, تواصل `#contact`.
