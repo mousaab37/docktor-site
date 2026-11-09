@@ -42,7 +42,9 @@ Do **not** create separate About, Services, Clinics, Booking or Contact pages. T
 **Security**
 - Never put the Supabase **service-role key** in code, `.env` files read by the browser, or anything committed.
 - Never commit secrets. `.env` must stay in `.gitignore`.
-- Every dashboard route and action must check the Supabase session on the **server**. Front-end checks alone are not enough.
+- Every dashboard route and action must check the Supabase session on the **server** with `auth.getUser()` (never trust `getSession()` alone) **and** `is_dashboard_user()`. Front-end checks alone are not enough.
+- Every write RLS policy uses `public.is_dashboard_user()`. Never use plain `auth.role() = 'authenticated'`.
+- Public pages use the cookie-less anon client (`src/lib/supabase/public.ts`); only `/login`, `/logout` and `/dashboard/*` create a session client.
 - Draft articles must never be readable publicly.
 - Article HTML must be sanitized before it is saved and before it is rendered.
 
