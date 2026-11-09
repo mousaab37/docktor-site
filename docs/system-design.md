@@ -123,7 +123,7 @@ src/
 public/
   fonts/ (Arabic)  img/
 supabase/
-  setup.sql                   # tables, constraints, indexes, RLS, triggers, buckets, storage policies
+  (moved) db/01-setup.sql     # tables, constraints, indexes, RLS, triggers, buckets, storage policies
 workers/
   health-cron (or scheduled() export in the same Worker)
 docs/
@@ -220,7 +220,7 @@ No service-role key in the app. Doctor user is created once from the Supabase da
 ## 10. Build phases (matches PRD §18)
 
 1. **Foundation** — Cloudflare adapter, Tailwind v4 with template tokens, Arabic fonts, RTL base layout, port template components to Arabic/RTL, `doctor.config.ts`.
-2. **Database & auth** — `supabase/setup.sql`, Supabase clients, middleware, login/logout.
+2. **Database & auth** — `db/01-setup.sql` (copy and paste into the Supabase SQL Editor, see `db/README.md`), Supabase clients, middleware, login/logout.
 3. **Dashboard** — 8 sections.
 4. **Public site** — all routes wired to config + public data.
 5. **Integration** — uploads, Leaflet, WhatsApp, SEO, sitemap.

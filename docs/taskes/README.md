@@ -23,7 +23,8 @@ Before task 1, the owner must:
 
 | # | File | What it delivers | Owner action needed | Status |
 |---|---|---|---|---|
-| 8 | [task8.md](task8.md) | `supabase/setup.sql` (tables, RLS, triggers, storage), `seed.sql`, owner guide `docs/setup-supabase.md` | **After** the task: the planner reviews the SQL, then the owner follows the guide (creates the project, runs the SQL, creates the doctor user, fills `.env`) | todo |
+| — | [db/](../../db/README.md) | **Written and tested by the planner:** `01-setup.sql` (schema, RLS, storage), `02-add-doctor.sql`, `03-check.sql`, Arabic guide `README.md` | Owner follows `db/README.md` for each client (copy and paste, about 10 min) | ✅ ready |
+| 8 | [task8.md](task8.md) | `db/90-sample-data.sql` (dev seed, same rows as `sample-data.ts`) | Owner runs it on the **dev** project only | todo |
 | 9 | [task9.md](task9.md) | Landing page reads from Supabase; image URLs; graceful fallback; cache headers | `.env` must be filled first | todo |
 | 10 | [task10.md](task10.md) | Login, logout, server-side protected `/dashboard` with the 8-section shell | Doctor user + `dashboard_users` row must exist | todo |
 | 11 | [task11.md](task11.md) | `npm run verify:security`: 16 automated RLS/storage checks (PRD §7.4) | Create `.env.test.local` with the doctor's test login | todo |

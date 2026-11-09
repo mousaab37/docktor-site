@@ -57,4 +57,4 @@ An automated script that proves the database rules hold, run against the doctor'
 - [ ] One commit: `task11: security verification script`.
 
 ## Out of scope
-- Don't change `setup.sql`. If a check fails because of the SQL, report it to the planner and set Status to `blocked`.
+- Don't change anything in `db/`. If a check fails because of the SQL, report it to the planner and set Status to `blocked`.

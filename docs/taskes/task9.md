@@ -4,7 +4,7 @@
 Switch `src/lib/data.ts` from sample data to Supabase. The landing page must keep working when the database is down or not configured: empty sections hide themselves, and the page never crashes.
 
 ## Before you start
-- Task 8 is done, and the **owner has run `setup.sql` and `seed.sql`** and filled `.env` (see `docs/setup-supabase.md`). If `.env` has no `PUBLIC_SUPABASE_URL`, stop and report it.
+- Task 8 is done, and the **owner has followed `db/README.md`**: run `db/01-setup.sql`, `db/02-add-doctor.sql` and `db/90-sample-data.sql`, with `db/03-check.sql` all green, and filled `.env`. If `.env` has no `PUBLIC_SUPABASE_URL`, stop and report it.
 - Read the official guide for `@supabase/ssr` and `supabase-js` v2. Use the find-skills skill if needed.
 
 ## Files
