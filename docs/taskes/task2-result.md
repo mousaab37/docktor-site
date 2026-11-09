@@ -1,0 +1,12 @@
+# Task 2 — Result
+- Commit: see `git log` (task2: doctor config + zod schema)
+- Status: done
+- Files changed: src/config/doctor.schema.ts, src/config/doctor.config.ts, src/config/index.ts, docs/taskes/task2-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (only the 5 known baseline errors in SectionHeader/SectionVisit, none in new files, no warnings in new files)
+- How to verify: `npx tsx -e 'import("./src/config/index.ts").then(m=>console.log(m.doctorConfig.doctor.fullName))'`
+- Validation test: set `brand.primary` to `"green"` -> parsing threw a ZodError (invalid_format); reverted to `#0B3B2E`, parse OK again.
+- Notes for planner:
+  - Since nothing imports the config yet, `npm run build` does not validate it. The failing-build test was therefore done by importing the config with `npx tsx` (temporary, not added to package.json). Build-time failure will start working once a page imports the config (Task 3+).
+  - Used Zod 4 APIs `z.url()` / `z.email()` (the `z.string().url()` forms are deprecated).
+  - The "5 known baseline errors" are documented in `docs/taskes/task1-result.md`, not `README.md`.
+  - Services: 5 entries, no prices. `doc-haddad.webp` used as photo as instructed.
