@@ -1,0 +1,46 @@
+---
+import c from "../content.json";
+---
+<section class="sec" id="faq" aria-labelledby="faq-h">
+    <div class="wrap faq-grid">
+      <div class="faq-l">
+        <span class="eyebrow">{c.faq.span_1}</span>
+        <h2 class="h2" id="faq-h" data-split set:html={c.faq.h2_2_html}></h2>
+        <p class="lead">{c.faq.p_3}</p>
+        <div class="cta-row">
+          <a class="btn" href="#book"><span class="roll"><span data-t="Book a visit">{c.faq.span_4}</span></span></a>
+          <a class="btn ghost" href="tel:+15550134870"><span class="roll"><span data-t="Call us">{c.faq.span_5}</span></span></a>
+        </div>
+      </div>
+      <div class="faq-list">
+        <details class="qa" open>
+          <summary set:html={c.faq.summary_6_html}></summary>
+          <p>{c.faq.p_7}</p>
+        </details>
+        <details class="qa">
+          <summary set:html={c.faq.summary_8_html}></summary>
+          <p>{c.faq.p_9}</p>
+        </details>
+        <details class="qa">
+          <summary set:html={c.faq.summary_10_html}></summary>
+          <p>{c.faq.p_11}</p>
+        </details>
+        <details class="qa">
+          <summary set:html={c.faq.summary_12_html}></summary>
+          <p>{c.faq.p_13}</p>
+        </details>
+        <details class="qa">
+          <summary set:html={c.faq.summary_14_html}></summary>
+          <p>{c.faq.p_15}</p>
+        </details>
+        <details class="qa">
+          <summary set:html={c.faq.summary_16_html}></summary>
+          <p>{c.faq.p_17}</p>
+        </details>
+        <details class="qa">
+          <summary set:html={c.faq.summary_18_html}></summary>
+          <p>{c.faq.p_19}</p>
+        </details>
+      </div>
+    </div>
+  </section>

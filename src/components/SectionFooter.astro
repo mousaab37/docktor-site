@@ -1,0 +1,45 @@
+---
+import c from "../content.json";
+---
+<footer class="foot dark">
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-about">
+        <a class="logo" href="#top">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#C8F23A" /><g fill="#0B3B2E"><path d="M16 15c-3-2.8-3-7.6 0-10.6 3 3 3 7.8 0 10.6z" /><path d="M16 17c3 2.8 3 7.6 0 10.6-3-3-3-7.8 0-10.6z" /><path d="M15 16c-2.8 3-7.6 3-10.6 0 3-3 7.8-3 10.6 0z" /><path d="M17 16c2.8-3 7.6-3 10.6 0-3 3-7.8 3-10.6 0z" /></g></svg>
+          {c.footer.text_1}<small>{c.footer.small_2}</small>
+        </a>
+        <p>{c.footer.p_3}</p>
+        <a class="btn" href="#book"><span class="roll"><span data-t="Book a visit">{c.footer.span_4}</span></span></a>
+      </div>
+      <nav aria-labelledby="f-links" id="site-links">
+        <h2 id="f-links">{c.footer.h2_5}</h2>
+        <ul>
+          <li><a href="#services">{c.footer.a_6}</a></li>
+          <li><a href="#visit">{c.footer.a_7}</a></li>
+          <li><a href="#doctors">{c.footer.a_8}</a></li>
+          <li><a href="#prices">{c.footer.a_9}</a></li>
+          <li><a href="#faq">{c.footer.a_10}</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h2>{c.footer.h2_11}</h2>
+        <address set:html={c.footer.address_12_html}></address>
+      </div>
+      <div>
+        <h2>{c.footer.h2_13}</h2>
+        <ul>
+          <li><a href="tel:+15550134870">{c.footer.a_14}</a></li>
+          <li><a href="mailto:hello@averin.example">{c.footer.a_15}</a></li>
+          <li>{c.footer.li_16}</li>
+          <li>{c.footer.li_17}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <p>{c.footer.p_18}</p>
+      <ul><li><a href="#">{c.footer.a_19}</a></li><li><a href="#">{c.footer.a_20}</a></li></ul>
+    </div>
+  </div>
+  <div class="giant" aria-hidden="true">{c.footer.div_21}</div>
+</footer>

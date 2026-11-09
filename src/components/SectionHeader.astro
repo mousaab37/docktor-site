@@ -1,0 +1,59 @@
+---
+import c from "../content.json";
+---
+<a class="skip" href="#main">{c.header.a_1}</a>
+<header class="hdr" id="top">
+  <div class="wrap hdr-in">
+    <a class="logo" href="#top" aria-label="Averin Clinic, back to top">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#0B3B2E" /><g fill="#C8F23A"><path d="M16 15c-3-2.8-3-7.6 0-10.6 3 3 3 7.8 0 10.6z" /><path d="M16 17c3 2.8 3 7.6 0 10.6-3-3-3-7.8 0-10.6z" /><path d="M15 16c-2.8 3-7.6 3-10.6 0 3-3 7.8-3 10.6 0z" /><path d="M17 16c2.8-3 7.6-3 10.6 0-3 3-7.8 3-10.6 0z" /></g></svg>
+      {c.header.text_2}<small>{c.header.small_3}</small>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a class="nojs-only" href="#services">{c.header.a_4}</a>
+      <button class="js-only" type="button" aria-expanded="false" aria-controls="mega" data-mega>{c.header.text_5} <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 4.5l4 4 4-4" /></svg></button>
+      <a href="#visit">{c.header.a_6}</a>
+      <a href="#doctors">{c.header.a_7}</a>
+      <a href="#prices">{c.header.a_8}</a>
+      <a href="#faq">{c.header.a_9}</a>
+    </nav>
+    <div class="hdr-r">
+      <a class="hdr-tel" href="tel:+15550134870">{c.header.a_10}</a>
+      <a class="btn sm" href="#book"><span class="roll"><span data-t="Book a visit" set:html={c.header.span_11_html}></span></span></a>
+      <button class="menu-btn js-only" type="button" aria-expanded="false" aria-controls="menu" data-menu set:html={c.header.button_12_html}></button>
+      <a class="menu-btn nojs-only" href="#site-links">{c.header.a_13}</a>
+    </div>
+  </div>
+
+  <div class="mega" id="mega">
+    <div class="wrap mega-in">
+      <a class="m-item" href="#services"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg></span><b>{c.header.b_14}</b><span>{c.header.span_15}</span></a>
+      <a class="m-item" href="#services"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6" /></svg></span><b>{c.header.b_16}</b><span>{c.header.span_17}</span></a>
+      <a class="m-item" href="#services"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3M7.5 15h9" /></svg></span><b>{c.header.b_18}</b><span>{c.header.span_19}</span></a>
+      <a class="m-item" href="#services"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2 .6 3.2 2.2 3.8 5" /></svg></span><b>{c.header.b_20}</b><span>{c.header.span_21}</span></a>
+      <a class="m-item" href="#services"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z" /></svg></span><b>{c.header.b_22}</b><span>{c.header.span_23}</span></a>
+      <a class="m-item" href="#services"><span class="m-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3" /><path d="M16 10l5-3v10l-5-3" /></svg></span><b>{c.header.b_24}</b><span>{c.header.span_25}</span></a>
+      <a class="m-promo" href="#book" data-service="Check-up">
+        <span class="ph"><img src={"/" + c.header.img_26_image} alt={c.header.img_26_alt} width="1600" height="1067" loading="lazy"></span>
+        <div><span><small>{c.header.small_27}</small><strong>{c.header.strong_28}</strong></span><p>{c.header.p_29}</p><em>{c.header.em_30}</em></div>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="menu" id="menu" aria-label="Site menu">
+  <div class="menu-media ph"><img src={"/" + c.header.img_31_image} alt width="1600" height="1067" loading="lazy"></div>
+  <div class="menu-list">
+    <ul>
+      <li><a href="#services">{c.header.a_32}</a></li>
+      <li><a href="#visit">{c.header.a_33}</a></li>
+      <li><a href="#doctors">{c.header.a_34}</a></li>
+      <li><a href="#prices">{c.header.a_35}</a></li>
+      <li><a href="#faq">{c.header.a_36}</a></li>
+      <li><a href="#book">{c.header.a_37}</a></li>
+    </ul>
+    <div class="menu-foot">
+      <a href="tel:+15550134870">{c.header.a_38}</a>
+      <a href="mailto:hello@averin.example">{c.header.a_39}</a>
+      <span>{c.header.span_40}</span>
+    </div>
+  </div>
+</nav>

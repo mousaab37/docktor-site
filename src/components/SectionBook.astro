@@ -1,0 +1,74 @@
+---
+import c from "../content.json";
+---
+<section class="sec book" id="book" aria-labelledby="book-h">
+    <div class="wrap book-grid">
+      <div class="book-l">
+        <span class="eyebrow">{c.book.span_1}</span>
+        <h2 class="h2" id="book-h" data-split set:html={c.book.h2_2_html}></h2>
+        <p class="lead">{c.book.p_3}</p>
+        <dl class="info">
+          <div><dt>{c.book.dt_4}</dt><dd set:html={c.book.dd_5_html}></dd></div>
+          <div><dt>{c.book.dt_6}</dt><dd><a href="tel:+15550134870">{c.book.a_7}</a></dd></div>
+          <div><dt>{c.book.dt_8}</dt><dd><a href="mailto:hello@averin.example">{c.book.a_9}</a></dd></div>
+          <div><dt>{c.book.dt_10}</dt><dd set:html={c.book.dd_11_html}></dd></div>
+        </dl>
+        <p class="sos"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="8" /><path d="M10 5.5v5.5M10 13.6v.9" /></svg><span>{c.book.span_12}</span></p>
+      </div>
+
+      <div class="form-card">
+        
+        <form class="form" id="f-contact" action="https://formgong.com/submit" method="POST">
+          <input type="hidden" name="access_key" value={c.form.access_key}>
+          <input type="hidden" name="subject" value="New appointment request from the website">
+          <div class="hp" aria-hidden="true"><label>{c.book.text_13}<input name="botcheck" tabindex="-1" autocomplete="off"></label></div>
+          <fieldset class="chips full">
+            <legend>{c.book.legend_14}</legend>
+            <div>
+              <label><input type="radio" name="service" value="Family doctor" checked><span>{c.book.span_15}</span></label>
+              <label><input type="radio" name="service" value="Check-up"><span>{c.book.span_16}</span></label>
+              <label><input type="radio" name="service" value="Lab tests"><span>{c.book.span_17}</span></label>
+              <label><input type="radio" name="service" value="Specialist"><span>{c.book.span_18}</span></label>
+              <label><input type="radio" name="service" value="IV therapy"><span>{c.book.span_19}</span></label>
+              <label><input type="radio" name="service" value="Video visit"><span>{c.book.span_20}</span></label>
+              <label><input type="radio" name="service" value="Membership"><span>{c.book.span_21}</span></label>
+            </div>
+          </fieldset>
+          <div class="fl full"><label for="b-name">{c.book.label_22}</label><input id="b-name" name="name" autocomplete="name" required maxlength="100"></div>
+          <div class="fl"><label for="b-email">{c.book.label_23}</label><input id="b-email" name="email" type="email" autocomplete="email" required maxlength="160"></div>
+          <div class="fl"><label for="b-phone">{c.book.label_24}</label><input id="b-phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div>
+          <div class="fl"><label for="b-day">{c.book.label_25}</label>
+            <select id="b-day" name="day">
+              <option>{c.book.option_26}</option><option>{c.book.option_27}</option><option>{c.book.option_28}</option><option>{c.book.option_29}</option><option>{c.book.option_30}</option><option>{c.book.option_31}</option><option>{c.book.option_32}</option>
+            </select>
+          </div>
+          <fieldset class="chips">
+            <legend>{c.book.legend_33}</legend>
+            <div>
+              <label><input type="radio" name="time" value="Any time" checked><span>{c.book.span_34}</span></label>
+              <label><input type="radio" name="time" value="Morning"><span>{c.book.span_35}</span></label>
+              <label><input type="radio" name="time" value="Afternoon"><span>{c.book.span_36}</span></label>
+              <label><input type="radio" name="time" value="Evening"><span>{c.book.span_37}</span></label>
+            </div>
+          </fieldset>
+          <div class="fl full">
+            <label for="b-msg">{c.book.label_38}</label>
+            <textarea id="b-msg" name="message" rows="3" maxlength="1000" aria-describedby="b-msg-hint" placeholder="For example: I'd like to see Dr. Okafor, or I need a visit for two children."></textarea>
+            <p class="hint" id="b-msg-hint"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="2" /><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" /></svg>{c.book.text_39}</p>
+          </div>
+          <div class="send full">
+            <button class="btn submit" type="submit"><span data-send-label>{c.book.span_40}</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg></button>
+            <p class="note">{c.book.p_41}</p>
+          </div>
+          <p class="status full" data-status role="status" aria-live="polite"></p>
+          <p class="credit full" set:html={c.book.p_42_html}></p>
+          <div class="thanks full" tabindex="-1">
+            <span class="tick" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none" stroke="#0D2B22" stroke-width="2.2"><path d="M6 14.5l5.5 5.5L22 8.5" /></svg></span>
+            <h3 set:html={c.book.h3_43_html}></h3>
+            <p>{c.book.p_44}</p>
+            <button class="btn ghost" type="button" data-again>{c.book.button_45}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>

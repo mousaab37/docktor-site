@@ -1,0 +1,42 @@
+---
+import c from "../content.json";
+---
+<section class="sec" id="doctors" aria-labelledby="doc-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">{c.doctors.span_1}</span>
+          <h2 class="h2" id="doc-h" data-split set:html={c.doctors.h2_2_html}></h2>
+        </div>
+        <p class="lead rv">{c.doctors.p_3}</p>
+      </div>
+      <div class="team">
+        <figure class="doc rv" style="margin:0">
+          <div class="ph clip"><span class="days">{c.doctors.span_4}</span><img src={"/" + c.doctors.img_5_image} alt={c.doctors.img_5_alt} width="800" height="1200" loading="lazy"></div>
+          <figcaption><h3>{c.doctors.h3_6}</h3><p>{c.doctors.p_7}</p><p>{c.doctors.p_8}</p></figcaption>
+        </figure>
+        <figure class="doc rv" style="margin:0;--d:1">
+          <div class="ph clip" style="--d:1"><span class="days">{c.doctors.span_9}</span><img src={"/" + c.doctors.img_10_image} alt={c.doctors.img_10_alt} width="800" height="1200" loading="lazy"></div>
+          <figcaption><h3>{c.doctors.h3_11}</h3><p>{c.doctors.p_12}</p><p>{c.doctors.p_13}</p></figcaption>
+        </figure>
+        <figure class="doc rv" style="margin:0;--d:2">
+          <div class="ph clip" style="--d:2"><span class="days">{c.doctors.span_14}</span><img src={"/" + c.doctors.img_15_image} alt={c.doctors.img_15_alt} width="800" height="1200" loading="lazy"></div>
+          <figcaption><h3>{c.doctors.h3_16}</h3><p>{c.doctors.p_17}</p><p>{c.doctors.p_18}</p></figcaption>
+        </figure>
+        <figure class="doc rv" style="margin:0;--d:3">
+          <div class="ph clip" style="--d:3"><span class="days">{c.doctors.span_19}</span><img src={"/" + c.doctors.img_20_image} alt={c.doctors.img_20_alt} width="800" height="1200" loading="lazy"></div>
+          <figcaption><h3>{c.doctors.h3_21}</h3><p>{c.doctors.p_22}</p><p>{c.doctors.p_23}</p></figcaption>
+        </figure>
+      </div>
+
+      <div class="clinic rv">
+        <div class="clinic-t">
+          <span class="eyebrow">{c.doctors.span_24}</span>
+          <h3>{c.doctors.h3_25}</h3>
+          <p>{c.doctors.p_26}</p>
+          <div><a class="btn ghost" href="#book"><span class="roll"><span data-t="Address and hours">{c.doctors.span_27}</span></span></a></div>
+        </div>
+        <div class="ph"><img src={"/" + c.doctors.img_28_image} alt={c.doctors.img_28_alt} width="1600" height="1067" loading="lazy" data-par="0.06"></div>
+      </div>
+    </div>
+  </section>

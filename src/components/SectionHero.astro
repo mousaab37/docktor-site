@@ -1,0 +1,29 @@
+---
+import c from "../content.json";
+---
+<section class="hero" aria-labelledby="hero-h">
+    <div class="wrap hero-grid">
+      <div class="hero-media ph" data-hero>
+        <div class="zoom"><img src={"/" + c.hero.img_1_image} alt={c.hero.img_1_alt} width="1024" height="1536" fetchpriority="high" data-par="0.08"></div>
+        <span class="badge" set:html={c.hero.span_2_html}></span>
+      </div>
+      <div class="hero-text">
+        <div>
+          <span class="eyebrow">{c.hero.span_3}</span>
+          <h1 class="h1" id="hero-h" data-split="blur" set:html={c.hero.h1_4_html}></h1>
+        </div>
+        <div>
+          <p class="lead">{c.hero.p_5}</p>
+          <div class="cta-row">
+            <a class="btn" href="#book"><span class="roll"><span data-t="Book a visit">{c.hero.span_6}</span></span></a>
+            <a class="btn ghost" href="#prices"><span class="roll"><span data-t="See prices">{c.hero.span_7}</span></span></a>
+          </div>
+          <ul class="facts">
+            <li set:html={c.hero.li_8_html}></li>
+            <li set:html={c.hero.li_9_html}></li>
+            <li set:html={c.hero.li_10_html}></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>

@@ -1,0 +1,50 @@
+---
+import c from "../content.json";
+---
+<section class="sec" id="prices" aria-labelledby="price-h" style="padding-top:0">
+    <div class="wrap prices-grid">
+      <div class="prices-l">
+        <span class="eyebrow">{c.prices.span_1}</span>
+        <h2 class="h2" id="price-h" data-split set:html={c.prices.h2_2_html}></h2>
+        <p class="lead">{c.prices.p_3}</p>
+        <div class="member dark rv">
+          <small>{c.prices.small_4}</small>
+          <h3>{c.prices.h3_5}</h3>
+          <p class="pr" set:html={c.prices.p_6_html}></p>
+          <ul>
+            <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 10.5l4 4 8-9" /></svg>{c.prices.text_7}</li>
+            <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 10.5l4 4 8-9" /></svg>{c.prices.text_8}</li>
+            <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 10.5l4 4 8-9" /></svg>{c.prices.text_9}</li>
+          </ul>
+          <a class="btn" href="#book" data-service="Membership"><span class="roll"><span data-t="Ask about membership">{c.prices.span_10}</span></span></a>
+        </div>
+      </div>
+      <div>
+        <div class="plist rv">
+          <h3>{c.prices.h3_11}</h3>
+          <ul>
+            <li><div><b>{c.prices.b_12}</b><span>{c.prices.span_13}</span></div><em>{c.prices.em_14}</em></li>
+            <li><div><b>{c.prices.b_15}</b><span>{c.prices.span_16}</span></div><em>{c.prices.em_17}</em></li>
+            <li><div><b>{c.prices.b_18}</b><span>{c.prices.span_19}</span></div><em>{c.prices.em_20}</em></li>
+            <li><div><b>{c.prices.b_21}</b><span>{c.prices.span_22}</span></div><em>{c.prices.em_23}</em></li>
+          </ul>
+        </div>
+        <div class="plist rv">
+          <h3>{c.prices.h3_24}</h3>
+          <ul>
+            <li><div><b>{c.prices.b_25}</b><span>{c.prices.span_26}</span></div><em>{c.prices.em_27}</em></li>
+            <li><div><b>{c.prices.b_28}</b><span>{c.prices.span_29}</span></div><em>{c.prices.em_30}</em></li>
+            <li><div><b>{c.prices.b_31}</b><span>{c.prices.span_32}</span></div><em>{c.prices.em_33}</em></li>
+          </ul>
+        </div>
+        <div class="plist rv">
+          <h3>{c.prices.h3_34}</h3>
+          <ul>
+            <li><div><b>{c.prices.b_35}</b><span>{c.prices.span_36}</span></div><em>{c.prices.em_37}</em></li>
+            <li><div><b>{c.prices.b_38}</b><span>{c.prices.span_39}</span></div><em>{c.prices.em_40}</em></li>
+            <li><div><b>{c.prices.b_41}</b><span>{c.prices.span_42}</span></div><em>{c.prices.em_43}</em></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
