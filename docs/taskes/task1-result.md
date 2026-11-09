@@ -1,0 +1,12 @@
+# Task 1 — Result
+- Commit: see `git log` (task1: project setup (cloudflare adapter, tailwind wiring, ts strict))
+- Status: blocked (only because `npm run check` reports 5 errors in old template files, which the task forbids editing)
+- Files changed: astro.config.mjs, tsconfig.json, src/env.d.ts, src/styles/global.css, .env.example, .gitignore, package.json, package-lock.json, README.md, docs/taskes/task1-result.md
+- Commands run and outcome:
+  - npm install (supabase-js, ssr, zod, leaflet, fontsource x2, @astrojs/cloudflare) ✅
+  - npm run build ✅
+  - npm run check ❌ 5 errors, 0 in new files
+- How to verify: `npm run build`; `npm run dev` -> http://localhost:4321 (dev server not opened in a browser by me)
+- Notes for planner:
+  - `astro add cloudflare` was not used; I installed `@astrojs/cloudflare` with npm and configured by hand. No wrangler config file was generated (build works without one); add `wrangler.jsonc` in a later task if deploy needs it.
+  - The 5 check errors (all `ts(2322): Type 'boolean' is not assignable to type 'string'` on `<img src={"/" + c.xxx_image}>`): `src/components/SectionHeader.astro:43`, `src/components/SectionVisit.astro:15,16,17,18`. Cause: some `*_image` fields in `src/content.json` are typed boolean. These files will be replaced in later tasks; suggest excluding them in tsconfig or fixing the content.json values.

@@ -8,3 +8,9 @@ out/
 .svelte-kit/
 .astro/
 _site/
+
+.env
+.env.*
+!.env.example
+.dev.vars
+.wrangler/
