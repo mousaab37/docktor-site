@@ -11,13 +11,15 @@ Before task 1, the owner must:
 | # | File | What it delivers | Status |
 |---|---|---|---|
 | 1 | [task1.md](task1.md) | Packages, Cloudflare adapter, Tailwind wiring, TS config, env example | ✅ done (reviewed) |
-| 2 | [task2.md](task2.md) | `doctor.config.ts` + Zod schema (onboarding data) | todo |
+| 2 | [task2.md](task2.md) | `doctor.config.ts` + Zod schema (onboarding data) | ✅ done (reviewed) |
 | 3 | [task3.md](task3.md) | Arabic fonts, design tokens, base CSS, `BaseLayout`, dev style guide | todo |
 | 4 | [task4.md](task4.md) | Public layout: header, mobile menu, footer, WhatsApp helper, motion script | todo |
 | 5 | [task5.md](task5.md) | Data types + sample data; landing page part 1 (hero, about, stats, services); old template moved to `reference/` | todo |
 | 6 | [task6.md](task6.md) | Landing page part 2 (clinics + map + hours, certificates, testimonials, articles, contact) | todo |
 
 ## Known baseline check errors (accepted until task 5)
+
+> This is the section that task files mean by "see `README.md`": `docs/taskes/README.md`, not the root README.
 
 `npm run check` reports **exactly 5 errors**, all in the old template:
 - `src/components/SectionHeader.astro:43`
