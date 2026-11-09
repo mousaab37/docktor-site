@@ -1,0 +1,29 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Header from "@/components/public/Header.astro";
+import Footer from "@/components/public/Footer.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  noindex?: boolean;
+}
+
+const { title, description, ogImage, noindex } = Astro.props;
+const showReferenceLink = import.meta.env.DEV;
+---
+<BaseLayout title={title} description={description} ogImage={ogImage} noindex={noindex}>
+  <slot name="head" slot="head" />
+  <Header />
+  <main id="main"><slot /></main>
+  <Footer />
+  {showReferenceLink && (
+    <a class="dev-float" href="/dev/reference" title="يفتح القالب القديم (الإنجليزي) للمقارنة. يظهر في وضع التطوير فقط.">
+      <span aria-hidden="true">⇄</span> الموقع القديم (مرجع)
+    </a>
+  )}
+  <script>
+    import "@/scripts/motion";
+  </script>
+</BaseLayout>

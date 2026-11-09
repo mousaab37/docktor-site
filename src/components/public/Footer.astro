@@ -1,0 +1,47 @@
+---
+import { doctorConfig } from "@/config";
+import { sectionLinks } from "@/lib/nav";
+import { waLink } from "@/lib/whatsapp";
+import Logo from "./Logo.astro";
+
+const { doctor, contact, brand, whatsapp } = doctorConfig;
+const year = new Date().getFullYear();
+const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
+const socialNames: Record<string, string> = {
+  instagram: "إنستغرام", x: "إكس", facebook: "فيسبوك", tiktok: "تيك توك",
+  youtube: "يوتيوب", linkedin: "لينكدإن", snapchat: "سناب شات",
+};
+---
+<footer class="foot dark">
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-about">
+        <Logo />
+        <p>{doctor.shortIntro}</p>
+      </div>
+      <nav aria-labelledby="f-links">
+        <h2 id="f-links">روابط</h2>
+        <ul>
+          {sectionLinks.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+          <li><a href="/blog">المدونة</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h2>تواصل معنا</h2>
+        <ul>
+          <li><a href={tel}><bdi dir="ltr">{contact.phone}</bdi></a></li>
+          <li><a href={waLink(contact.whatsapp, whatsapp.defaultMessage)} target="_blank" rel="noopener">واتساب</a></li>
+          {contact.email && <li><a href={`mailto:${contact.email}`}><bdi dir="ltr">{contact.email}</bdi></a></li>}
+          {contact.socials.map((s) => (
+            <li><a href={s.url} target="_blank" rel="noopener">{socialNames[s.platform] ?? s.platform}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <p>© <bdi>{year}</bdi> {doctor.honorific} {doctor.fullName}</p>
+      <ul><li><a href="/privacy">سياسة الخصوصية</a></li></ul>
+    </div>
+  </div>
+  <div class="giant" aria-hidden="true">{brand.logoText}</div>
+</footer>

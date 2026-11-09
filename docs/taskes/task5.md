@@ -1,103 +1,65 @@
-# Task 5 — Data types, sample data, landing page part 1 (hero, about, stats, services)
+# Task 5 — Compare button (old ↔ new) + full animation engine
 
 ## Goal
-Replace the old Averin home page with the new Arabic landing page and build its first four sections. Sections that will later come from Supabase read from typed **sample data** for now, so Phase 2 only has to swap the data source.
+1. While developing, the owner must be able to jump between the original English site and the new Arabic site **with one floating button**, landing on the matching section.
+2. Bring the motion system up to **full parity** with the original. Matching the original's animations is the owner's top priority. Read `docs/taskes/animation-inventory.md` first.
 
 ## Before you start
-- Tasks 1–4 are done and `git status` is clean.
-- Visual references: `SectionHero.astro`, `SectionBold.astro` (stats), `SectionServices.astro`, `SectionDoctors.astro` ("The clinic" card, for the About layout) and the matching rules in `public/site.css`.
+- Task 4 is done and `git status` is clean.
+- The original runs at `/dev/reference` (`src/pages/dev/reference.astro`, created during task 4). Keep it working.
+- Visual and behavior source: `public/site.css` and `public/site.js`. **Copy the timings, easings and transforms exactly**; only change what RTL needs.
 
-## Part A — Move the old template out of the build
+## Part A — Fix the 5 baseline check errors (allowed now)
+In `src/components/SectionHeader.astro:43` and `src/components/SectionVisit.astro:15–18`, change the bare `alt` attribute to `alt=""`. Nothing else changes in those files. After this, `npm run check` must report **0 errors**.
 
-Use `git mv` so history is kept. Create the folders first.
+## Part B — `src/components/dev/CompareButton.astro`
+- Renders **only** when `import.meta.env.DEV` is true; otherwise it outputs nothing.
+- Props: `to: "old" | "new"`.
+- A fixed pill in the bottom inline-end corner (`z-index: 200`), dark ink background, white text, shadow, system font. Labels:
+  - `to="old"`: `EN ↗ النسخة الأصلية`
+  - `to="new"`: `AR ↗ Arabic version`
+- On click (small inline script), go to the other site **keeping the matching section**. Map the current `location.hash`:
 
-| From | To |
+  | New (`/`) | Old (`/dev/reference`) |
+  |---|---|
+  | `#services` | `#services` |
+  | `#how` | `#visit` |
+  | `#about`, `#certificates` | `#doctors` |
+  | `#testimonials` | `#reviews` |
+  | `#clinics`, `#contact` | `#book` |
+  | anything else | top of page |
+
+  The reverse direction uses the same table (`#doctors` goes to `#about`, `#book` goes to `#contact`, `#visit` goes to `#how`).
+- Use it in two places:
+  - `BaseLayout.astro`: `<CompareButton to="old" />` just before `</body>`. Every new page gets it.
+  - `src/pages/dev/reference.astro`: replace the hand-made "Back to the new Arabic site" link with `<CompareButton to="new" />`.
+
+## Part C — Motion engine parity (`src/scripts/motion.ts` + `global.css`)
+Implement these rows from `animation-inventory.md`. The selectors and data attributes stay the **same as the original**, so section components can copy the original markup.
+
+| Row | What to add |
 |---|---|
-| `src/components/Section*.astro` (12 files) | `reference/averin/components/` |
-| `src/layouts/Base.astro` | `reference/averin/layouts/Base.astro` |
-| `src/content.json` | `reference/averin/content.json` |
-| `public/site.css` | `reference/averin/site.css` |
-| `public/site.js` | `reference/averin/site.js` |
-| `public/fonts/` (Latin fonts) | `reference/averin/fonts/` |
+| A3 | Mobile menu links slide up with the **staggered delays** (`.05s` steps, as in `site.css`). |
+| A5 | **Button roll.** CSS `.roll`, `.roll > span`, `::after content: attr(data-t)`, hover `translateY(-1.2em)`, copied from `site.css`. Update `WhatsAppButton.astro` and any `.btn` link in Header and Footer to use `<span class="roll"><span data-t="label">label</span></span>`. Under 1024px, the header CTA drops the roll copy, as in the original. |
+| A6 | **Mega menu.** In `Header.astro`, "الخدمات" becomes a button (`data-mega`, `aria-expanded`, `aria-controls="mega"`) with a chevron. Panel `#mega`: one `.m-item` per `doctorConfig.services` (an icon box with a generic medical SVG, the title and a short description) linking to `/#services`. The promo card `.m-promo` uses the first service's image and title and a WhatsApp CTA. Behavior copied from `setMega`: hover opens, mouseleave closes after 220ms, click toggles, outside click and Esc close it, and the header stays visible while it's open. Hide the promo under 1180px. Without JS, the nav shows a plain `/#services` link (`.nojs-only` and `.js-only`, as in the original). |
+| A12 | **Parallax** `[data-par]`, with the same math as `site.js`. |
+| A13 | **Drift** `[data-drift]`, with the same math, but **multiply by −1 when `document.dir === "rtl"`**. |
+| A14 | **Fill words** `[data-fill]`. Wrap words in `.fw` and light them up as the paragraph scrolls (same math). |
+| A17 | **Sticky steps controller.** Generic: inside `[data-steps]`, each `[data-step="k"]` crossing the middle of the viewport sets `.on` on itself and on `[data-shot="k"]`, and writes `0{k+1}` into `[data-vnum]`. Copy the `.visit-*`, `.step`, `.vcount` CSS from `site.css`, renamed with the prefix `steps-`, using logical properties. |
 
-Then add `reference/README.md` with one line: "Original English Averin template, kept as a visual reference only. Not built."
-**Keep** `public/img/`. The new site uses those images.
+Also copy these CSS blocks from `site.css` into `global.css`, converting left/right to logical properties: `.big`/`.ln`/`.l2`, `.fill .fw`, `.clip` (A19), `.pulse` (A11), `.hero-media` clip and zoom (A10), and the `.band`/`.track` marquee (A18). For RTL, add a separate `@keyframes run-rtl { to { transform: translateX(50%); } }` and use it when `[dir=rtl]`.
 
-## Part B — Types and sample data
-
-### `src/lib/types.ts`
-TypeScript types that mirror the PRD §6.1 tables exactly. Use snake_case field names, the same as the DB columns:
-`Statistic`, `Certificate`, `Clinic`, `WorkingHour`, `Article`, `Testimonial`, `SeoSetting`.
-- Dates and timestamps are `string` (ISO).
-- `WorkingHour.weekday` is `0 | 1 | 2 | 3 | 4 | 5 | 6`, where **0 = Sunday … 6 = Saturday** (the same as JS `getDay()`). Add a comment saying so.
-- `WorkingHour.opening_time` and `closing_time` are `string | null` in `"HH:MM"` format.
-- `Article.status` is `"draft" | "published"`.
-- Also export `ClinicWithHours = Clinic & { working_hours: WorkingHour[] }`.
-
-### `src/lib/sample-data.ts`
-- First line: `// SAMPLE — replaced by Supabase queries in Phase 2.`
-- Export typed arrays that are **obviously fictional**, in Arabic:
-  - `sampleStatistics`: 3 items, for example `{ label: "سنوات خبرة (مثال)", value: "12" }`. Note that `value` is text.
-  - `sampleCertificates`: 3 items with "(مثال)" in the issuer name and `image_path: null`.
-  - `sampleClinics: ClinicWithHours[]`: 2 clinics with fictional addresses and real-looking coordinates in Riyadh. Give each clinic hours for Sunday to Thursday, with one day split into two intervals. Friday is closed.
-  - `sampleTestimonials`: 3 items. Display names are initials only, such as "م. ع.". Each text ends with "(نص تجريبي)".
-  - `sampleArticles`: 3 published articles and 1 draft, with Arabic slugs written in Latin kebab-case (for example `healthy-sleep-tips`).
-- Only include items with `is_active: true` or `is_published: true` / `status: "published"` where the sections need them. The section components must still **filter** on these flags themselves, so they behave the same when real DB data arrives.
-
-### `src/lib/data.ts`
-A thin data access layer that the pages call. For now it returns sample data:
-```ts
-export async function getActiveStatistics(): Promise<Statistic[]>
-export async function getActiveClinicsWithHours(): Promise<ClinicWithHours[]>
-export async function getActiveCertificates(): Promise<Certificate[]>
-export async function getPublishedTestimonials(): Promise<Testimonial[]>
-export async function getLatestArticles(limit: number): Promise<Article[]>
-```
-Each one filters on active/published, sorts by `display_order` (articles by `published_at` desc), and returns the result. Add `// TODO(phase2): read from Supabase`.
-
-## Part C — Sections (all in `src/components/public/`)
-
-All text is Arabic. Every section has an `id` that matches `nav.ts`.
-
-1. **`HeroSection.astro`** (no id, it's the top)
-   Layout based on the template hero. Photo on the inline-start side on desktop, stacked on mobile.
-   - Content: an eyebrow with the specialty; an `h1` with `data-split="blur"` reading `{honorific} {fullName}` and, on a second line, the specialty inside `<em>`; the `shortIntro` as `.lead`; a primary `WhatsAppButton` and a ghost button linking to `/#clinics` ("العيادات والمواعيد").
-   - Photo: `doctor.photo` with `data-hero`.
-   - Badge on the photo: the first language from `doctor.languages`.
-
-2. **`AboutSection.astro`** (`id="about"`)
-   - `.sec-head` with the eyebrow "نبذة" and the title "عن الطبيب".
-   - The `bio` paragraphs.
-   - Two lists side by side: "التعليم" (`education`) and "الخبرة" (`experience`), in the `.plist` style from `site.css`.
-   - Languages as `.tags`.
-
-3. **`StatsSection.astro`** (`id="stats"`)
-   - Props: `stats: Statistic[]`. If the list is empty, render nothing.
-   - The dark rounded panel from `SectionBold`, with big numbers in the lime color.
-   - When `value` is purely numeric, put it in `data-count`; otherwise show the text as is.
-   - Under the numbers, a small muted note: "أرقام يُدخلها الطبيب يدويًا". The PRD says stats must not look independently verified.
-
-4. **`ServicesSection.astro`** (`id="services"`)
-   - Cards built from `doctorConfig.services`, using the `.card` style from the template's `.svc`.
-   - Each card: image (if any), title, description, and a small WhatsApp link with the message `أود الاستفسار عن خدمة: {title}`.
-   - **No prices.** Make the first card the featured dark card, like `.svc.feat`.
-
-## Part D — `src/pages/index.astro` (replace)
-- `PublicLayout` with no props, so the config defaults apply.
-- Load the data with `getActiveStatistics()`.
-- Render: `HeroSection`, `AboutSection`, `StatsSection`, `ServicesSection`.
-- Leave a comment listing the sections task 6 will add: clinics, certificates, testimonials, articles, contact.
+## Part D — Style guide demos
+Add a demo block to `/dev/styleguide` for **each** item: roll button, mega menu (the real header), a parallax image, two drift lines, a fill-words paragraph, a 4-step sticky steps block (Arabic placeholder steps and `/img/*.webp` shots), a marquee band, a clip-reveal card, and the pulse badge.
 
 ## Acceptance criteria
-- [ ] `/` shows the new Arabic RTL landing page with these 4 sections, the header and the footer.
-- [ ] Header links to `#about`, `#services` and `#stats` scroll to the right sections. Links to sections that don't exist yet do nothing, which is OK.
-- [ ] Mobile (375px): no horizontal scroll, and the hero stacks.
-- [ ] `reference/` isn't built: `npm run build` passes and `dist/` has nothing from it.
-- [ ] `npm run check` reports **0 errors**. The 5 baseline errors disappear because the old files move to `reference/`. If `astro check` still scans `reference/`, add it to the check's ignore list and say so in the result file.
-- [ ] The view-source of `/` shows `lang="ar" dir="rtl"`, the canonical link and the OG tags.
-- [ ] One commit: `task5: landing page part 1, types, sample data, archive template`.
+- [ ] The floating button appears on `/dev/styleguide` and `/`, and also on `/dev/reference`. It goes back and forth, keeping the section where a mapping exists.
+- [ ] `npm run build` output: the button isn't rendered in production. Run `npm run build && npm run preview` and check `/`.
+- [ ] Every Part C row works on `/dev/styleguide`, and side by side it feels the same as `/dev/reference`.
+- [ ] Reduced motion: everything is visible right away, and the marquee and drift are stopped.
+- [ ] `npm run check` reports **0 errors**, and `npm run build` passes.
+- [ ] One commit: `task5: compare button, animation engine parity`.
 
 ## Out of scope
-- Clinics, certificates, testimonials, articles and contact sections (task 6).
-- No Supabase.
-- No blog routes.
+- No landing sections yet (tasks 6–7).
+- Don't change the original's look on `/dev/reference`; only replace its back link.

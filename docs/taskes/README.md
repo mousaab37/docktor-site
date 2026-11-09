@@ -12,10 +12,15 @@ Before task 1, the owner must:
 |---|---|---|---|
 | 1 | [task1.md](task1.md) | Packages, Cloudflare adapter, Tailwind wiring, TS config, env example | ✅ done (reviewed) |
 | 2 | [task2.md](task2.md) | `doctor.config.ts` + Zod schema (onboarding data) | ✅ done (reviewed) |
-| 3 | [task3.md](task3.md) | Arabic fonts, design tokens, base CSS, `BaseLayout`, dev style guide | todo |
-| 4 | [task4.md](task4.md) | Public layout: header, mobile menu, footer, WhatsApp helper, motion script | todo |
-| 5 | [task5.md](task5.md) | Data types + sample data; landing page part 1 (hero, about, stats, services); old template moved to `reference/` | todo |
-| 6 | [task6.md](task6.md) | Landing page part 2 (clinics + map + hours, certificates, testimonials, articles, contact) | todo |
+| 3 | [task3.md](task3.md) | Arabic fonts, design tokens, base CSS, `BaseLayout`, dev style guide | ✅ done (reviewed) |
+| 4 | [task4.md](task4.md) | Public layout: header, mobile menu, footer, WhatsApp helper, basic motion (+ `/dev/reference` = original site) | in progress |
+| 5 | [task5.md](task5.md) | Floating compare button old ↔ new; fix the 5 baseline errors; **full animation engine** (roll, mega menu, parallax, drift, fill words, sticky steps, marquee, clip) | todo |
+| 6 | [task6.md](task6.md) | Types + sample data; landing part 1 (hero, statement + stats, services, about) | todo |
+| 7 | [task7.md](task7.md) | Landing part 2 (how-to-book steps, band, certificates, clinics + map + hours, testimonials, articles, contact) | todo |
+
+**Owner's priority:** match the original's **animations and simplicity**. Every animation is listed in [animation-inventory.md](animation-inventory.md). The original site stays available at `/dev/reference` (dev only), with a floating button to switch. The old template files are **kept**, not moved.
+
+**Owner feedback loop:** when the owner finds something in the original that the Arabic site lacks, the planner adds a fix task (`taskNa.md`) or amends the next task.
 
 ## Known baseline check errors (accepted until task 5)
 
@@ -25,7 +30,7 @@ Before task 1, the owner must:
 - `src/components/SectionHeader.astro:43`
 - `src/components/SectionVisit.astro:15–18`
 
-The message is `ts(2322) boolean is not assignable to string`. Don't fix them. For tasks 2–4, the check counts as **passed** when these 5 are the only errors. Task 5 moves those files to `reference/` (excluded in `tsconfig.json`), after which the check must report **0 errors**.
+The message is `ts(2322) boolean is not assignable to string`. Don't fix them. For tasks 2–4, the check counts as **passed** when these 5 are the only errors. Task 5 fixes them (`alt` → `alt=""`), after which the check must report **0 errors**.
 
 ## Backlog for later phases
 - Add `wrangler.jsonc` (name, compatibility_date, `nodejs_compat`, cron trigger) when deployment and the health-check worker are set up. Build and dev work without it for now.

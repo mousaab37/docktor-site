@@ -1,0 +1,36 @@
+---
+import { doctorConfig } from "@/config";
+import { sectionLinks } from "@/lib/nav";
+import Logo from "./Logo.astro";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+const { contact } = doctorConfig;
+const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
+---
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+<header class="hdr" id="top">
+  <div class="wrap hdr-in">
+    <Logo />
+    <nav class="nav" aria-label="التنقل الرئيسي">
+      {sectionLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+    <div class="hdr-r">
+      <a class="hdr-tel" href={tel}><bdi dir="ltr">{contact.phone}</bdi></a>
+      <WhatsAppButton size="sm" label="واتساب" />
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" data-menu>
+        <i aria-hidden="true"></i><span>القائمة</span>
+      </button>
+    </div>
+  </div>
+</header>
+<nav class="menu" id="menu" aria-label="قائمة الموقع">
+  <div class="menu-list">
+    <ul>
+      {sectionLinks.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+    </ul>
+    <div class="menu-foot">
+      <a href={tel}><bdi dir="ltr">{contact.phone}</bdi></a>
+      <WhatsAppButton size="sm" />
+    </div>
+  </div>
+</nav>

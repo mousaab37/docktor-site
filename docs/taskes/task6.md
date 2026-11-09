@@ -1,94 +1,85 @@
-# Task 6 — Landing page part 2: clinics + map + hours, certificates, testimonials, articles, contact
+# Task 6 — Data types, sample data, landing page part 1 (hero, statement + stats, about, services)
 
 ## Goal
-Finish the landing page. After this task, the public page has every section from the PRD, all reading sample data through `src/lib/data.ts`.
+Replace the old page at `/` with the new Arabic landing page and build its first sections, **matching the original's layout and animations** (see `animation-inventory.md`). Sections that will later come from Supabase read typed **sample data** for now.
 
 ## Before you start
-- Task 5 is done and `git status` is clean.
-- Visual references in `reference/averin/`: `components/SectionReviews.astro`, `components/SectionDoctors.astro` (team cards for certificates), `components/SectionBook.astro` (the `.info` contact list and the `.sos` note), and `site.css`.
+- Task 5 is done and `git status` is clean. `npm run check` reports 0 errors.
+- Keep the original site at `/dev/reference` working. **Don't move or delete** the old `Section*.astro`, `Base.astro`, `content.json`, `public/site.css`, `public/site.js` or `public/fonts/`. The reference page needs them.
+- Open `/dev/reference` next to your work and match each section's look and motion.
 
-## Files (all components in `src/components/public/`)
+## Part A — Types and sample data
 
-### 1. `src/lib/hours.ts`
+### `src/lib/types.ts`
+TypeScript types that mirror PRD §6.1 exactly, with snake_case field names: `Statistic`, `Certificate`, `Clinic`, `WorkingHour`, `Article`, `Testimonial`, `SeoSetting`.
+- Dates and timestamps are `string` (ISO).
+- `WorkingHour.weekday` is `0|1|2|3|4|5|6`, where **0 = Sunday … 6 = Saturday** (the same as JS `getDay()`). Comment it.
+- `WorkingHour.opening_time` and `closing_time` are `string | null`, format `"HH:MM"`.
+- `Article.status` is `"draft" | "published"`.
+- Export `ClinicWithHours = Clinic & { working_hours: WorkingHour[] }`.
+
+### `src/lib/sample-data.ts`
+- First line: `// SAMPLE — replaced by Supabase queries in Phase 2.`
+- Export typed, **obviously fictional** Arabic data:
+  - `sampleStatistics`: 3 items. The labels end with "(مثال)". `value` is text, for example `"12"`.
+  - `sampleCertificates`: 4 items. The issuer contains "(مثال)". Use `image_path` values from `/img/` (`doc-ellison.webp`, `doc-okafor.webp`, `doc-haddad.webp`, `doc-aoki.webp`) so the clip reveal can be seen.
+  - `sampleClinics: ClinicWithHours[]`: 2 clinics with fictional addresses and real Riyadh coordinates. Sunday to Thursday open, with one day split into two intervals. Friday closed.
+  - `sampleTestimonials`: 6 items, with initials-only names such as "م. ع.". Each text ends with "(نص تجريبي)".
+  - `sampleArticles`: 3 published and 1 draft, with Latin kebab-case slugs.
+- Include some inactive or unpublished rows too, so the filtering is really tested.
+
+### `src/lib/data.ts`
 ```ts
-export const weekdayNames: Record<0|1|2|3|4|5|6, string>
-// 0 "الأحد", 1 "الاثنين", 2 "الثلاثاء", 3 "الأربعاء", 4 "الخميس", 5 "الجمعة", 6 "السبت"
-
-export const displayOrder: (0|1|2|3|4|5|6)[] = [6, 0, 1, 2, 3, 4, 5];   // week starts Saturday
-
-export function groupHours(hours: WorkingHour[]): { weekday: 0|1|2|3|4|5|6; closed: boolean; intervals: { from: string; to: string }[] }[]
-// One row per day in displayOrder. A day with no rows, or with is_closed, counts as closed.
-// Sort intervals by interval_order.
-
-export function formatTime(hhmm: string): string
-// "16:30" → "4:30 م", "09:00" → "9:00 ص"
+export async function getActiveStatistics(): Promise<Statistic[]>
+export async function getActiveClinicsWithHours(): Promise<ClinicWithHours[]>
+export async function getActiveCertificates(): Promise<Certificate[]>
+export async function getPublishedTestimonials(): Promise<Testimonial[]>
+export async function getLatestArticles(limit: number): Promise<Article[]>
 ```
+Each one filters on active/published, sorts by `display_order` (articles by `published_at` desc), and has the comment `// TODO(phase2): read from Supabase`.
 
-### 2. `HoursTable.astro`
-- Props: `hours: WorkingHour[]`.
-- Renders a `<table>` with a `<caption class="sr-only">`. Each row shows the day name, then the intervals (`9:00 ص – 1:00 م`, `4:00 م – 9:00 م`) or "مغلق" in a muted color.
-- Wrap times in `<bdi>`.
-- Highlight today's row. Do it in a small client script, because the server may be in a different time zone; add `data-weekday` on each row.
+## Part B — Sections (in `src/components/public/`)
+All text is Arabic. **Copy the structure and classes of the original component, then swap in the data.**
 
-### 3. `ClinicMap.astro`
-- Props: `clinics: { id: string; name: string; latitude: number | null; longitude: number | null }[]`. Skip clinics with no coordinates; if none are left, render nothing.
-- Renders `<div class="… rounded-[22px] h-[360px]" dir="ltr" data-clinic-map data-clinics={JSON.stringify(...)}>`. `dir="ltr"` keeps the Leaflet controls working.
-- Client `<script>`:
-  - Lazy-init the map when the div gets close to the viewport (IntersectionObserver). Import `leaflet` and `leaflet/dist/leaflet.css` dynamically.
-  - Tiles: `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png` with attribution `© OpenStreetMap contributors`.
-  - Use `L.circleMarker`, not the default marker icon, which breaks with bundlers. Color it with the brand primary, read from the CSS variable. Each marker gets a popup with the clinic name.
-  - Fit the bounds to all markers (for one marker, zoom 15).
-  - `scrollWheelZoom: false`.
-- Add a comment: `// TODO: choose the production tile provider (PRD open decision #4)`.
+1. **`HeroSection.astro`**. Based on `SectionHero.astro`.
+   - Photo `doctor.photo` in `.hero-media.ph[data-hero]` with `.zoom` and `data-par="0.08"` (A10, A12).
+   - Badge with the pulse dot (A11): "يستقبل المرضى في {N} عيادة", where N is the number of active clinics. Pass the clinics in as a prop.
+   - Eyebrow: specialty. H1 with `data-split="blur"`: `{honorific} {fullName}`, then a second line with the specialty in `<em>`.
+   - `.lead`: `shortIntro`. CTA row: `WhatsAppButton`, plus a ghost roll button "العيادات والمواعيد" linking to `/#clinics`.
+   - `.facts`: the first 3 active statistics (value in `<b>`, then label). If there are none, hide the list.
 
-### 4. `ClinicsSection.astro` (`id="clinics"`)
-- Props: `clinics: ClinicWithHours[]`.
-- `.sec-head`: eyebrow "العيادات", title "أين تجدنا ومتى".
-- One card per clinic: name; address; phone if set (`tel:`); description if set; `HoursTable`; and two buttons:
-  - `WhatsAppButton` that uses the clinic's `whatsapp`, falling back to `contact.whatsapp`, with the message `clinicMessage(doctorConfig.whatsapp.clinicMessage, clinic.name)`
-  - "الاتجاهات" (directions): ghost link to `https://www.google.com/maps/dir/?api=1&destination={lat},{lng}`, only when coordinates exist
-- Below the cards: one `ClinicMap` with all the clinics.
-- Below the map: a notice box in the `.sos` style from `site.css` that says exactly:
-  **"إرسال رسالة عبر واتساب لا يعني تأكيد الموعد. ستتواصل معك العيادة لتأكيد الموعد."**
+2. **`StatementSection.astro`** (`id="stats"`). Based on `SectionBold.astro`, the dark panel.
+   - Eyebrow "لماذا {honorific} {fullName}".
+   - Two `.big` drifting lines (A13): line 1 `رعاية تُصغي إليك.`, line 2 (`.l2`, lime) `ولعائلتك كلها.`
+   - `.fill` paragraph (A14) with `data-fill`: the first `bio` paragraph.
+   - `.stats` list (A15): every active statistic, with `data-count` when `value` is purely numeric.
+   - Under the stats, a small muted note: "أرقام يُدخلها الطبيب يدويًا".
 
-### 5. `CertificatesSection.astro` (`id="certificates"`)
-- Props: `certificates: Certificate[]`. Render nothing if the list is empty.
-- A grid of cards: an image if `image_path` is set (for now, treat it as a path under `/public`; Phase 2 changes it to a Supabase Storage URL), otherwise a `.ph` placeholder; then the title, the issuing organization and the issue year.
-- Grid: 3 columns on desktop, 2 on tablet, 1 on mobile.
+3. **`ServicesSection.astro`** (`id="services"`). Based on `SectionServices.astro`.
+   - Cards from `doctorConfig.services`. The first card is `.feat` (dark).
+   - Card footer: **no price**. Put the `.go` round-arrow link on the inline-end side, as a WhatsApp link with the message `أود الاستفسار عن خدمة: {title}` and the label "استفسر".
+   - Hover (A16): lift, image zoom, and the arrow rotates to `45deg`, pointing left for RTL.
 
-### 6. `TestimonialsSection.astro` (`id="testimonials"`)
-- Props: `testimonials: Testimonial[]`. Render nothing if the list is empty.
-- Port the masonry quote cards from `SectionReviews` (`.rv-grid`, `.quote`, `.ini`).
-- Initials come from `display_name`; the date comes from `testimonial_date` if set, formatted with `Intl.DateTimeFormat("ar", { year: "numeric", month: "long" })`.
-- Title: "آراء المرضى".
+4. **`AboutSection.astro`** (`id="about"`). Based on the "The clinic" card in `SectionDoctors.astro` (`.clinic`, the mint rounded box with a photo).
+   - Text side: eyebrow "نبذة", title "عن الطبيب", then the remaining `bio` paragraphs.
+   - Photo side: `doctor.photo`, with parallax (A12).
+   - Below the box: two `.plist` lists side by side, "التعليم" and "الخبرة", with the hover effect (A21). Languages as `.tags`.
 
-### 7. `ArticlesSection.astro` (`id="articles"`)
-- Props: `articles: Article[]`. Render nothing if the list is empty.
-- Up to 3 cards: featured image or `.ph`, title, excerpt, and the date (`Intl.DateTimeFormat("ar", { dateStyle: "long" })`). Each card links to `/blog/{slug}`.
-- A "كل المقالات" button linking to `/blog`.
-- These links return 404 until Phase 4. Mention that in the result file.
-
-### 8. `ContactSection.astro` (`id="contact"`)
-- Two columns. Left: the title "تواصل معنا", a lead sentence, a big `WhatsAppButton`, and the same notice as in ClinicsSection (reuse it: make a small `BookingNotice.astro` component and use it in both places).
-- Right: a `.info` list (`dl`) with phone, WhatsApp number, email (if set), socials, and each clinic name with its address and a link to `#clinics`.
-- **No form.**
-
-### 9. Update `src/pages/index.astro`
-- Load the data in parallel with `Promise.all`: statistics, clinics, certificates, testimonials, articles (limit 3).
-- Section order: Hero, About, Stats, Services, Clinics, Certificates, Testimonials, Articles, Contact.
+## Part C — `src/pages/index.astro` (replace the old one)
+- `PublicLayout` with no props.
+- Load the data with `Promise.all`: statistics, clinics.
+- Order: `HeroSection`, `StatementSection`, `ServicesSection`, `AboutSection`.
+- Add a comment listing what task 7 adds: how-to-book steps, band, clinics, certificates, testimonials, articles, contact.
 
 ## Acceptance criteria
-- [ ] Every link in the header and footer scrolls to a real section.
-- [ ] The map shows 2 markers with popups and OSM attribution, and it loads only when you scroll near it. The Network tab should show no tile requests at page load.
-- [ ] The hours tables start on Saturday, show Friday as "مغلق", show the split day as two intervals, and highlight today.
-- [ ] The clinic WhatsApp link contains the clinic name in the encoded message.
-- [ ] The notice "إرسال رسالة عبر واتساب لا يعني تأكيد الموعد…" appears in both Clinics and Contact.
-- [ ] The draft sample article doesn't appear anywhere.
-- [ ] Mobile (375px): no horizontal scroll, and the map is usable.
-- [ ] `npm run build` and `npm run check` pass.
-- [ ] One commit: `task6: landing page part 2 (clinics, map, hours, certificates, testimonials, articles, contact)`.
+- [ ] `/` shows the new Arabic page. `/dev/reference` still shows the original, and the compare button jumps between matching sections.
+- [ ] Side by side with the original: the hero photo opens and zooms, the H1 blurs in, the badge pulses, the big lines drift, the words light up, the numbers count up, and the service cards lift with the arrow rotating.
+- [ ] Mobile (375px): no horizontal scroll, and the hero stacks with the text first, as in the original.
+- [ ] Inactive or unpublished sample rows don't appear.
+- [ ] `npm run check` reports 0 errors, and `npm run build` passes.
+- [ ] The view-source of `/` shows `lang="ar" dir="rtl"`, the canonical link and the OG tags.
+- [ ] One commit: `task6: landing part 1 (hero, statement, services, about), types, sample data`.
 
 ## Out of scope
-- No blog, privacy or 404 pages (Phase 4).
-- No Supabase (Phase 2).
-- No dashboard (Phase 3).
+- How-to-book steps, band, clinics, certificates, testimonials, articles and contact (task 7).
+- No Supabase. No blog routes.

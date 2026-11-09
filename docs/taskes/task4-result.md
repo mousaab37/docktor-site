@@ -1,0 +1,23 @@
+# Task 4 — Result
+- Commit: see `git log` (task4: public layout, header, footer, whatsapp, motion, dev reference page)
+- Status: done
+- Files changed:
+  - New: src/lib/whatsapp.ts, src/lib/nav.ts, src/scripts/motion.ts, src/layouts/PublicLayout.astro, src/components/public/{WhatsAppButton,Logo,Header,Footer}.astro, src/pages/dev/reference.astro
+  - Edited: src/styles/global.css (header, mobile menu, footer, word-rise, dev float), src/pages/dev/styleguide.astro (now uses PublicLayout)
+  - Docs from the planner: docs/taskes/README.md, task5.md, task6.md, task7.md, animation-inventory.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (only the 5 known baseline errors, none in new files)
+- How to verify: `npm run dev`, open http://localhost:4321/dev/styleguide. The floating "الموقع القديم (مرجع)" button opens `/dev/reference` (original English site); that page has a button back. Both are dev only (404 in production). `/` is still the old page.
+- Checked in the browser pane:
+  - header, footer, `dir=rtl`; no horizontal overflow at 375px
+  - header turns solid, hides when scrolling down past 320px (verified; scroll-behavior smooth makes it lag slightly), returns on scroll up
+  - mobile menu at 375px: button opens it, links stagger in, body scroll locked, focus on first link, Esc closes, link click closes
+  - WhatsApp button href is `https://wa.me/966500000000?text=<encoded Arabic>`
+  - `.rv` boxes reveal, `data-count="25"` counter present, word-rise and blur headings reveal
+- Not checked by me: reduced-motion emulation in DevTools (the CSS block and the `reduce` checks in motion.ts are in place; please test once).
+- Notes for planner:
+  - Animations done in this task: A1, A2, A3 (stagger), A4, A7, A8 (word rise CSS added to global.css), A9, A15, A23. Mega menu, button roll, parallax, drift, fill words and sticky steps were not built, as instructed.
+  - The task did not list CSS, so header/menu/footer/dev-float rules were appended to `src/styles/global.css`. `.giant` uses `font-display`, no letter-spacing, `line-height: 1.4` so Arabic descenders are not clipped.
+  - `PublicLayout` forwards the `head` slot to `BaseLayout`, and shows the dev-only floating reference link (`import.meta.env.DEV`). The floating link has `z-index: 50` so it sits under the open mobile menu.
+  - `Header` shows the phone only above 1180px. The menu button label is "القائمة".
+  - Dev server note: port 4321 was held by a dev server started earlier by an interrupted preview start (PID 38616). I used it for testing and left it running.
+  - `git status` at the start contained the planner's doc changes; they are included in this commit.
