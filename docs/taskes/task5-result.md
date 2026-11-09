@@ -1,0 +1,26 @@
+# Task 5 — Result
+- Commit: see `git log` (task5: compare button, animation engine parity)
+- Status: done
+- Files changed:
+  - Part A: src/components/SectionHeader.astro, src/components/SectionVisit.astro (`alt` → `alt=""` only)
+  - Part B: new src/components/dev/CompareButton.astro; used in src/layouts/PublicLayout.astro, src/pages/dev/reference.astro and src/pages/index.astro
+  - Part C: src/scripts/motion.ts (rewritten), src/styles/global.css, src/components/public/Header.astro (mega menu), src/components/public/WhatsAppButton.astro (roll)
+  - Part D: src/pages/dev/styleguide.astro (demos)
+  - docs/taskes/task5-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ **0 errors, 0 warnings** (2 hints in old public/site.js)
+- How to verify: `npm run dev`, open `/dev/styleguide` and use the floating button (bottom inline-end corner). Production check: `npm run build && npx astro preview`: `/` has no button, `/dev/*` return 404.
+- Checked in the browser pane (1024px wide pane):
+  - Compare button: `/dev/styleguide#how` → `/dev/reference#visit` and lands on the section; `/dev/reference#doctors` → `/dev/styleguide#about`. Present on styleguide, `/` and reference.
+  - Mega menu: 5 items from config; click toggles, hover opens and closes after 220ms, Esc and outside click close, header gets `.open` (stays visible). Promo card is hidden under 1180px as specified, so it was not visible in the 1024px pane.
+  - Parallax and drift transforms update on scroll; drift is mirrored in RTL (`data-drift="-1"` gives a positive translate).
+  - Fill words: 21 words, lit progressively (10 → 21 while scrolling). Sticky steps: counter `01`→`04`, `.on` on step and shot together. Clip reveal opens when its parent `.rv` becomes `.in`. Marquee uses `run-rtl` in RTL.
+  - Production: button not rendered.
+- Reduced motion — **how it was tested (please re-check once in real DevTools)**: the pane has no switch for the media feature, so I tested two ways: (1) copied the `@media (prefers-reduced-motion: reduce)` rules into a plain stylesheet and checked computed styles on fresh elements: `.rv`, word reveal, `.clip`, hero clip and zoom, fill words, steps, mobile-menu links are all visible with no transform/filter/clip-path, and the marquee and the pulse have `animation: none`; (2) re-ran `motion.ts` with `matchMedia` patched to `reduce: true`: all fill words lit, no parallax/drift transform, count shows the final value (25). Real DevTools emulation was not used.
+- Notes for planner:
+  - `/` is still the OLD index page until task 6. So the compare button's "new" target is **`/dev/styleguide`** (constant `NEW_HOME` in CompareButton.astro), not `/`. Change it to `/` in task 6. I also added `<CompareButton to="new" />` to `src/pages/index.astro` (old page) so the acceptance line "button appears on `/`" holds.
+  - The click handler first uses the section the visitor is looking at (`section[id]` in view), and falls back to `location.hash`. After arriving, a small dev-only `load` handler scrolls the target section into view with `behavior: "instant"` (the browser's own hash scroll landed at the top in the pane because of `scroll-behavior: smooth` and late layout). The script is `is:inline` inside the dev-only condition, because a bundled `<script>` inside `{show && …}` did not run.
+  - Button roll: `.roll` height/translate use 1.4em (Arabic needs more line height than the original's 1.2em). Roll was added to `WhatsAppButton` only (the footer has no `.btn`).
+  - Mega menu hides entirely under 1024px (the menu button takes over). Services without an image show an empty placeholder in the promo.
+  - Sticky steps CSS is prefixed `steps-` (`.steps-grid`, `.steps-media`, `.steps-count`, `.steps-list`, `.steps-item`, `.steps-n`); data attributes (`data-steps`, `data-step`, `data-shot`, `data-vnum`) are the original's names.
+  - `.big`/`.fill`/marquee fonts use `font-display` with larger line heights (1.35–1.7) and no letter-spacing, because Arabic is clipped by the original's .9–1 line height.
+  - The dev server I used on port 4321 is still the one started earlier (PID 38616); I stopped the preview server I started on port 4330.

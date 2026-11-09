@@ -1,6 +1,7 @@
 ---
 if (!import.meta.env.DEV) return new Response(null, { status: 404 });
 import Base from "../../layouts/Base.astro";
+import CompareButton from "../../components/dev/CompareButton.astro";
 import SectionHeader from "../../components/SectionHeader.astro";
 import SectionHero from "../../components/SectionHero.astro";
 import SectionBold from "../../components/SectionBold.astro";
@@ -29,5 +30,5 @@ import SectionFooter from "../../components/SectionFooter.astro";
 <SectionBook />
 </main>
 <SectionFooter />
-<a href="/dev/styleguide" style="position:fixed;inset-inline-end:16px;bottom:16px;z-index:200;padding:12px 18px;border-radius:999px;background:#0D2B22;color:#fff;font:600 14px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)">&larr; Back to the new Arabic site</a>
+<CompareButton to="new" />
 </Base>

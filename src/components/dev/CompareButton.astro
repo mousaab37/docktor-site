@@ -1,0 +1,75 @@
+---
+// Dev only: jump between the original English site and the new Arabic site,
+// keeping the matching section. Renders nothing in production.
+interface Props {
+  to: "old" | "new";
+}
+
+const { to } = Astro.props;
+const show = import.meta.env.DEV;
+// The Arabic landing page replaces "/" in task 6. Until then the new site lives in the style guide.
+const NEW_HOME = "/dev/styleguide";
+const OLD_HOME = "/dev/reference";
+const label = to === "old" ? "EN ↗ النسخة الأصلية" : "AR ↗ Arabic version";
+const href = to === "old" ? OLD_HOME : NEW_HOME;
+---
+{show && (
+  <a
+    class="dev-float"
+    href={href}
+    data-compare={to}
+    data-compare-new={NEW_HOME}
+    data-compare-old={OLD_HOME}
+    style="font-family:system-ui,sans-serif;direction:ltr"
+  >{label}</a>
+)}
+{show && (
+  <script is:inline>
+    // new site hash -> old site hash, and the reverse
+    const toOld = {
+      "#services": "#services",
+      "#how": "#visit",
+      "#about": "#doctors",
+      "#certificates": "#doctors",
+      "#testimonials": "#reviews",
+      "#clinics": "#book",
+      "#contact": "#book",
+    };
+    const toNew = {
+      "#services": "#services",
+      "#visit": "#how",
+      "#doctors": "#about",
+      "#reviews": "#testimonials",
+      "#book": "#contact",
+    };
+    document.querySelectorAll("a[data-compare]").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        const going = a.dataset.compare;
+        const map = going === "old" ? toOld : toNew;
+        const base = going === "old" ? a.dataset.compareOld : a.dataset.compareNew;
+        // The section the visitor is looking at wins over a stale URL hash.
+        const hash = currentSection() || location.hash;
+        window.location.href = (base ?? "/") + (map[hash] ?? "");
+      });
+    });
+
+    // After the other site loads, make sure the matching section is really in view
+    // (late layout shifts can make the browser's own hash scroll land short).
+    window.addEventListener("load", () => {
+      const id = location.hash.slice(1);
+      const el = id ? document.getElementById(id) : null;
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: "instant" }), 150);
+    });
+
+    function currentSection() {
+      const ids = Array.from(document.querySelectorAll("section[id]"));
+      let best = "";
+      for (const el of ids) {
+        const r = el.getBoundingClientRect();
+        if (r.top <= window.innerHeight * 0.4 && r.bottom > window.innerHeight * 0.2) best = "#" + el.id;
+      }
+      return best;
+    }
+  </script>
+)}

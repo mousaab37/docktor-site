@@ -4,7 +4,17 @@ import { sectionLinks } from "@/lib/nav";
 import Logo from "./Logo.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
-const { contact } = doctorConfig;
+const { contact, services } = doctorConfig;
+const promo = services[0];
+// Generic medical icons for the mega menu items (cycled).
+const icons = [
+  "M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z",
+  "M3 12h4l2-5 4 10 2-5h6",
+  "M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3M7.5 15h9",
+  "M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",
+  "M5 12.5l4.5 4.5L19 7.5",
+  "M12 5v14M5 12h14",
+];
 const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 ---
 <a class="skip" href="#main">تخطَّ إلى المحتوى</a>
@@ -12,7 +22,19 @@ const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
   <div class="wrap hdr-in">
     <Logo />
     <nav class="nav" aria-label="التنقل الرئيسي">
-      {sectionLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+      {sectionLinks.map((l) =>
+        l.href === "/#services" ? (
+          <>
+            <a class="nojs-only" href={l.href}>{l.label}</a>
+            <button class="js-only" type="button" aria-expanded="false" aria-controls="mega" data-mega>
+              {l.label}
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 4.5l4 4 4-4" /></svg>
+            </button>
+          </>
+        ) : (
+          <a href={l.href}>{l.label}</a>
+        ),
+      )}
     </nav>
     <div class="hdr-r">
       <a class="hdr-tel" href={tel}><bdi dir="ltr">{contact.phone}</bdi></a>
@@ -20,6 +42,27 @@ const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
       <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" data-menu>
         <i aria-hidden="true"></i><span>القائمة</span>
       </button>
+    </div>
+  </div>
+  <div class="mega" id="mega">
+    <div class="wrap mega-in">
+      {services.map((svc, i) => (
+        <a class="m-item" href="/#services">
+          <span class="m-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={icons[i % icons.length]} /></svg>
+          </span>
+          <b>{svc.title}</b>
+          <span>{svc.description}</span>
+        </a>
+      ))}
+      <div class="m-promo">
+        <span class="ph">{promo.image && <img src={promo.image.src} alt="" width="1600" height="1067" loading="lazy" />}</span>
+        <div>
+          <span><small>خدمة مميزة</small><strong>{promo.title}</strong></span>
+          <p>{promo.description}</p>
+          <WhatsAppButton size="sm" label="اسأل عبر واتساب" message={`مرحبًا، أود الاستفسار عن: ${promo.title}`} />
+        </div>
+      </div>
     </div>
   </div>
 </header>
