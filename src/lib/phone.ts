@@ -23,25 +23,6 @@ const NAMES_AR: Record<PhoneCountry, string> = {
   SE: "السويد",
 };
 
-/** An example national mobile number per country, shown as the placeholder. */
-export const PHONE_PLACEHOLDERS: Record<PhoneCountry, string> = {
-  SY: "944 123 456",
-  LB: "3 123 456",
-  JO: "7 9012 3456",
-  IQ: "790 123 4567",
-  TR: "501 234 56 78",
-  SA: "50 123 4567",
-  AE: "50 123 4567",
-  QA: "3312 3456",
-  KW: "500 12345",
-  BH: "3600 1234",
-  OM: "9212 3456",
-  EG: "10 1234 5678",
-  DE: "1512 3456789",
-  NL: "6 12345678",
-  SE: "70 123 45 67",
-};
-
 /** The flag emoji of a country (two regional-indicator letters). */
 const flagOf = (code: string) => String.fromCodePoint(...[...code].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 

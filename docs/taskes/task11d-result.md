@@ -1,0 +1,33 @@
+# Task 11d — Result
+- Branch: `task/11d-phone-input` (started from the latest `main`, after PR #4 was merged)
+- Commit: task11d: phone fields with intl-tel-input (hash: see the PR)
+- PR: see the link in the final message (opened with `gh`)
+- Status: done
+- Files changed:
+  - New: src/scripts/phone-fields.ts
+  - Rewritten: src/components/dashboard/PhoneField.astro (same props)
+  - Edited: src/components/dashboard/ClinicForm.astro (the old "same as phone" script moved into phone-fields.ts), src/lib/phone.ts (removed the placeholder table that the library now provides), src/styles/dashboard.css (`.phone-field .iti …` overrides), package.json and package-lock.json (`intl-tel-input` 29.5.11)
+  - docs/taskes/task11d-result.md
+  - **Server side unchanged**: `src/lib/validation/phone.ts` and `clinic.ts` are exactly as in task 11c.
+- Commands run and outcome: npm install intl-tel-input (slow-network flags) ✅; npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard/clinics/new` and `/dashboard/clinics/{sample id}`.
+- Library notes: the installed version is 29.5.11. Its README only points to the online docs, so I used the option names from the bundled `intlTelInput.d.ts`: `uiTranslations` (not `i18n`), `countryNameLocale: "ar"`, `onlyCountries`, `countryOrder`, `separateDialCode`, `countrySearch`, `strictMode`, `formatAsYouType`, `loadUtils`, `initialCountry`. The Arabic UI strings come from `import { ar } from "intl-tel-input/locale"` (the package types only declare the named export; Vite keeps only Arabic). Country names come from `Intl.DisplayNames("ar")`, so "المملكة العربية السعودية" is the library's name for Saudi Arabia.
+- What was checked (dev server, real typing and clicks in the browser pane):
+  - Look: one field like our other inputs (same height ~51px, border, radius, focus ring); a compact country button with a flag **image** (the flags come from the library's sprite, so they show on Windows), ▾ and the dial code (`+963`), then the number input. The old select and the emoji flags are gone.
+  - Dropdown: 15 countries only, in the `PHONE_COUNTRIES` order (Syria first) — the list is generated on the server into `data-countries`, no second list in the script. Arabic names, search placeholder "ابحث عن دولة", typing "سور" leaves only Syria. Wide viewport (1280×900): a dropdown under the field, exactly the field's width, no horizontal overflow. 375px: the library's full-screen popup, with the close button, no horizontal scroll.
+  - Typing `944123456` formats live as `944 123 456`. Typing `0944123456` (with the national zero) is not reformatted while typing by the library, so I added a blur handler that rewrites a valid number in the formatted national form (`944 123 456`).
+  - Saving: the form writes the E.164 number into `phone_national` on submit and keeps `phone_country` in sync (`countrychange`); a clinic saved with `0944123456` and "نفس رقم الهاتف" ticked is stored as `+963 944 123 456` (public phone) and `963944123456` (public WhatsApp button `wa.me/963944123456`).
+  - Wrong number: typing `12345` and submitting returns 422 from the **server** with "رقم غير صحيح لهذا البلد", a red border on the whole field, and the other typed values kept.
+  - Editing the sample clinic opens with Saudi Arabia selected (`+966`, `50 000 0001`); saving it unchanged stores `500000001` / `SA` again.
+  - "نفس رقم الهاتف": ticking copies the phone's country and number into the WhatsApp instance and disables it (input and country button); it follows later phone changes; unticking enables it.
+  - Without JavaScript the markup is a plain `<input type="tel">` plus the hidden country field, so the same form posts and the server validates as before (checked only by reading the markup, not with JS disabled).
+  - Loading: `utils` (a separate chunk, 262 KB, about 58 KB gzipped) is requested only on the dashboard clinic pages; `/` makes no request for the phone script, the library or utils (checked on `/` in dev and in the production preview HTML).
+  - Production: `npm run build` emits the flag sprites (`flags.*.webp`, `flags@2x.*.webp`) next to the CSS, and in `astro preview` the sprite is served (HTTP 200; the `@2x` file answers with a 307 redirect that the browser follows). `/dashboard/*` is still 404 in production.
+- **Size of the dashboard phone script**: `PhoneField…lang.js` = 52.4 KB raw, 17.9 KB gzipped (the library, the Arabic strings and our code); CSS 17 KB raw, 3.7 KB gzipped; the lazy `utils` chunk 262 KB raw, 58 KB gzipped.
+- Not checked: JavaScript fully disabled in a real browser; the dropdown with a real keyboard (arrow keys, Esc); the production dashboard (it is 404 in production by design, so the flags were checked through the served asset).
+- Notes for planner:
+  - The pane's own window is small (about 460×300), where the library picks the full-screen popup on its own (`countrySelectorMode: "AUTO"`); the desktop dropdown was checked by emulating 1280×900.
+  - `getNumber()` needs the lazy utils; if they have not arrived when the form is submitted, `phone-fields.ts` builds the E.164 number by hand (dial code + digits without the leading zero).
+  - I removed `PHONE_PLACEHOLDERS` from `src/lib/phone.ts` because the library shows its own example number as the placeholder. `callingCode()` and the emoji `flag` field of `PHONE_COUNTRIES` are no longer used by the form but are still exported (harmless, used by task 11c's tests only).
+  - The test clinic I created was deleted; the sample clinic I re-saved has the same values as before.
+  - `gh` is at `C:\Program Files\GitHub CLI\gh.exe` and logged in.

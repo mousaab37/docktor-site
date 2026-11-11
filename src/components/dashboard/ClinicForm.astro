@@ -65,28 +65,3 @@ const same = values.whatsapp_same === true;
     <FormActions cancelHref={cancelHref} />
   </form>
 </Card>
-
-<script>
-  // "نفس رقم الهاتف": copies the phone into the WhatsApp fields and locks them. (The server copies it too.)
-  document.querySelectorAll<HTMLFormElement>("form[data-clinic-form]").forEach((form) => {
-    const box = form.querySelector<HTMLInputElement>("[data-same-phone]");
-    const get = (name: string) => form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null;
-    const pc = get("phone_country");
-    const pn = get("phone_national");
-    const wc = get("whatsapp_country");
-    const wn = get("whatsapp_national");
-    if (!box || !pc || !pn || !wc || !wn) return;
-    const apply = () => {
-      if (box.checked) {
-        wc.value = pc.value;
-        wn.value = pn.value;
-        wc.dispatchEvent(new Event("change")); // updates the placeholder
-      }
-      wc.disabled = wn.disabled = box.checked;
-    };
-    box.addEventListener("change", apply);
-    pc.addEventListener("change", apply);
-    pn.addEventListener("input", apply);
-    apply();
-  });
-</script>
