@@ -1,0 +1,38 @@
+---
+interface Props {
+  id: string;
+  editHref: string;
+  /** Show the up/down buttons (for lists with a display order). */
+  orderable?: boolean;
+  first?: boolean;
+  last?: boolean;
+}
+
+const { id, editHref, orderable = true, first = false, last = false } = Astro.props;
+---
+<div class="d-row-actions">
+  <a class="d-link-btn" href={editHref}>تعديل</a>
+  {orderable && (
+    <>
+      <form method="post">
+        <input type="hidden" name="intent" value="move_up" />
+        <input type="hidden" name="id" value={id} />
+        <button class="d-icon-btn" type="submit" disabled={first} aria-label="نقل لأعلى" title="نقل لأعلى">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6" /></svg>
+        </button>
+      </form>
+      <form method="post">
+        <input type="hidden" name="intent" value="move_down" />
+        <input type="hidden" name="id" value={id} />
+        <button class="d-icon-btn" type="submit" disabled={last} aria-label="نقل لأسفل" title="نقل لأسفل">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+      </form>
+    </>
+  )}
+  <form method="post">
+    <input type="hidden" name="intent" value="delete" />
+    <input type="hidden" name="id" value={id} />
+    <button class="d-link-btn d-danger" type="submit" data-confirm="هل أنت متأكد من الحذف؟">حذف</button>
+  </form>
+</div>

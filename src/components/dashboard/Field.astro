@@ -1,0 +1,85 @@
+---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  as?: "input" | "textarea" | "select";
+  name: string;
+  label: string;
+  value?: string | number | null;
+  error?: string;
+  hint?: string;
+  required?: boolean;
+  maxlength?: number;
+  /** Use "ltr" for URLs, numbers and phone numbers. */
+  dir?: "ltr" | "rtl";
+  type?: "text" | "number" | "email" | "url" | "tel" | "date" | "time" | "password";
+  rows?: number;
+  options?: Option[];
+  placeholder?: string;
+  step?: string;
+  min?: string;
+  max?: string;
+}
+
+const {
+  as = "input",
+  name,
+  label,
+  value = "",
+  error,
+  hint,
+  required = false,
+  maxlength,
+  dir,
+  type = "text",
+  rows = 5,
+  options = [],
+  placeholder,
+  step,
+  min,
+  max,
+} = Astro.props;
+
+const id = `f-${name}`;
+const current = value === null || value === undefined ? "" : String(value);
+const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-err` : null].filter(Boolean).join(" ") || undefined;
+---
+<div class:list={["field", error && "has-error"]}>
+  <label for={id}>{label}{required && <span class="req" aria-hidden="true">*</span>}</label>
+  {as === "textarea" && (
+    <textarea id={id} name={name} rows={rows} required={required} maxlength={maxlength} dir={dir}
+      placeholder={placeholder} aria-invalid={error ? "true" : undefined} aria-describedby={describedBy}
+      data-counter={maxlength ? "" : undefined}>{current}</textarea>
+  )}
+  {as === "select" && (
+    <select id={id} name={name} required={required} dir={dir} aria-invalid={error ? "true" : undefined} aria-describedby={describedBy}>
+      {options.map((o) => <option value={o.value} selected={o.value === current}>{o.label}</option>)}
+    </select>
+  )}
+  {as === "input" && (
+    <input id={id} name={name} type={type} value={current} required={required} maxlength={maxlength} dir={dir}
+      placeholder={placeholder} step={step} min={min} max={max}
+      aria-invalid={error ? "true" : undefined} aria-describedby={describedBy}
+      data-counter={maxlength ? "" : undefined} />
+  )}
+  {maxlength && as !== "select" && <span class="counter" data-counter-for={id} aria-hidden="true"><bdi>{current.length}</bdi> / <bdi>{maxlength}</bdi></span>}
+  {hint && <p class="hint" id={`${id}-hint`}>{hint}</p>}
+  {error && <p class="err" id={`${id}-err`}>{error}</p>}
+</div>
+
+<script>
+  // Live character counter for fields with a maxlength.
+  document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("[data-counter]").forEach((el) => {
+    const out = document.querySelector<HTMLElement>(`[data-counter-for="${el.id}"]`);
+    if (!out) return;
+    const max = el.maxLength;
+    const update = () => {
+      out.innerHTML = `<bdi>${el.value.length}</bdi> / <bdi>${max}</bdi>`;
+    };
+    el.addEventListener("input", update);
+    update();
+  });
+</script>

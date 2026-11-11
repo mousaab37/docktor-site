@@ -1,0 +1,9 @@
+---
+interface Props {
+  kind: "visible" | "hidden" | "draft" | "published";
+}
+
+const { kind } = Astro.props;
+const labels = { visible: "ظاهر", hidden: "مخفي", draft: "مسودة", published: "منشور" } as const;
+---
+<span class={`d-badge ${kind}`}>{labels[kind]}</span>

@@ -1,0 +1,33 @@
+---
+interface Props {
+  errors?: Record<string, string>;
+}
+
+const { errors = {} } = Astro.props;
+const messages: Record<string, string> = {
+  saved: "تم الحفظ",
+  deleted: "تم الحذف",
+  moved: "تم الترتيب",
+};
+const ok = messages[Astro.url.searchParams.get("ok") ?? ""];
+const errorList = Object.values(errors);
+---
+{errorList.length > 0 && (
+  <div class="d-errors" role="alert">
+    <strong>يرجى تصحيح الأخطاء التالية:</strong>
+    <ul>{errorList.map((e) => <li>{e}</li>)}</ul>
+  </div>
+)}
+{ok && <div class="d-toast" role="status" data-toast>{ok}</div>}
+
+<script>
+  // The toast fades after 3 seconds, and "?ok=" is removed from the address bar.
+  const toast = document.querySelector<HTMLElement>("[data-toast]");
+  if (toast) {
+    const url = new URL(location.href);
+    url.searchParams.delete("ok");
+    history.replaceState(null, "", url.pathname + url.search + url.hash);
+    setTimeout(() => toast.classList.add("hide"), 3000);
+    setTimeout(() => toast.remove(), 3500);
+  }
+</script>

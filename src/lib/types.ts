@@ -82,10 +82,13 @@ export interface Testimonial {
   updated_at: string;
 }
 
+export type SeoScope = "global" | "blog" | "privacy";
+
 export interface SeoSetting {
   id: string;
-  scope: string; // "global" or a supported page key
+  scope: SeoScope;
   seo_title: string | null;
   seo_description: string | null;
+  og_image: string | null;
   updated_at: string;
 }

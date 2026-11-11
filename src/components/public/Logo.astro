@@ -3,12 +3,13 @@ import { doctorConfig } from "@/config";
 
 interface Props {
   class?: string;
+  href?: string;
 }
 
 const { brand } = doctorConfig;
-const { class: extra = "" } = Astro.props;
+const { class: extra = "", href = "/" } = Astro.props;
 ---
-<a class={`logo ${extra}`.trim()} href="/" aria-label={`${brand.logoText} — الصفحة الرئيسية`}>
+<a class={`logo ${extra}`.trim()} href={href} aria-label={`${brand.logoText} — الصفحة الرئيسية`}>
   {brand.logoImage ? (
     <img src={brand.logoImage} alt="" height="32" style="height:32px;width:auto" />
   ) : (

@@ -1,0 +1,8 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: extra = "" } = Astro.props;
+---
+<div class={`d-card ${extra}`.trim()}><slot /></div>

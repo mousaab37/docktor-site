@@ -1,0 +1,12 @@
+---
+interface Props {
+  cancelHref: string;
+  saveLabel?: string;
+}
+
+const { cancelHref, saveLabel = "حفظ" } = Astro.props;
+---
+<div class="d-actions">
+  <button class="btn" type="submit">{saveLabel}</button>
+  <a class="btn btn-ghost" href={cancelHref}>إلغاء</a>
+</div>

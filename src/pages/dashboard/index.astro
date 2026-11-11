@@ -1,0 +1,42 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import Card from "@/components/dashboard/Card.astro";
+import { getRepo } from "@/lib/repo";
+
+const repo = getRepo();
+const [articles, clinics, certificates, testimonials, statistics] = await Promise.all([
+  repo.articles.list(),
+  repo.clinics.list(),
+  repo.certificates.list(),
+  repo.testimonials.list(),
+  repo.statistics.list(),
+]);
+
+// Content counts (PRD §5.1), not medical metrics.
+const counts = [
+  { label: "مقالات منشورة", value: articles.filter((a) => a.status === "published").length, href: "/dashboard/blog" },
+  { label: "مسودات", value: articles.filter((a) => a.status === "draft").length, href: "/dashboard/blog" },
+  { label: "العيادات", value: clinics.length, href: "/dashboard/clinics" },
+  { label: "الشهادات", value: certificates.length, href: "/dashboard/certificates" },
+  { label: "آراء المرضى", value: testimonials.length, href: "/dashboard/testimonials" },
+  { label: "الإحصائيات", value: statistics.length, href: "/dashboard/statistics" },
+];
+---
+<DashboardLayout title="لوحة التحكم" description="نظرة سريعة على محتوى موقعك.">
+  <div class="d-counts">
+    {counts.map((c) => (
+      <a class="d-count" href={c.href}>
+        <b><bdi>{c.value}</bdi></b>
+        <span>{c.label}</span>
+      </a>
+    ))}
+  </div>
+
+  <Card>
+    <h2 style="font-size:20px;font-weight:600">ابدأ من هنا</h2>
+    <div class="d-links">
+      <a class="btn btn-sm" href="/dashboard/blog/new">إضافة مقال</a>
+      <a class="btn btn-ghost btn-sm" href="/dashboard/clinics/new">إضافة عيادة</a>
+    </div>
+  </Card>
+</DashboardLayout>

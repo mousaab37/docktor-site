@@ -1,44 +1,41 @@
-// Data access for the public site. Today it reads sample data; Phase 2 reads Supabase.
-// Each function already applies the public filters (active / published) and the ordering.
-import {
-  sampleArticles,
-  sampleCertificates,
-  sampleClinics,
-  sampleStatistics,
-  sampleTestimonials,
-} from "./sample-data";
+// Data access for the public site. It reads the content repository (in memory today, Supabase in task 17)
+// and applies the public filters (active / published) and the ordering here, in code.
+import { getRepo } from "./repo";
 import type { Article, Certificate, ClinicWithHours, Statistic, Testimonial } from "./types";
 
 const byOrder = <T extends { display_order: number }>(a: T, b: T) => a.display_order - b.display_order;
 
 export async function getActiveStatistics(): Promise<Statistic[]> {
-  // TODO(phase2): read from Supabase
-  return sampleStatistics.filter((s) => s.is_active).sort(byOrder);
+  const rows = await getRepo().statistics.list();
+  return rows.filter((s) => s.is_active).sort(byOrder);
 }
 
 export async function getActiveClinicsWithHours(): Promise<ClinicWithHours[]> {
-  // TODO(phase2): read from Supabase
-  return sampleClinics
-    .filter((c) => c.is_active)
-    .map((c) => ({
+  const repo = getRepo();
+  const clinics = (await repo.clinics.list()).filter((c) => c.is_active);
+  return Promise.all(
+    clinics.map(async (c) => ({
       ...c,
-      working_hours: [...c.working_hours].sort((a, b) => a.weekday - b.weekday || a.interval_order - b.interval_order),
-    }));
+      working_hours: (await repo.workingHours.listByClinic(c.id)).sort(
+        (a, b) => a.weekday - b.weekday || a.interval_order - b.interval_order,
+      ),
+    })),
+  );
 }
 
 export async function getActiveCertificates(): Promise<Certificate[]> {
-  // TODO(phase2): read from Supabase
-  return sampleCertificates.filter((c) => c.is_active).sort(byOrder);
+  const rows = await getRepo().certificates.list();
+  return rows.filter((c) => c.is_active).sort(byOrder);
 }
 
 export async function getPublishedTestimonials(): Promise<Testimonial[]> {
-  // TODO(phase2): read from Supabase
-  return sampleTestimonials.filter((t) => t.is_published).sort(byOrder);
+  const rows = await getRepo().testimonials.list();
+  return rows.filter((t) => t.is_published).sort(byOrder);
 }
 
 export async function getLatestArticles(limit: number): Promise<Article[]> {
-  // TODO(phase2): read from Supabase
-  return sampleArticles
+  const rows = await getRepo().articles.list();
+  return rows
     .filter((a) => a.status === "published" && a.published_at !== null)
     .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
     .slice(0, limit);

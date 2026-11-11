@@ -1,0 +1,105 @@
+---
+/*
+ * FORM PATTERN for every dashboard page (copy it, do not invent another one):
+ *
+ *  1. The page handles POST in its frontmatter:
+ *       const fd = await Astro.request.formData();
+ *       const intent = fd.get("intent");
+ *  2. Valid input -> do the change, then redirect (POST-redirect-GET):
+ *       return Astro.redirect(Astro.url.pathname + "?ok=saved");
+ *  3. Invalid input -> render the form again with `errors` and the typed `values`,
+ *     and set the status to 422:  Astro.response.status = 422;
+ *  4. Astro's `security.checkOrigin` (on by default for server output) blocks cross-site
+ *     form posts. Do not turn it off.
+ */
+import "@/styles/dashboard.css";
+import BaseLayout from "./BaseLayout.astro";
+import Logo from "@/components/public/Logo.astro";
+import { dashboardNav } from "@/lib/dashboard-nav";
+
+interface Props {
+  /** The page heading. */
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const isCurrent = (path: string) => (path === "/dashboard" ? current === path : current === path || current.startsWith(path + "/"));
+---
+<BaseLayout title={title === "لوحة التحكم" ? title : `${title} | لوحة التحكم`} noindex>
+  <div class="dash-banner" role="note">
+    وضع التطوير: لا يوجد تسجيل دخول بعد، والبيانات مؤقتة وتُمسح عند إعادة تشغيل الخادم.
+  </div>
+
+  <div class="dash-wrap">
+    <div class="dash-top">
+      <Logo href="/dashboard" />
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="dash-side" data-dash-menu style="display:inline-flex">
+        <i aria-hidden="true"></i><span>القائمة</span>
+      </button>
+    </div>
+    <div class="dash-backdrop" data-dash-backdrop></div>
+
+    <aside class="dash-side" id="dash-side" aria-label="أقسام لوحة التحكم">
+      <Logo href="/dashboard" />
+      <nav aria-label="أقسام لوحة التحكم" style="flex:1;display:flex">
+        <ul class="dash-nav">
+          {dashboardNav.map((item) => (
+            <li>
+              <a href={item.path} aria-current={isCurrent(item.path) ? "page" : undefined}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" set:html={item.icon} />
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <a class="dash-view" href="/" target="_blank" rel="noopener">عرض الموقع ↗</a>
+    </aside>
+
+    <main class="dash-main" id="main">
+      <div class="dash-inner">
+        <h1 class="dash-h1">{title}</h1>
+        {description && <p class="dash-desc">{description}</p>}
+        <div class="dash-content"><slot /></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Dashboard drawer (same pattern as the public mobile menu): Esc closes it, links close it,
+    // the page behind does not scroll, and focus moves in and back.
+    const side = document.querySelector<HTMLElement>("#dash-side");
+    const backdrop = document.querySelector<HTMLElement>("[data-dash-backdrop]");
+    const btn = document.querySelector<HTMLButtonElement>("[data-dash-menu]");
+    if (side && backdrop && btn) {
+      const set = (open: boolean) => {
+        side.classList.toggle("open", open);
+        backdrop.classList.toggle("open", open);
+        btn.setAttribute("aria-expanded", String(open));
+        document.body.style.overflow = open ? "hidden" : "";
+        if (open) side.querySelector<HTMLElement>("a")?.focus({ preventScroll: true });
+      };
+      btn.addEventListener("click", () => set(!side.classList.contains("open")));
+      backdrop.addEventListener("click", () => set(false));
+      side.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => set(false)));
+      window.addEventListener("resize", () => {
+        if (window.innerWidth > 1023) set(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && side.classList.contains("open")) {
+          set(false);
+          btn.focus();
+        }
+      });
+    }
+
+    // Any submit button with data-confirm asks first.
+    document.addEventListener("click", (e) => {
+      const target = e.target as Element | null;
+      const el = target?.closest<HTMLElement>("[data-confirm]");
+      if (el && !window.confirm(el.dataset.confirm ?? "")) e.preventDefault();
+    });
+  </script>
+</BaseLayout>

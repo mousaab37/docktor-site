@@ -1,0 +1,29 @@
+# Task 8 — Result
+- Commit: see `git log` (task8: dashboard foundation (repo, dev gate, layout, ui kit, overview))
+- Status: done
+- Files changed:
+  - Validation: src/lib/validation/{common,statistic,certificate,clinic,working-hours,article,testimonial,seo,form}.ts
+  - Repository: src/lib/repo/{types,memory,index}.ts; src/lib/data.ts (now reads the repo); src/lib/types.ts (`SeoScope`, `og_image` on `SeoSetting`)
+  - Gate and nav: src/middleware.ts (new), src/lib/dashboard-nav.ts
+  - Layout and styles: src/layouts/DashboardLayout.astro, src/styles/dashboard.css (new file, imported by the layout)
+  - UI kit (src/components/dashboard/): Card, Field, Toggle, FormActions, Flash, RowActions, EmptyState, StatusBadge
+  - Pages: src/pages/dashboard/index.astro (Overview) and 7 "قيد البناء" pages (statistics, testimonials, certificates, clinics, hours, blog, seo)
+  - src/components/public/Logo.astro (new optional `href` prop, default `/`; the dashboard logo links to `/dashboard`)
+  - docs/taskes/task8-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard`. For production: `npm run build && npx astro preview`, then `/dashboard` → 404 and `/` → 200.
+- Checked:
+  - `/dashboard` in dev: the yellow dev banner, exactly 8 nav items in the required order, the current one highlighted, no public header and no compare button, `noindex`, 28px sans `h1`, response header `Cache-Control: private, no-store`. Overview counts: published articles 3, drafts 1, clinics 3, certificates 5, testimonials 7, statistics 4 (all rows, including the inactive ones, because the dashboard lists everything).
+  - 375px: no horizontal scroll; the drawer opens from the menu button, focus moves into it, the page behind is locked, Esc and the backdrop close it, focus returns to the button.
+  - Production preview: `/` 200 with `lang="ar" dir="rtl"`, no inactive/unpublished sample row in the HTML, badge "في عيادتين"; `/dashboard` and `/dashboard/statistics` 404; `/dev/*` 404.
+  - `/` in dev still shows all 11 sections with the same counts as before (3 stats, 2 clinics, 4 certificates, 6 testimonials, 3 articles); the data now comes through the repo.
+  - Validation, by script (tsx, not part of the repo): required, max length, regex, number, "both or neither" coordinates, day schedule (overlap, closed with intervals, open with none, max 3) and article slug all return the expected Arabic messages. `parseForm` converts checkbox → boolean, empty → `null`/`undefined`, numeric strings → numbers, and keeps `values` for re-display.
+  - Memory repo, by script: new rows go to the end; `move` swaps `display_order` and does nothing at the edges; deleting a clinic deletes its hours; `replaceDay` replaces one weekday (open with intervals, then closed); `published_at` is set the first time an article is published and kept after unpublish/republish; slug uniqueness (create and update); SEO rows global/blog/privacy; image upload returns a data URL and rejects GIF and files over 2 MB.
+- Not checked: the UI kit components `Field` (counter script), `Toggle`, `FormActions`, `Flash` (toast), `RowActions`, `StatusBadge` are written and type-checked but no page uses them yet, so they were not exercised in the browser. Task 9 is their first real use.
+- Notes for planner:
+  - **Bug found and fixed while testing production:** the first version created the in-memory store at module load, and `crypto.randomUUID()` is not allowed in the global scope of a Cloudflare Worker, so `/` returned 500 in `astro preview`. The store is now created lazily on first use (`db()` in memory.ts). Task 17 (Supabase) is not affected, but any future module-level random/time/fetch call has the same limit.
+  - `Cache-Control: private, no-store` is set by the middleware for every `/dashboard` response; the production 404 is returned before the page runs.
+  - Links "إضافة مقال" (`/dashboard/blog/new`) and "إضافة عيادة" (`/dashboard/clinics/new`) on the Overview 404 in dev until tasks 13 and 11 create those pages.
+  - `Field` types the `type` prop as a small union (text, number, email, url, tel, date, time, password) because a plain `string` did not satisfy Astro's input type.
+  - The in-memory store seeds `og_image: null` SEO rows with new random ids on each dev-server start.
+  - Stale preview processes: the first `astro preview` I started kept serving the old build after a rebuild (workerd caches modules), so I stopped it and started a fresh one before the final check. All preview servers I started are stopped; the dev server on port 4321 is the one started with `preview_start` in this session.
