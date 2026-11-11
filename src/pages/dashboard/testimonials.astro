@@ -3,11 +3,22 @@ import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
 import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
+import FormDialog from "@/components/dashboard/FormDialog.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import TestimonialForm from "@/components/dashboard/TestimonialForm.astro";
 import { getRepo } from "@/lib/repo";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { testimonialInput } from "@/lib/validation/testimonial";
 
 const repo = getRepo();
+
+// Dialog state: closed by default, opened again by the server after a validation error.
+let dialogOpen = false;
+let dialogTitle = "إضافة رأي";
+// New testimonials are unpublished by default.
+let values: FormValues = { id: "", display_name: "", content: "", testimonial_date: "", is_published: false };
+let errors: Record<string, string> = {};
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
@@ -21,6 +32,21 @@ if (Astro.request.method === "POST") {
     await repo.testimonials.remove(id);
     return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
   }
+  if (intent === "save") {
+    // An empty id means "add", otherwise "edit" (an unknown id is a 404).
+    if (id && !(await repo.testimonials.get(id))) return new Response("Not found", { status: 404 });
+    const result = parseForm(testimonialInput, fd);
+    if (result.ok) {
+      if (id) await repo.testimonials.update(id, result.data);
+      else await repo.testimonials.create(result.data);
+      return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+    }
+    dialogOpen = true;
+    dialogTitle = id ? "تعديل رأي" : "إضافة رأي";
+    values = { ...result.values, id };
+    errors = result.errors;
+    Astro.response.status = 422;
+  }
 }
 
 const rows = await repo.testimonials.list();
@@ -29,16 +55,32 @@ const excerpt = (text: string) => {
   const chars = Array.from(text);
   return chars.length > 120 ? chars.slice(0, 120).join("") + "…" : text;
 };
+const addAttrs = {
+  "data-dialog-open": "testimonial-dialog",
+  "data-title": "إضافة رأي",
+  "data-row": JSON.stringify({ id: "", display_name: "", content: "", testimonial_date: null, is_published: false }),
+};
+const editAttrs = (t: (typeof rows)[number]) => ({
+  "data-dialog-open": "testimonial-dialog",
+  "data-title": "تعديل رأي",
+  "data-row": JSON.stringify({
+    id: t.id,
+    display_name: t.display_name,
+    content: t.content,
+    testimonial_date: t.testimonial_date,
+    is_published: t.is_published,
+  }),
+});
 ---
 <DashboardLayout title="آراء المرضى" description="آراء تظهر في قسم الآراء بالصفحة الرئيسية.">
   <Flash />
   <div class="d-toolbar">
     <p class="d-note">انشر رأي المريض فقط بعد أخذ إذنه.</p>
-    <a class="btn btn-sm" href="/dashboard/testimonials/new">إضافة رأي</a>
+    <a class="btn btn-sm" href="/dashboard/testimonials/new" {...addAttrs}>إضافة رأي</a>
   </div>
   <Card>
     {rows.length === 0 ? (
-      <EmptyState message="لا توجد آراء بعد." addHref="/dashboard/testimonials/new" addLabel="إضافة رأي" />
+      <EmptyState message="لا توجد آراء بعد." addHref="/dashboard/testimonials/new" addLabel="إضافة رأي" addAttrs={addAttrs} />
     ) : (
       <ul class="d-list">
         {rows.map((t, i) => (
@@ -51,10 +93,20 @@ const excerpt = (text: string) => {
               </p>
             </div>
             <StatusBadge kind={t.is_published ? "published" : "hidden"} />
-            <RowActions id={t.id} editHref={`/dashboard/testimonials/${t.id}`} first={i === 0} last={i === rows.length - 1} />
+            <RowActions
+              id={t.id}
+              editHref={`/dashboard/testimonials/${t.id}`}
+              editAttrs={editAttrs(t)}
+              first={i === 0}
+              last={i === rows.length - 1}
+            />
           </li>
         ))}
       </ul>
     )}
   </Card>
+
+  <FormDialog id="testimonial-dialog" title={dialogTitle} open={dialogOpen} size="md">
+    <TestimonialForm values={values} errors={errors} cancelHref="/dashboard/testimonials" inDialog />
+  </FormDialog>
 </DashboardLayout>

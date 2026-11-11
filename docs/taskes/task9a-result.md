@@ -1,0 +1,28 @@
+# Task 9a — Result
+- Commit: see `git log` (task9a: statistics and testimonials in dialogs, remove statistic description)
+- Status: done
+- Files changed:
+  - New: src/components/dashboard/FormDialog.astro
+  - Statistics: src/lib/validation/statistic.ts (no `description`), src/components/dashboard/StatisticForm.astro (no description; `inDialog` prop; fills itself from the opener), src/pages/dashboard/statistics.astro (one dialog, `save` intent, 422 with the dialog open)
+  - Testimonials: src/components/dashboard/TestimonialForm.astro (`inDialog` prop, small notice inside the dialog, fills itself from `data-row`), src/pages/dashboard/testimonials.astro (same pattern)
+  - Shared: RowActions.astro (`editAttrs`), EmptyState.astro (`addAttrs`), FormActions.astro (`dialog` mode: cancel closes the dialog), src/styles/dashboard.css (dialog styles), src/lib/repo/memory.ts (one line, see notes)
+  - `new.astro` and `[id].astro` of both sections are unchanged and still work as the no-JS fallback (they use the shared forms without `inDialog`)
+  - docs/taskes/task9a-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard/statistics` or `/dashboard/testimonials`, click "تعديل" or the add button.
+- Checked in the browser pane (dev server):
+  - Statistics "تعديل": the URL does not change, the dialog is 420px wide with exactly 3 controls (title, number, toggle) filled from the row, the title is "تعديل إحصائية", focus goes to the first field. "إضافة إحصائية" opens it empty with the toggle on and the title "إضافة إحصائية".
+  - Empty title + save → 422, the dialog comes back **open** with "هذا الحقل مطلوب" under the field, the typed number `77+` kept and the right title; a valid save closes it (page reloads without the dialog), the list updates and `/` shows the new title and `15+`.
+  - Closing: ×, "إلغاء", a backdrop click and the native Esc close it, and focus returns to the opener (checked with real focus on the opener); a click inside the dialog does not close it.
+  - Unknown id on a dialog post → 404. A new row posted with an empty `id` is created.
+  - Testimonials: the dialog is the `md` size (560px); the edit dialog is filled **exactly** from the row (same text including line breaks, double quotes and an `<b>` tag), shows the small notice, the date, the toggle and the counter (`53 / 1000`); add opens empty with the toggle off. Empty text → 422 with the dialog open, error shown and the typed name kept. Saving an edit updates the list and `/` shows it (published).
+  - 375px: the dialog is a bottom sheet (left 8, right 367, bottom at the screen edge, top corners rounded 26px), the form scrolls inside it (`overflow-y: auto`, max height 85vh), no horizontal scroll.
+  - Fallback pages: `/dashboard/statistics/new` and `/[id]` and `/dashboard/testimonials/new` return 200 and have no description field; the "تعديل" and add links keep their `href`.
+  - `/` still shows the statistics correctly.
+- Not checked: the exact visual of the dialog open animation (the pane pauses animations when hidden); a real keyboard Esc press (the native `cancel`/`close` path was exercised with `dialog.close()`); JavaScript truly disabled in a browser (only the `href`s and the fallback pages were checked by HTTP).
+- Notes for planner:
+  - **Tailwind's reset gave `<dialog>` `margin: 0`**, which pinned it to a corner instead of centering it. `.d-dialog` now sets `margin: auto` explicitly (and the sheet uses `margin: auto 8px 0`). Any future dialog needs the same.
+  - The task says not to touch the repo, but `memory.ts` created statistics with `input.description ?? null`, which no longer compiles once `description` leaves `statisticInput`. I changed that one line to `description: null` (comment included). Updates keep the stored description because the update input has no such key.
+  - On mobile the Save button sits at the bottom of the scrolling form body, so it is reached by scrolling inside the sheet, not pinned.
+  - In the task 9 result I wrote that the list pages use `.d-link-btn` for edit; the delete button also uses that class, so the selector for tests must be `a.d-link-btn`.
+  - Test rows I added while checking (a statistic "جديدة", two testimonials, an edited first statistic) live in the dev server's memory; restarting the dev server restores the sample data.

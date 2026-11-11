@@ -141,7 +141,7 @@ export const memoryRepo: ContentRepo = {
       id: crypto.randomUUID(),
       label: input.label,
       value: input.value,
-      description: input.description ?? null,
+      description: null, // the dashboard no longer edits it (task 9a); the column stays in the database
       display_order: order,
       is_active: input.is_active,
       created_at: now(),

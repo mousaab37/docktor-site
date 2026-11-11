@@ -3,11 +3,21 @@ import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
 import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
+import FormDialog from "@/components/dashboard/FormDialog.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
+import StatisticForm from "@/components/dashboard/StatisticForm.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
 import { getRepo } from "@/lib/repo";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { statisticInput } from "@/lib/validation/statistic";
 
 const repo = getRepo();
+
+// Dialog state: closed by default, opened again by the server after a validation error.
+let dialogOpen = false;
+let dialogTitle = "إضافة إحصائية";
+let values: FormValues = { id: "", label: "", value: "", is_active: true };
+let errors: Record<string, string> = {};
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
@@ -21,19 +31,50 @@ if (Astro.request.method === "POST") {
     await repo.statistics.remove(id);
     return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
   }
+  if (intent === "save") {
+    // An empty id means "add", otherwise "edit" (an unknown id is a 404).
+    if (id && !(await repo.statistics.get(id))) return new Response("Not found", { status: 404 });
+    const result = parseForm(statisticInput, fd);
+    if (result.ok) {
+      if (id) await repo.statistics.update(id, result.data);
+      else await repo.statistics.create(result.data);
+      return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+    }
+    dialogOpen = true;
+    dialogTitle = id ? "تعديل إحصائية" : "إضافة إحصائية";
+    values = { ...result.values, id };
+    errors = result.errors;
+    Astro.response.status = 422;
+  }
 }
 
 const rows = await repo.statistics.list();
+const addAttrs = {
+  "data-dialog-open": "stat-dialog",
+  "data-title": "إضافة إحصائية",
+  "data-id": "",
+  "data-label": "",
+  "data-value": "",
+  "data-active": "true",
+};
+const editAttrs = (s: (typeof rows)[number]) => ({
+  "data-dialog-open": "stat-dialog",
+  "data-title": "تعديل إحصائية",
+  "data-id": s.id,
+  "data-label": s.label,
+  "data-value": s.value,
+  "data-active": String(s.is_active),
+});
 ---
 <DashboardLayout title="الإحصائيات" description="أرقام تظهر في الصفحة الرئيسية.">
   <Flash />
   <div class="d-toolbar">
     <p class="d-note">الأرقام تُدخل يدويًا ولا يتحقق منها الموقع.</p>
-    <a class="btn btn-sm" href="/dashboard/statistics/new">إضافة إحصائية</a>
+    <a class="btn btn-sm" href="/dashboard/statistics/new" {...addAttrs}>إضافة إحصائية</a>
   </div>
   <Card>
     {rows.length === 0 ? (
-      <EmptyState message="لا توجد إحصائيات بعد." addHref="/dashboard/statistics/new" addLabel="إضافة إحصائية" />
+      <EmptyState message="لا توجد إحصائيات بعد." addHref="/dashboard/statistics/new" addLabel="إضافة إحصائية" addAttrs={addAttrs} />
     ) : (
       <ul class="d-list">
         {rows.map((s, i) => (
@@ -41,13 +82,22 @@ const rows = await repo.statistics.list();
             <b class="d-item-value"><bdi>{s.value}</bdi></b>
             <div class="d-item-body">
               <strong>{s.label}</strong>
-              {s.description && <p>{s.description}</p>}
             </div>
             <StatusBadge kind={s.is_active ? "visible" : "hidden"} />
-            <RowActions id={s.id} editHref={`/dashboard/statistics/${s.id}`} first={i === 0} last={i === rows.length - 1} />
+            <RowActions
+              id={s.id}
+              editHref={`/dashboard/statistics/${s.id}`}
+              editAttrs={editAttrs(s)}
+              first={i === 0}
+              last={i === rows.length - 1}
+            />
           </li>
         ))}
       </ul>
     )}
   </Card>
+
+  <FormDialog id="stat-dialog" title={dialogTitle} open={dialogOpen}>
+    <StatisticForm values={values} errors={errors} cancelHref="/dashboard/statistics" inDialog />
+  </FormDialog>
 </DashboardLayout>

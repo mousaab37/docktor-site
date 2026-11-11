@@ -6,12 +6,14 @@ interface Props {
   orderable?: boolean;
   first?: boolean;
   last?: boolean;
+  /** Extra attributes for the edit link (used to open a dialog instead of the edit page). */
+  editAttrs?: Record<string, string>;
 }
 
-const { id, editHref, orderable = true, first = false, last = false } = Astro.props;
+const { id, editHref, orderable = true, first = false, last = false, editAttrs = {} } = Astro.props;
 ---
 <div class="d-row-actions">
-  <a class="d-link-btn" href={editHref}>تعديل</a>
+  <a class="d-link-btn" href={editHref} {...editAttrs}>تعديل</a>
   {orderable && (
     <>
       <form method="post">

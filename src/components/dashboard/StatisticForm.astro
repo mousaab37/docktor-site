@@ -9,17 +9,21 @@ interface Props {
   values: FormValues;
   errors?: Record<string, string>;
   cancelHref: string;
+  /** Rendered inside a FormDialog: no outer card, a hidden id, and "cancel" closes the dialog. */
+  inDialog?: boolean;
 }
 
-const { values, errors = {}, cancelHref } = Astro.props;
+const { values, errors = {}, cancelHref, inDialog = false } = Astro.props;
+const Wrapper = inDialog ? "div" : Card;
 ---
-<Card>
-  <form method="post" class="d-form" novalidate>
+<Wrapper>
+  <form method="post" class="d-form" novalidate data-stat-form action={inDialog ? "/dashboard/statistics" : undefined}>
     <input type="hidden" name="intent" value="save" />
+    {inDialog && <input type="hidden" name="id" value={String(values.id ?? "")} />}
     <Field name="label" label="العنوان" value={String(values.label ?? "")} error={errors.label} required maxlength={80} />
     <Field
       name="value"
-      label="القيمة"
+      label="الرقم"
       value={String(values.value ?? "")}
       error={errors.value}
       required
@@ -27,8 +31,28 @@ const { values, errors = {}, cancelHref } = Astro.props;
       dir="ltr"
       hint="رقم أو نص قصير مثل 15+"
     />
-    <Field as="textarea" name="description" label="وصف (اختياري)" value={String(values.description ?? "")} error={errors.description} maxlength={300} rows={3} />
     <Toggle name="is_active" label="ظاهر في الموقع" checked={values.is_active === true} />
-    <FormActions cancelHref={cancelHref} />
+    <FormActions cancelHref={cancelHref} dialog={inDialog} />
   </form>
-</Card>
+</Wrapper>
+
+<script>
+  // When the form lives in a dialog, fill it from the button that opened the dialog.
+  document.querySelectorAll<HTMLFormElement>("dialog form[data-stat-form]").forEach((form) => {
+    const dialog = form.closest("dialog");
+    dialog?.addEventListener("dialog-prefill", (e) => {
+      const t = (e as CustomEvent<{ trigger: HTMLElement }>).detail.trigger.dataset;
+      const set = (name: string, value: string) => {
+        (form.elements.namedItem(name) as HTMLInputElement).value = value;
+      };
+      set("id", t.id ?? "");
+      set("label", t.label ?? "");
+      set("value", t.value ?? "");
+      (form.elements.namedItem("is_active") as HTMLInputElement).checked = t.active === "true";
+      // Forget errors from an earlier failed save.
+      form.querySelectorAll(".err").forEach((el) => el.remove());
+      form.querySelectorAll(".has-error").forEach((el) => el.classList.remove("has-error"));
+      form.querySelectorAll("input, textarea").forEach((el) => el.dispatchEvent(new Event("input")));
+    });
+  });
+</script>

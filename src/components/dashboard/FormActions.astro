@@ -1,12 +1,18 @@
 ---
 interface Props {
   cancelHref: string;
+  /** Inside a dialog the cancel button closes it instead of linking away. */
+  dialog?: boolean;
   saveLabel?: string;
 }
 
-const { cancelHref, saveLabel = "حفظ" } = Astro.props;
+const { cancelHref, saveLabel = "حفظ", dialog = false } = Astro.props;
 ---
 <div class="d-actions">
   <button class="btn" type="submit">{saveLabel}</button>
-  <a class="btn btn-ghost" href={cancelHref}>إلغاء</a>
+  {dialog ? (
+    <button class="btn btn-ghost" type="button" data-dialog-close>إلغاء</button>
+  ) : (
+    <a class="btn btn-ghost" href={cancelHref}>إلغاء</a>
+  )}
 </div>
