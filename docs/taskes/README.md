@@ -26,7 +26,7 @@ The owner asked to build the dashboard **before** the database and login. Every 
 | # | File | What it delivers | Status |
 |---|---|---|---|
 | 8 | [task8.md](task8.md) | Validation schemas, `ContentRepo` + memory store, dev-only gate, `DashboardLayout` (8 sections), UI kit, Overview | ✅ done (reviewed) |
-| 9 | [task9.md](task9.md) | Statistics + Testimonials (list/add/edit/delete/order/show-hide): the pattern every other section copies | todo |
+| 9 | [task9.md](task9.md) | Statistics + Testimonials (list/add/edit/delete/order/show-hide): the pattern every other section copies | ✅ done (reviewed) |
 | 10 | [task10.md](task10.md) | Certificates, with image upload inside the form | todo |
 | 11 | [task11.md](task11.md) | Clinics, with the map location picker | todo |
 | 12 | [task12.md](task12.md) | Working hours editor (per clinic, up to 3 intervals per day) | todo |
