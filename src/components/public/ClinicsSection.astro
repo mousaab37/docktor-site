@@ -3,7 +3,7 @@ import { doctorConfig } from "@/config";
 import { clinicMessage } from "@/lib/whatsapp";
 import type { ClinicWithHours } from "@/lib/types";
 import BookingNotice from "./BookingNotice.astro";
-import ClinicMap from "./ClinicMap.astro";
+import ClinicMiniMap from "./ClinicMiniMap.astro";
 import HoursTable from "./HoursTable.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
@@ -27,7 +27,7 @@ const { contact, whatsapp } = doctorConfig;
 
       <div class="clinics-grid">
         {clinics.map((c, i) => (
-          <article class="card clinic-card rv" style={i > 0 ? `--d:${i}` : undefined}>
+          <article class:list={["card", "clinic-card", "rv", c.latitude !== null && c.longitude !== null && "has-map"]} style={i > 0 ? `--d:${i}` : undefined}>
             <div class="clinic-card-b">
               <h3>{c.name}</h3>
               <p class="addr">{c.address}</p>
@@ -51,11 +51,13 @@ const { contact, whatsapp } = doctorConfig;
                 )}
               </div>
             </div>
+            {c.latitude !== null && c.longitude !== null && (
+              <ClinicMiniMap name={c.name} latitude={c.latitude} longitude={c.longitude} />
+            )}
           </article>
         ))}
       </div>
 
-      <div class="rv" style="margin-top:20px"><ClinicMap clinics={clinics} /></div>
       <div style="margin-top:20px"><BookingNotice /></div>
     </div>
   </section>

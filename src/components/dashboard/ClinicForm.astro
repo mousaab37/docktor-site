@@ -41,8 +41,7 @@ const num = (v: string | boolean | undefined) => {
       lng={num(values.longitude)}
       latText={String(values.latitude ?? "")}
       lngText={String(values.longitude ?? "")}
-      latError={errors.latitude}
-      lngError={errors.longitude}
+      error={errors.latitude ?? errors.longitude}
     />
     <Toggle name="is_active" label="ظاهرة في الموقع" checked={values.is_active === true} />
     <FormActions cancelHref={cancelHref} />

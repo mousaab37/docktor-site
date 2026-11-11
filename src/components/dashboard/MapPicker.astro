@@ -1,17 +1,15 @@
 ---
-import Field from "./Field.astro";
-
 interface Props {
   /** The saved point (the initial marker), or null when no location is set. */
   lat: number | null;
   lng: number | null;
   latName?: string;
   lngName?: string;
-  /** What to show in the inputs (the typed text after a failed save). Defaults to the numbers above. */
+  /** What to submit in the hidden fields (the typed text after a failed save). Defaults to the numbers above. */
   latText?: string;
   lngText?: string;
-  latError?: string;
-  lngError?: string;
+  /** A validation error for the location (for example when only one of the two numbers arrived). */
+  error?: string;
 }
 
 const {
@@ -21,52 +19,113 @@ const {
   lngName = "longitude",
   latText = lat === null ? "" : String(lat),
   lngText = lng === null ? "" : String(lng),
-  latError,
-  lngError,
+  error,
 } = Astro.props;
+const hasPoint = latText !== "" && lngText !== "";
 ---
 <div class="map-picker" data-map-picker data-lat={lat ?? ""} data-lng={lng ?? ""} data-lat-name={latName} data-lng-name={lngName}>
-  <div class="d-form-row">
-    <Field name={latName} type="number" step="any" min="-90" max="90" dir="ltr" label="خط العرض" value={latText} error={latError} />
-    <Field name={lngName} type="number" step="any" min="-180" max="180" dir="ltr" label="خط الطول" value={lngText} error={lngError} />
-  </div>
+  <!-- The coordinates are not shown to the doctor; they are still submitted and validated on the server. -->
+  <input type="hidden" name={latName} value={latText} />
+  <input type="hidden" name={lngName} value={lngText} />
+  <span class="map-picker-label">موقع العيادة على الخريطة</span>
   <div class="map-picker-actions">
     <button class="d-link-btn" type="button" data-picker-locate>موقعي الحالي</button>
     <button class="d-link-btn" type="button" data-picker-clear>مسح الموقع</button>
   </div>
   <p class="err" data-picker-msg hidden></p>
+  {error && <p class="err">{error}</p>}
   <div class="clinic-map" dir="ltr" data-picker-map role="application" aria-label="خريطة لتحديد موقع العيادة"></div>
-  <p class="hint">انقر على الخريطة أو اسحب المؤشر لتحديد موقع العيادة.</p>
+  <p class="hint" data-picker-status aria-live="polite"
+    data-text-none="لم يُحدَّد موقع العيادة بعد. انقر على الخريطة لتحديده."
+    data-text-set="✓ تم تحديد موقع العيادة على الخريطة">{hasPoint ? "✓ تم تحديد موقع العيادة على الخريطة" : "لم يُحدَّد موقع العيادة بعد. انقر على الخريطة لتحديده."}</p>
 </div>
 
 <script>
-  // Location picker. Leaflet is loaded only when the map is near the viewport.
-  // No geocoding / address search for now (PRD open decision #4): the doctor clicks the map or types the numbers.
+  import { addOsmTiles, baseMapOptions, clinicDotIcon, enableTwoFingerPan, loadLeaflet, whenNear } from "@/scripts/leaflet-shared";
+
+  // Location picker. A click on the map (or the end of a marker drag) sets the point and asks Nominatim
+  // for the address, which is written into the address field. The coordinates stay in hidden fields.
   // TODO: default center from config
   const DEFAULT_CENTER: [number, number] = [24.7136, 46.6753]; // Riyadh
   const DEFAULT_ZOOM = 11;
   const POINT_ZOOM = 16;
+
+  // Nominatim public API: fine for occasional dashboard use by one doctor. Revisit with PRD open decision #4 (production geocoding provider).
+  const NOMINATIM = "https://nominatim.openstreetmap.org/reverse";
+  const DEBOUNCE_MS = 600;
+  const MIN_GAP_MS = 1000; // at most one request per second
+
+  interface NominatimAddress {
+    road?: string;
+    house_number?: string;
+    neighbourhood?: string;
+    suburb?: string;
+    quarter?: string;
+    city_district?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    municipality?: string;
+    country?: string;
+    postcode?: string;
+  }
+  interface NominatimReply {
+    display_name?: string;
+    address?: NominatimAddress;
+  }
+
+  /** A short Arabic address: road with house number, neighbourhood, then city. */
+  function shortAddress(reply: NominatimReply): string {
+    const a = reply.address ?? {};
+    const road = [a.road, a.house_number].filter(Boolean).join(" ");
+    const area = a.neighbourhood || a.suburb || a.quarter || a.city_district;
+    const city = a.city || a.town || a.village || a.municipality;
+    const parts = [road, area, city].filter((p): p is string => Boolean(p));
+    if (parts.length) return parts.join("، ");
+    // Fall back to display_name without the country and the postcode.
+    return (reply.display_name ?? "")
+      .split(/،\s*|,\s*/)
+      .map((p) => p.trim())
+      .filter((p) => p && p !== a.country && p !== a.postcode)
+      .join("، ");
+  }
 
   document.querySelectorAll<HTMLElement>("[data-map-picker]").forEach((root) => {
     const mapEl = root.querySelector<HTMLElement>("[data-picker-map]");
     const latQuery = root.querySelector<HTMLInputElement>(`[name="${root.dataset.latName}"]`);
     const lngQuery = root.querySelector<HTMLInputElement>(`[name="${root.dataset.lngName}"]`);
     const msg = root.querySelector<HTMLElement>("[data-picker-msg]");
+    const statusEl = root.querySelector<HTMLElement>("[data-picker-status]");
     const locateBtn = root.querySelector<HTMLButtonElement>("[data-picker-locate]");
     const clearBtn = root.querySelector<HTMLButtonElement>("[data-picker-clear]");
-    if (!mapEl || !latQuery || !lngQuery || !msg) return;
+    if (!mapEl || !latQuery || !lngQuery || !msg || !statusEl) return;
     // New names so the "not null" check also holds inside the functions below.
     const latInput: HTMLInputElement = latQuery;
     const lngInput: HTMLInputElement = lngQuery;
+    const status: HTMLElement = statusEl;
+
+    const form = root.closest("form");
+    const addressEl = form?.elements.namedItem("address") as HTMLTextAreaElement | null;
+    // A small status line under the address field.
+    let addressNote: HTMLElement | null = null;
+    if (addressEl) {
+      addressNote = document.createElement("p");
+      addressNote.className = "hint";
+      addressNote.setAttribute("aria-live", "polite");
+      addressNote.hidden = true;
+      addressEl.closest(".field")?.appendChild(addressNote);
+    }
 
     const say = (text: string | null) => {
       msg.textContent = text ?? "";
       msg.hidden = !text;
     };
+    const setStatus = (hasPoint: boolean) => {
+      status.textContent = hasPoint ? (status.dataset.textSet ?? "") : (status.dataset.textNone ?? "");
+    };
     if (!("geolocation" in navigator) && locateBtn) locateBtn.hidden = true;
 
-    // The point currently typed in the inputs (both must be valid numbers inside the range).
-    const readInputs = (): [number, number] | null => {
+    const readPoint = (): [number, number] | null => {
       if (latInput.value.trim() === "" || lngInput.value.trim() === "") return null;
       const la = Number(latInput.value);
       const ln = Number(lngInput.value);
@@ -74,55 +133,125 @@ const {
       return [la, ln];
     };
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-        void start();
-      },
-      { rootMargin: "300px 0px" },
-    );
-    io.observe(mapEl);
+    // ---- Address lookup (only after a click, a drag end or "my location"; never on page load) ----
+    const cache = new Map<string, string>();
+    let debounce: number | undefined;
+    let noteTimer: number | undefined;
+    let controller: AbortController | null = null;
+    let lastRequestAt = 0;
 
-    async function start() {
-      const [{ default: L }] = await Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]);
-      const touch = L.Browser.mobile;
-      // On phones one finger scrolls the page; two fingers pan the map (same rule as the public map).
-      // `tap` is a real Leaflet 1.x option that @types/leaflet does not declare.
-      const options: L.MapOptions & { tap?: boolean } = { scrollWheelZoom: false, dragging: !touch, tap: false };
-      const map = L.map(mapEl as HTMLElement, options);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(map);
+    const showNote = (text: string | null, autoHideMs = 0) => {
+      if (!addressNote) return;
+      window.clearTimeout(noteTimer);
+      addressNote.textContent = text ?? "";
+      addressNote.hidden = !text;
+      if (text && autoHideMs) noteTimer = window.setTimeout(() => (addressNote!.hidden = true), autoHideMs);
+    };
+    const fillAddress = (text: string) => {
+      if (!addressEl) return;
+      addressEl.value = text.slice(0, addressEl.maxLength > 0 ? addressEl.maxLength : 300);
+      addressEl.dispatchEvent(new Event("input")); // updates the character counter
+      showNote("تمت تعبئة العنوان من الخريطة، يمكنك تعديله.", 3000);
+    };
 
-      // A forest dot with a white ring; no default marker images.
-      const icon = L.divIcon({ className: "pick-dot", html: "<span></span>", iconSize: [26, 26], iconAnchor: [13, 13] });
-      let marker: L.Marker | null = null;
+    const requestAddress = (la: number, ln: number) => {
+      if (!addressEl) return;
+      window.clearTimeout(debounce);
+      controller?.abort(); // a newer point makes the previous request useless
+      showNote("جارٍ جلب العنوان…");
+      debounce = window.setTimeout(async () => {
+        const key = `${la.toFixed(5)},${ln.toFixed(5)}`;
+        const hit = cache.get(key);
+        if (hit) return fillAddress(hit);
+        // At most one request per second.
+        const wait = lastRequestAt + MIN_GAP_MS - Date.now();
+        if (wait > 0) await new Promise((r) => window.setTimeout(r, wait));
+        controller?.abort();
+        const mine = new AbortController();
+        controller = mine;
+        lastRequestAt = Date.now();
+        try {
+          const url = `${NOMINATIM}?format=jsonv2&lat=${la}&lon=${ln}&accept-language=ar&zoom=18&addressdetails=1`;
+          const res = await fetch(url, { signal: mine.signal });
+          if (!res.ok) throw new Error(String(res.status));
+          const text = shortAddress((await res.json()) as NominatimReply);
+          if (!text) throw new Error("empty");
+          cache.set(key, text);
+          fillAddress(text);
+        } catch (e) {
+          if (e instanceof DOMException && e.name === "AbortError") return; // replaced by a newer request
+          showNote("تعذّر جلب العنوان، اكتبه يدويًا.");
+        }
+      }, DEBOUNCE_MS);
+    };
 
+    // The map starts when it is near the viewport, or earlier when a button needs it.
+    interface Api {
+      place: (la: number, ln: number) => void;
+      view: (la: number, ln: number) => void;
+      removeMarker: () => void;
+    }
+    let started: Promise<Api> | null = null;
+    const ensure = () => (started ??= start());
+    whenNear(mapEl, () => void ensure());
+
+    // Clears the point only; the address text is left alone.
+    clearBtn?.addEventListener("click", () => {
+      say(null);
+      window.clearTimeout(debounce);
+      controller?.abort();
+      showNote(null);
+      latInput.value = "";
+      lngInput.value = "";
+      setStatus(false);
+      void started?.then((api) => api.removeMarker());
+    });
+
+    locateBtn?.addEventListener("click", () => {
+      say(null);
+      void ensure();
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          const api = await ensure();
+          api.place(latitude, longitude);
+          latInput.value = latitude.toFixed(6);
+          lngInput.value = longitude.toFixed(6);
+          setStatus(true);
+          api.view(latitude, longitude);
+          requestAddress(latitude, longitude);
+        },
+        () => say("تعذّر تحديد موقعك. اسمح للمتصفح بالوصول إلى الموقع، أو انقر على الخريطة لتحديده يدويًا."),
+        { enableHighAccuracy: true, timeout: 10000 },
+      );
+    });
+
+    async function start(): Promise<Api> {
+      const L = await loadLeaflet();
+      const map = L.map(mapEl as HTMLElement, baseMapOptions());
+      addOsmTiles(map);
+
+      let marker: ReturnType<typeof L.marker> | null = null;
       const write = (la: number, ln: number) => {
         latInput.value = la.toFixed(6);
         lngInput.value = ln.toFixed(6);
+        setStatus(true);
       };
       const place = (la: number, ln: number) => {
         if (marker) {
           marker.setLatLng([la, ln]);
           return;
         }
-        marker = L.marker([la, ln], { icon, draggable: true }).addTo(map);
+        marker = L.marker([la, ln], { icon: clinicDotIcon(), draggable: true }).addTo(map);
         marker.on("dragend", () => {
           const p = marker?.getLatLng();
-          if (p) write(p.lat, p.lng);
+          if (!p) return;
+          write(p.lat, p.lng);
+          requestAddress(p.lat, p.lng); // drag END, not every move
         });
       };
-      const clear = () => {
-        latInput.value = "";
-        lngInput.value = "";
-        marker?.remove();
-        marker = null;
-      };
 
-      const start0 = readInputs();
+      const start0 = readPoint();
       if (start0) {
         place(start0[0], start0[1]);
         map.setView(start0, POINT_ZOOM);
@@ -130,68 +259,23 @@ const {
         map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
       }
 
-      // Click -> move the marker there and fill both inputs.
-      map.on("click", (e: L.LeafletMouseEvent) => {
+      map.on("click", (e) => {
         say(null);
         place(e.latlng.lat, e.latlng.lng);
         write(e.latlng.lat, e.latlng.lng);
+        requestAddress(e.latlng.lat, e.latlng.lng);
       });
 
-      // Typing in the inputs moves the marker.
-      const fromInputs = () => {
-        const p = readInputs();
-        if (p) {
-          place(p[0], p[1]);
-          map.setView(p, Math.max(map.getZoom(), POINT_ZOOM - 2));
-        } else if (latInput.value.trim() === "" && lngInput.value.trim() === "") {
+      enableTwoFingerPan(map, mapEl as HTMLElement);
+
+      return {
+        place,
+        view: (la, ln) => map.setView([la, ln], POINT_ZOOM),
+        removeMarker: () => {
           marker?.remove();
           marker = null;
-        }
+        },
       };
-      latInput.addEventListener("change", fromInputs);
-      lngInput.addEventListener("change", fromInputs);
-
-      clearBtn?.addEventListener("click", () => {
-        say(null);
-        clear();
-      });
-
-      locateBtn?.addEventListener("click", () => {
-        say(null);
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            place(pos.coords.latitude, pos.coords.longitude);
-            write(pos.coords.latitude, pos.coords.longitude);
-            map.setView([pos.coords.latitude, pos.coords.longitude], POINT_ZOOM);
-          },
-          () => say("تعذّر تحديد موقعك. اسمح للمتصفح بالوصول إلى الموقع، أو انقر على الخريطة لتحديده يدويًا."),
-          { enableHighAccuracy: true, timeout: 10000 },
-        );
-      });
-
-      if (touch) {
-        const hint = document.createElement("div");
-        hint.className = "map-hint";
-        hint.setAttribute("aria-hidden", "true");
-        hint.textContent = "استخدم إصبعين لتحريك الخريطة";
-        mapEl?.appendChild(hint);
-        let shown = false;
-        mapEl?.addEventListener(
-          "touchstart",
-          (e) => {
-            if (e.touches.length >= 2) {
-              map.dragging.enable();
-            } else if (!shown) {
-              shown = true;
-              hint.classList.add("show");
-              window.setTimeout(() => hint.classList.remove("show"), 1500);
-            }
-          },
-          { passive: true },
-        );
-        mapEl?.addEventListener("touchend", () => map.dragging.disable(), { passive: true });
-        mapEl?.addEventListener("touchcancel", () => map.dragging.disable(), { passive: true });
-      }
     }
   });
 </script>

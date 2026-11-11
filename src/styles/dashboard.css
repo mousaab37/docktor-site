@@ -342,14 +342,5 @@
 @media (max-width: 899px) { .clinic-list { grid-template-columns: minmax(0, 1fr); } }
 .map-picker { display: grid; gap: 12px; }
 .map-picker-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.pick-dot span {
-  display: block;
-  width: 26px;
-  height: 26px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--color-forest);
-  border: 4px solid #fff;
-  box-shadow: 0 2px 8px rgb(0 0 0 / .45);
-  cursor: grab;
-}
+
+.map-picker-label { font-size: 15px; font-weight: 600; line-height: 1.5; }
