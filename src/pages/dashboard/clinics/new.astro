@@ -1,0 +1,33 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import ClinicForm from "@/components/dashboard/ClinicForm.astro";
+import { getRepo } from "@/lib/repo";
+import { clinicInput } from "@/lib/validation/clinic";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+
+let values: FormValues = {
+  name: "",
+  address: "",
+  phone: "",
+  whatsapp: "",
+  latitude: "",
+  longitude: "",
+  description: "",
+  is_active: true,
+};
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const result = parseForm(clinicInput, await Astro.request.formData());
+  if (result.ok) {
+    await getRepo().clinics.create(result.data);
+    return Astro.redirect("/dashboard/clinics?ok=saved", 303);
+  }
+  values = result.values;
+  errors = result.errors;
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="إضافة عيادة">
+  <ClinicForm values={values} errors={errors} cancelHref="/dashboard/clinics" />
+</DashboardLayout>

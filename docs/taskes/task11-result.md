@@ -1,0 +1,27 @@
+# Task 11 — Result
+- Branch: `task/11-clinics`
+- Commit: task11: dashboard clinics with map picker (hash: see the PR)
+- PR: see the link in the final message (opened with `gh`)
+- Status: done
+- Files changed:
+  - New: src/components/dashboard/MapPicker.astro, src/components/dashboard/ClinicForm.astro, src/pages/dashboard/clinics/new.astro, src/pages/dashboard/clinics/[id].astro
+  - Edited: src/pages/dashboard/clinics.astro (the list replaces the placeholder), src/styles/dashboard.css (clinic cards, picker, forest dot marker), src/lib/validation/clinic.ts (the "both or neither" message now reads exactly as the task says)
+  - docs/taskes/task11-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard/clinics`; add a clinic, click or drag on the map, save, reopen, then look at `/` (clinics section, public map, contact list, hero badge).
+- Checked (dev server; real clicks and drags in the browser pane, plus form posts):
+  - MapPicker: Leaflet loads only when the map is near the viewport; OSM attribution "© OpenStreetMap contributors" is visible; start view is Riyadh at zoom 11 when there is no point. A real click on the map placed the marker and filled both inputs with 6 decimals (`24.716170`, `46.681667`); a real drag of the marker updated both inputs; typing a latitude and firing `change` moved the marker; "مسح الموقع" emptied both inputs and removed the marker.
+  - Saving through the form and reopening: the point is kept (inputs filled, the forest dot shown at the point, `data-lat`/`data-lng` set). Clearing the location and saving: the list says "لم يُحدَّد الموقع", the clinic is **not** in the public map pins, and it has no "الاتجاهات" link on `/`.
+  - Adding with coordinates and WhatsApp: the clinic appears on `/` (clinics section, public map pins, directions link `destination=24.8,46.7`, contact list) and the hero badge changes ("في 3 عيادات"). Hiding it removes it from `/` with its hours and the badge goes back to "في عيادتين". Its WhatsApp link uses its own number and the clinic message with its name.
+  - Only one coordinate → 422 with "أدخل خط العرض والطول معًا أو اتركهما فارغين"; a bad WhatsApp number → "رقم واتساب: أرقام فقط، من 8 إلى 15 رقمًا"; unknown id → 404.
+  - Delete: the button carries the confirm text "سيتم حذف العيادة وكل ساعات عملها. هل أنت متأكد؟"; the clinic is gone afterwards (edit page 404). The hours removal is the repo behavior verified in task 8.
+  - The list is sorted by name; each card has edit, "ساعات العمل" (→ `/dashboard/hours?clinic={id}`) and delete.
+  - 375px: no horizontal scroll, the form and the map are usable; one finger over the map shows the hint "استخدم إصبعين لتحريك الخريطة", two fingers turn dragging on, and it turns off again at the end (scripted touch events, same as task 7a).
+- Not checked: "موقعي الحالي" with a real browser permission prompt (the button is hidden when geolocation is not available; the refusal message is in the code but I did not trigger a refusal); real finger gestures on a phone; the confirm dialog itself (native dialogs are suppressed in the pane, as noted in task 9a).
+- Notes for planner:
+  - `/dashboard/hours?clinic={id}` is still the "قيد البناء" page until task 12; the link is already in place.
+  - The picker's marker is an `L.marker` with a `divIcon` (forest dot with a white ring), as the task says, so no default marker images are needed.
+  - The map code (`touch` handling, hint, `tap` typing) is copied from `ClinicMap.astro` rather than shared; if a third map appears it would be worth extracting.
+  - `MapPicker` takes optional `latText`/`lngText`/`latError`/`lngError` props in addition to the required ones, so a failed save can show what the user typed and the error under the latitude field.
+  - `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe` (not on the bash PATH) and is logged in; I used it to open the PR.
+  - The test clinics I added were deleted again. Other test data from earlier tasks lives only in the dev server's memory.
