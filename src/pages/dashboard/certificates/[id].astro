@@ -1,0 +1,43 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import CertificateForm from "@/components/dashboard/CertificateForm.astro";
+import { getRepo } from "@/lib/repo";
+import { applyImageChange } from "@/lib/dashboard/images";
+import { certificateInput } from "@/lib/validation/certificate";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+
+const repo = getRepo();
+const row = await repo.certificates.get(Astro.params.id ?? "");
+if (!row) return new Response("Not found", { status: 404 });
+
+let values: FormValues = {
+  title: row.title,
+  issuing_organization: row.issuing_organization ?? "",
+  issue_date: row.issue_date ?? "",
+  is_active: row.is_active,
+};
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  const result = parseForm(certificateInput, fd);
+  if (result.ok) {
+    // The current image comes from the stored row, never from the form.
+    const image = await applyImageChange(repo, "certificates", fd, "image", row.image_path);
+    if (!image.error) {
+      await repo.certificates.update(row.id, { ...result.data, image_path: image.path });
+      if (image.oldToRemove) await repo.images.remove("certificates", image.oldToRemove);
+      return Astro.redirect("/dashboard/certificates?ok=saved", 303);
+    }
+    values = result.values;
+    errors = { image: image.error };
+  } else {
+    values = result.values;
+    errors = result.errors;
+  }
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="تعديل شهادة">
+  <CertificateForm values={values} errors={errors} currentImage={row.image_path} cancelHref="/dashboard/certificates" />
+</DashboardLayout>

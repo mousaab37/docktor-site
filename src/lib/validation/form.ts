@@ -3,7 +3,7 @@ import type { z } from "zod";
 export type FormValues = Record<string, string | boolean>;
 
 export type ParseResult<T> =
-  | { ok: true; data: T }
+  | { ok: true; data: T; values: FormValues }
   | { ok: false; errors: Record<string, string>; values: FormValues };
 
 interface FieldInfo {
@@ -73,7 +73,7 @@ export function parseValues<S extends z.ZodType>(
   values: FormValues = {},
 ): ParseResult<z.output<S>> {
   const result = schema.safeParse(raw);
-  if (result.success) return { ok: true, data: result.data };
+  if (result.success) return { ok: true, data: result.data, values };
   const errors: Record<string, string> = {};
   for (const issue of result.error.issues) {
     const key = issue.path.join(".") || "_form";

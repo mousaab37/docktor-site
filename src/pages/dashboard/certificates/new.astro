@@ -1,0 +1,34 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import CertificateForm from "@/components/dashboard/CertificateForm.astro";
+import { getRepo } from "@/lib/repo";
+import { applyImageChange } from "@/lib/dashboard/images";
+import { certificateInput } from "@/lib/validation/certificate";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+
+const repo = getRepo();
+let values: FormValues = { title: "", issuing_organization: "", issue_date: "", is_active: true };
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  const result = parseForm(certificateInput, fd);
+  if (result.ok) {
+    // Validate first, upload second, so a refused form never leaves an orphan file.
+    const image = await applyImageChange(repo, "certificates", fd, "image", null);
+    if (!image.error) {
+      await repo.certificates.create({ ...result.data, image_path: image.path });
+      return Astro.redirect("/dashboard/certificates?ok=saved", 303);
+    }
+    values = result.values;
+    errors = { image: image.error };
+  } else {
+    values = result.values;
+    errors = result.errors;
+  }
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="إضافة شهادة">
+  <CertificateForm values={values} errors={errors} cancelHref="/dashboard/certificates" />
+</DashboardLayout>

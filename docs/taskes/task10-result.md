@@ -1,0 +1,28 @@
+# Task 10 — Result
+- Branch: `task/10-certificates`
+- Commit: task10: dashboard certificates with image upload (hash: see the PR)
+- PR: `gh` is not installed, so open it from https://github.com/mousaab37/docktor-site/compare/main...task/10-certificates?expand=1
+- Status: done
+- Files changed:
+  - New: src/components/dashboard/ImageUpload.astro, src/components/dashboard/CertificateForm.astro, src/lib/dashboard/images.ts (`applyImageChange`), src/pages/dashboard/certificates/new.astro, src/pages/dashboard/certificates/[id].astro
+  - Edited: src/pages/dashboard/certificates.astro (the list/grid replaces the placeholder), src/styles/dashboard.css (image upload + certificate cards), src/lib/validation/form.ts (the `ok` result now also carries `values`, so a form can be re-rendered after a failed upload)
+  - docs/taskes/task10-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard/certificates`; add, edit (replace/remove image), hide, reorder and delete, reloading `/` each time.
+- Checked (dev server; multipart posts with curl and real submits in the browser pane):
+  - Add with an image (WebP): redirect `?ok=saved`; the card shows in the dashboard grid with its thumbnail and year; `/` shows the certificate with the image and the clip reveal still works (the card gets `in`, `clip-path: inset(0)`).
+  - Edit: the form shows the current image preview and the "إزالة الصورة" checkbox; replacing the image changes what `/` shows; saving without a file keeps the image; ticking "remove" removes it (the edit form then has no preview and `/` shows the placeholder, no `<img>`).
+  - Server rejection: a `.gif` → 422 "نوع الصورة غير مسموح (JPEG أو PNG أو WebP فقط)"; a 3 MB PNG → 422 "حجم الصورة أكبر من 2 ميغابايت". In both cases the typed values are kept, the old image stays, and a new certificate posted with a bad image is **not** created.
+  - Browser side: `enctype="multipart/form-data"`, `accept="image/jpeg,image/png,image/webp"`; picking a GIF or a 3 MB file is rejected on the spot with "الصورة يجب أن تكون JPG أو PNG أو WebP وحجمها أقل من 2 ميغابايت" and the file input is cleared; a valid file shows a local `blob:` preview at once; a real form submit from the browser created the certificate.
+  - Hide → `/` shows one card less; show → back; "move up" works through `intent=move`; delete → removed from the list and from `/`; unknown id → 404.
+  - 375px: the list is one column, the form has no horizontal scroll, no layout problem in the card (thumbnail beside the text).
+- Not checked: a real file chosen with the OS file picker (the file input was filled with scripted `DataTransfer` files); the remove-checkbox greying effect visually; the order of the cards on `/` after a move (the move request returned `?ok=moved`, but I did not compare titles on `/` before and after).
+- Notes for planner:
+  - The current image is **never read from the form**: the server takes it from the stored row (`row.image_path`), so a tampered hidden field cannot set an arbitrary value. The form therefore has no hidden `image_path` field; the file field is `image_file` and the checkbox is `image_remove`.
+  - Order of operations: validate the form first, then upload, then save, then remove the old image. A refused form never leaves an orphan file. `images.remove()` is a no-op in the memory repo, so the old-image removal is only exercised in task 17.
+  - In the in-memory repo the image becomes a **data URL**, which can be longer than the schema limit `image_path ≤ 500`. That is why `image_path` is set after validation instead of going through `certificateInput`. With Supabase Storage the stored value is a short path, so the same code works.
+  - `publicImageUrl()` does not exist yet (task 17), so previews use the stored value directly.
+  - After a failed save the browser cannot keep a chosen file in the file input; the user must pick it again (the other fields are kept).
+  - `parseForm`'s `ok` result now includes `values` (additive; nothing else changed).
+  - The dev server on port 4321 is the one started with `preview_start`. The test certificates I added were deleted again; the other test data (statistics/testimonials from task 9a) lives only in the dev server's memory.
+  - **Follow-up requested by the owner after the first push:** the description field was removed from the certificate form (same approach as the statistics in task 9a). It is also removed from `certificateInput` so that saving never wipes a stored description, and the memory repo creates new certificates with `description: null`. The database column stays. Done as a second commit on the same branch because the PR was not merged yet.

@@ -1,0 +1,77 @@
+---
+interface Props {
+  /** Base name of the fields: `<name>_file` (the file) and `<name>_remove` (the checkbox). */
+  name: string;
+  /** The current image (path or URL), or null. Shown as a preview. */
+  value?: string | null;
+  bucket: "certificates" | "articles";
+  label: string;
+  error?: string;
+}
+
+const { name, value = null, bucket, label, error } = Astro.props;
+const id = `f-${name}-file`;
+---
+<div class:list={["field", "img-upload", error && "has-error"]} data-image-upload data-bucket={bucket}>
+  <label for={id}>{label}</label>
+  <div class="img-preview ph" data-image-preview>
+    {value && <img src={value} alt="" data-image-current />}
+  </div>
+  <input id={id} type="file" name={`${name}_file`} accept="image/jpeg,image/png,image/webp" data-image-input />
+  <p class="hint">JPG أو PNG أو WebP، وبحجم أقل من 2 ميغابايت.</p>
+  {value && (
+    <label class="img-remove">
+      <input type="checkbox" name={`${name}_remove`} data-image-remove />
+      <span>إزالة الصورة</span>
+    </label>
+  )}
+  <p class="err" data-image-error hidden></p>
+  {error && <p class="err" data-image-server-error>{error}</p>}
+</div>
+
+<script>
+  // Local preview, and an immediate check of the type and the size (the server checks again).
+  const MAX_BYTES = 2 * 1024 * 1024;
+  const TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const MESSAGE = "الصورة يجب أن تكون JPG أو PNG أو WebP وحجمها أقل من 2 ميغابايت";
+
+  document.querySelectorAll<HTMLElement>("[data-image-upload]").forEach((box) => {
+    const input = box.querySelector<HTMLInputElement>("[data-image-input]");
+    const preview = box.querySelector<HTMLElement>("[data-image-preview]");
+    const errorEl = box.querySelector<HTMLElement>("[data-image-error]");
+    const remove = box.querySelector<HTMLInputElement>("[data-image-remove]");
+    if (!input || !preview || !errorEl) return;
+    let objectUrl: string | null = null;
+
+    const showError = (msg: string | null) => {
+      errorEl.textContent = msg ?? "";
+      errorEl.hidden = !msg;
+      box.querySelector("[data-image-server-error]")?.remove();
+    };
+
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      if (!TYPES.includes(file.type) || file.size > MAX_BYTES) {
+        input.value = ""; // reject on the spot
+        showError(MESSAGE);
+        return;
+      }
+      showError(null);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      objectUrl = URL.createObjectURL(file);
+      let img = preview.querySelector<HTMLImageElement>("img");
+      if (!img) {
+        img = document.createElement("img");
+        img.alt = "";
+        preview.appendChild(img);
+      }
+      img.src = objectUrl;
+      img.hidden = false;
+      if (remove) remove.checked = false; // a new file replaces the image, so "remove" no longer applies
+    });
+
+    // Ticking "remove" greys the preview.
+    remove?.addEventListener("change", () => preview.classList.toggle("is-removed", remove.checked));
+  });
+</script>
