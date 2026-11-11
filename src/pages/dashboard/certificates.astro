@@ -2,7 +2,62 @@
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
 import EmptyState from "@/components/dashboard/EmptyState.astro";
+import Flash from "@/components/dashboard/Flash.astro";
+import RowActions from "@/components/dashboard/RowActions.astro";
+import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import { getRepo } from "@/lib/repo";
+
+const repo = getRepo();
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  const intent = fd.get("intent");
+  const id = String(fd.get("id") ?? "");
+  if (intent === "move") {
+    await repo.certificates.move(id, fd.get("direction") === "down" ? "down" : "up");
+    return Astro.redirect(Astro.url.pathname + "?ok=moved", 303);
+  }
+  if (intent === "delete") {
+    // Deleting a certificate also removes its image.
+    const row = await repo.certificates.get(id);
+    if (row?.image_path) await repo.images.remove("certificates", row.image_path);
+    await repo.certificates.remove(id);
+    return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
+  }
+}
+
+const rows = await repo.certificates.list();
+const year = (iso: string | null) => (iso ? String(new Date(iso).getUTCFullYear()) : null);
 ---
-<DashboardLayout title="الشهادات">
-  <Card><EmptyState message="قيد البناء — المهمة 10" /></Card>
+<DashboardLayout title="الشهادات" description="شهادات ودورات تظهر في الصفحة الرئيسية.">
+  <Flash />
+  <div class="d-toolbar">
+    <span></span>
+    <a class="btn btn-sm" href="/dashboard/certificates/new">إضافة شهادة</a>
+  </div>
+  {rows.length === 0 ? (
+    <Card><EmptyState message="لا توجد شهادات بعد." addHref="/dashboard/certificates/new" addLabel="إضافة شهادة" /></Card>
+  ) : (
+    <ul class="cert-grid">
+      {rows.map((c, i) => (
+        <li class="d-card cert-card">
+          <div class="cert-thumb ph">
+            {c.image_path && <img src={c.image_path} alt="" loading="lazy" />}
+          </div>
+          <div class="cert-body">
+            <div class="cert-head">
+              <strong>{c.title}</strong>
+              <StatusBadge kind={c.is_active ? "visible" : "hidden"} />
+            </div>
+            <p class="d-note">
+              {c.issuing_organization}
+              {c.issuing_organization && year(c.issue_date) && " · "}
+              {year(c.issue_date) && <bdi>{year(c.issue_date)}</bdi>}
+            </p>
+            <RowActions id={c.id} editHref={`/dashboard/certificates/${c.id}`} first={i === 0} last={i === rows.length - 1} />
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
 </DashboardLayout>

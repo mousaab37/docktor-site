@@ -1,0 +1,30 @@
+---
+import Card from "./Card.astro";
+import Field from "./Field.astro";
+import FormActions from "./FormActions.astro";
+import ImageUpload from "./ImageUpload.astro";
+import Toggle from "./Toggle.astro";
+import type { FormValues } from "@/lib/validation/form";
+
+interface Props {
+  values: FormValues;
+  errors?: Record<string, string>;
+  /** The image currently stored for this certificate (never taken from the form). */
+  currentImage?: string | null;
+  cancelHref: string;
+}
+
+const { values, errors = {}, currentImage = null, cancelHref } = Astro.props;
+---
+<Card>
+  <form method="post" class="d-form" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="intent" value="save" />
+    <Field name="title" label="اسم الشهادة" value={String(values.title ?? "")} error={errors.title} required maxlength={150} />
+    <Field name="issuing_organization" label="الجهة المانحة (اختياري)" value={String(values.issuing_organization ?? "")} error={errors.issuing_organization} maxlength={150} />
+    <Field name="issue_date" type="date" label="تاريخ الإصدار (اختياري)" value={String(values.issue_date ?? "")} error={errors.issue_date} dir="ltr" />
+    <Field as="textarea" name="description" label="وصف (اختياري)" value={String(values.description ?? "")} error={errors.description} maxlength={1000} rows={4} />
+    <ImageUpload name="image" label="صورة الشهادة (اختياري)" value={currentImage} bucket="certificates" error={errors.image} />
+    <Toggle name="is_active" label="ظاهر في الموقع" checked={values.is_active === true} />
+    <FormActions cancelHref={cancelHref} />
+  </form>
+</Card>
