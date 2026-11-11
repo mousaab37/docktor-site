@@ -156,7 +156,7 @@ export const memoryRepo: ContentRepo = {
       title: input.title,
       issuing_organization: input.issuing_organization ?? null,
       issue_date: input.issue_date ?? null,
-      description: input.description ?? null,
+      description: null, // the dashboard no longer edits it; the column stays in the database
       image_path: input.image_path ?? null,
       display_order: order,
       is_active: input.is_active,

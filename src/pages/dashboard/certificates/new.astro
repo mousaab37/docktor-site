@@ -7,7 +7,7 @@ import { certificateInput } from "@/lib/validation/certificate";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 
 const repo = getRepo();
-let values: FormValues = { title: "", issuing_organization: "", issue_date: "", description: "", is_active: true };
+let values: FormValues = { title: "", issuing_organization: "", issue_date: "", is_active: true };
 let errors: Record<string, string> = {};
 
 if (Astro.request.method === "POST") {

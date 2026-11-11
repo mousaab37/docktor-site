@@ -25,3 +25,4 @@
   - After a failed save the browser cannot keep a chosen file in the file input; the user must pick it again (the other fields are kept).
   - `parseForm`'s `ok` result now includes `values` (additive; nothing else changed).
   - The dev server on port 4321 is the one started with `preview_start`. The test certificates I added were deleted again; the other test data (statistics/testimonials from task 9a) lives only in the dev server's memory.
+  - **Follow-up requested by the owner after the first push:** the description field was removed from the certificate form (same approach as the statistics in task 9a). It is also removed from `certificateInput` so that saving never wipes a stored description, and the memory repo creates new certificates with `description: null`. The database column stays. Done as a second commit on the same branch because the PR was not merged yet.
