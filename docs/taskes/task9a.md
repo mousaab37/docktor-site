@@ -1,14 +1,16 @@
-# Task 9a — Statistics: edit and add in a small popup (no separate page), remove the description
+# Task 9a — Statistics + Testimonials: edit and add in a popup (no separate page), remove the statistic description
 
 ## Owner feedback
 > Clicking "تعديل" opens a new page. I want a **small popup** instead, with only **the title, the number and the visibility toggle**. Remove the description field.
+>
+> Follow-up: **testimonials too** should use the popup.
 
 ## Goal
 On `/dashboard/statistics`, both "تعديل" and "إضافة إحصائية" open a **small modal dialog** on the same page. Saving closes it and updates the list. The description field disappears from the dashboard.
 
 ## Before you start
 - Task 9 is done and `git status` is clean.
-- Only statistics change in this task. Testimonials stay as they are.
+- Statistics (Parts A–C) and testimonials (Part D) change in this task. Nothing else does.
 
 ## Part A — Remove the description
 - `src/lib/validation/statistic.ts`: remove `description` from `statisticInput`.
@@ -18,7 +20,8 @@ On `/dashboard/statistics`, both "تعديل" and "إضافة إحصائية" op
 
 ## Part B — Reusable dialog: `src/components/dashboard/FormDialog.astro`
 A small wrapper around the native `<dialog>` element. Other sections can reuse it later.
-- Props: `id: string`, `title: string`, `open?: boolean` (server-side: render it already open, used after a validation error).
+- Props: `id: string`, `title: string`, `open?: boolean` (server-side: render it already open, used after a validation error), `size?: "sm" | "md"` (default `sm`).
+- Width: `sm` = `min(420px, calc(100vw - 32px))` (statistics); `md` = `min(560px, calc(100vw - 32px))` (testimonials, which have a long text field). The body scrolls inside the dialog when it's taller than `85vh`, so the buttons stay reachable.
 - Markup: `<dialog id={id} class="d-dialog" aria-labelledby={id + "-title"}>`. Inside:
   - a header with the `h2` title and a close button (×, `aria-label="إغلاق"`)
   - then `<slot />` for the form
@@ -49,7 +52,19 @@ A small wrapper around the native `<dialog>` element. Other sections can reuse i
   - **invalid** → render the list page again with status 422 and the dialog **already open** (`open`), with the typed values, the field errors and the right title (add or edit)
 - The `move` and `delete` intents don't change.
 
+## Part D — Testimonials with the same dialog
+Apply exactly the Part C pattern to `/dashboard/testimonials`, using `<FormDialog id="testimonial-dialog" size="md">`:
+- Fields (unchanged from task 9): **الاسم المعروض** (hint about initials), **نص الرأي** (textarea, 5 rows, counter up to 1000), **التاريخ** (optional, `type="date"`, `dir="ltr"`), and the toggle **منشور في الموقع**.
+- The notice "انشر رأي المريض فقط بعد أخذ إذنه." sits **inside the dialog**, above the fields, in a small style.
+- Titles: "إضافة رأي" and "تعديل رأي". When adding, the toggle is **off**.
+- Fill the fields for "تعديل" from **one** attribute, `data-row`, holding JSON for the row (`id`, `display_name`, `content`, `testimonial_date`, `is_published`). Astro escapes attribute values; the script does `JSON.parse(btn.dataset.row)`. The text can be long and multi-line, which is easier to pass this way than as several attributes.
+- Server: `intent=save` on the list page, with the same create/update, redirect, and 422-with-the-dialog-open behavior as statistics.
+- Keep `testimonials/new.astro` and `[id].astro` as the no-JS fallback, through the shared `TestimonialForm`.
+- Refactor `StatisticForm` and `TestimonialForm` so they can render **without** their outer `Card` and notice when they're placed inside the dialog (a prop `inDialog?: boolean`). The fallback pages keep the card.
+
 ## Acceptance criteria
+- [ ] Testimonials: "تعديل" opens the popup (the `md` size) filled with the row, including a multi-line text with quotes and line breaks. Saving updates the list, and `/` shows the change when the testimonial is published.
+- [ ] Testimonials: "إضافة رأي" opens it empty with the toggle off. An empty text → the popup comes back open with the error.
 - [ ] "تعديل" opens a small popup on the same page (the URL doesn't change), with exactly 3 controls: title, number, toggle. Save → the popup closes, the list updates, and "تم الحفظ" shows.
 - [ ] "إضافة إحصائية" opens the same popup empty, with the toggle on.
 - [ ] An empty title → the popup stays open (it comes back open after the server round trip), with "هذا الحقل مطلوب" under the field and the typed number kept.
@@ -59,7 +74,7 @@ A small wrapper around the native `<dialog>` element. Other sections can reuse i
 - [ ] The description field appears nowhere in the dashboard.
 - [ ] `/` still shows the statistics correctly.
 - [ ] `npm run check` reports 0 errors, and `npm run build` passes.
-- [ ] One commit: `task9a: statistics edit/add in a small dialog, remove description`.
+- [ ] One commit: `task9a: statistics and testimonials in dialogs, remove statistic description`.
 
 ## Out of scope
-Testimonials and other sections. They can move to `FormDialog` later if the owner asks.
+Other sections. Certificates, clinics, hours, blog and SEO keep full-page forms because they have images, maps, many rows or long content.
