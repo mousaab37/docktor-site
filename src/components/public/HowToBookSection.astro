@@ -1,11 +1,21 @@
 ---
 import BookingNotice from "./BookingNotice.astro";
 
+interface Props {
+  clinicCount: number;
+}
+
+const { clinicCount } = Astro.props;
+
 const steps = [
   {
-    title: "اختر العيادة",
-    text: "اختر أقرب عيادة إليك وراجع ساعات الدوام قبل أن تراسلنا.",
-    tags: ["العيادة الأقرب", "ساعات الدوام"],
+    // With one clinic there is nothing to choose, so the first step is about getting to know it.
+    title: clinicCount === 1 ? "تعرّف على العيادة" : "اختر العيادة",
+    text:
+      clinicCount === 1
+        ? "اطّلع على موقع العيادة وساعات عملها."
+        : "اختر أقرب عيادة إليك وراجع ساعات الدوام قبل أن تراسلنا.",
+    tags: clinicCount === 1 ? ["موقع العيادة", "ساعات الدوام"] : ["العيادة الأقرب", "ساعات الدوام"],
     shot: "/img/reception.webp",
   },
   {

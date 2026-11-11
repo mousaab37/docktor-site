@@ -1,8 +1,11 @@
 ---
+import { doctorConfig } from "@/config";
+import type { PhoneCountry } from "@/lib/phone";
 import Card from "./Card.astro";
 import Field from "./Field.astro";
 import FormActions from "./FormActions.astro";
 import MapPicker from "./MapPicker.astro";
+import PhoneField from "./PhoneField.astro";
 import Toggle from "./Toggle.astro";
 import type { FormValues } from "@/lib/validation/form";
 
@@ -13,37 +16,77 @@ interface Props {
 }
 
 const { values, errors = {}, cancelHref } = Astro.props;
+const fallback = doctorConfig.contact.defaultCountry;
+const country = (v: string | boolean | undefined): PhoneCountry => (typeof v === "string" && v ? (v as PhoneCountry) : fallback);
 const num = (v: string | boolean | undefined) => {
   const n = typeof v === "string" && v.trim() !== "" ? Number(v) : NaN;
   return Number.isNaN(n) ? null : n;
 };
+const same = values.whatsapp_same === true;
 ---
 <Card>
-  <form method="post" class="d-form" novalidate>
+  <form method="post" class="d-form" novalidate data-clinic-form>
     <input type="hidden" name="intent" value="save" />
     <Field name="name" label="اسم العيادة" value={String(values.name ?? "")} error={errors.name} required maxlength={120} />
-    <Field as="textarea" name="address" label="العنوان" value={String(values.address ?? "")} error={errors.address} required maxlength={300} rows={3} />
-    <div class="d-form-row">
-      <Field name="phone" type="tel" label="الهاتف (اختياري)" value={String(values.phone ?? "")} error={errors.phone} maxlength={30} dir="ltr" />
-      <Field
-        name="whatsapp"
-        type="tel"
-        label="واتساب (اختياري)"
-        value={String(values.whatsapp ?? "")}
-        error={errors.whatsapp}
-        dir="ltr"
-        hint="أرقام فقط مع رمز الدولة، مثل 966500000000. اتركه فارغًا لاستخدام رقم الطبيب الرئيسي"
-      />
-    </div>
-    <Field as="textarea" name="description" label="وصف (اختياري)" value={String(values.description ?? "")} error={errors.description} maxlength={1000} rows={3} />
-    <MapPicker
-      lat={num(values.latitude)}
-      lng={num(values.longitude)}
-      latText={String(values.latitude ?? "")}
-      lngText={String(values.longitude ?? "")}
-      error={errors.latitude ?? errors.longitude}
+    <PhoneField
+      name="phone"
+      label="الهاتف (اختياري)"
+      country={country(values.phone_country)}
+      national={String(values.phone_national ?? "")}
+      error={errors.phone}
     />
+    <label class="same-phone">
+      <input type="checkbox" name="whatsapp_same" checked={same} data-same-phone />
+      <span>نفس رقم الهاتف</span>
+    </label>
+    <PhoneField
+      name="whatsapp"
+      label="واتساب (اختياري)"
+      country={country(values.whatsapp_country)}
+      national={String(values.whatsapp_national ?? "")}
+      error={errors.whatsapp}
+      hint="اتركه فارغًا لاستخدام رقم الطبيب الرئيسي"
+    />
+    <Field as="textarea" name="description" label="وصف (اختياري)" value={String(values.description ?? "")} error={errors.description} maxlength={1000} rows={3} />
+
+    <fieldset class="d-group">
+      <legend>موقع العيادة</legend>
+      <Field as="textarea" name="address" label="العنوان" value={String(values.address ?? "")} error={errors.address} required maxlength={300} rows={3} />
+      <MapPicker
+        lat={num(values.latitude)}
+        lng={num(values.longitude)}
+        latText={String(values.latitude ?? "")}
+        lngText={String(values.longitude ?? "")}
+        error={errors.latitude ?? errors.longitude}
+      />
+    </fieldset>
+
     <Toggle name="is_active" label="ظاهرة في الموقع" checked={values.is_active === true} />
     <FormActions cancelHref={cancelHref} />
   </form>
 </Card>
+
+<script>
+  // "نفس رقم الهاتف": copies the phone into the WhatsApp fields and locks them. (The server copies it too.)
+  document.querySelectorAll<HTMLFormElement>("form[data-clinic-form]").forEach((form) => {
+    const box = form.querySelector<HTMLInputElement>("[data-same-phone]");
+    const get = (name: string) => form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null;
+    const pc = get("phone_country");
+    const pn = get("phone_national");
+    const wc = get("whatsapp_country");
+    const wn = get("whatsapp_national");
+    if (!box || !pc || !pn || !wc || !wn) return;
+    const apply = () => {
+      if (box.checked) {
+        wc.value = pc.value;
+        wn.value = pn.value;
+        wc.dispatchEvent(new Event("change")); // updates the placeholder
+      }
+      wc.disabled = wn.disabled = box.checked;
+    };
+    box.addEventListener("change", apply);
+    pc.addEventListener("change", apply);
+    pn.addEventListener("input", apply);
+    apply();
+  });
+</script>

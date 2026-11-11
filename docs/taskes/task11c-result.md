@@ -1,0 +1,30 @@
+# Task 11c — Result
+- Branch: `task/11c-clinic-form-phone` (started from the latest `main`, after PR #3 was merged)
+- Commit: task11c: clinic form order, phone country picker, singular clinic wording (hash: see the PR)
+- PR: see the link in the final message (opened with `gh`)
+- Status: done
+- Files changed:
+  - New: src/lib/phone.ts, src/lib/validation/phone.ts, src/components/dashboard/PhoneField.astro
+  - Phone/form: src/lib/validation/clinic.ts (`phone`/`whatsapp` use `phoneParts`; new `parseClinicForm` and `clinicFormValues`), src/lib/validation/form.ts (`parseForm` takes optional extra raw values), src/components/dashboard/ClinicForm.astro, src/components/dashboard/MapPicker.astro (label only), src/pages/dashboard/clinics/new.astro and `[id].astro`, src/styles/dashboard.css
+  - Config: src/config/doctor.schema.ts (`contact.defaultCountry`, default "SY"), src/config/doctor.config.ts
+  - Singular wording: src/lib/arabic.ts (`clinicsWord`), src/lib/data.ts (`getActiveClinicCount`), src/lib/nav.ts (`getSectionLinks(count)`), src/layouts/PublicLayout.astro, Header.astro, Footer.astro, HeroSection.astro, AboutSection.astro, ClinicsSection.astro, HowToBookSection.astro, src/pages/index.astro
+  - package.json and package-lock.json (`libphonenumber-js` 1.13.16)
+  - docs/taskes/task11c-result.md
+- Commands run and outcome: npm install libphonenumber-js (slow-network flags) ✅; npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard/clinics/new`; then hide clinics until one is left and look at `/`.
+- Part A — field order (checked in the served HTML): name → phone → WhatsApp → description → group "موقع العيادة" with the address textarea and, directly under it, the map, its buttons and the status line. A real click on the map still fills the address (checked in the pane: "عبدالله بن عتيك، النفل، بلدية الشمال").
+- Part B — phone numbers:
+  - The new form shows `🇸🇾 ‎+963 سوريا` selected in both pickers; the list has the 15 countries in the requested order; the placeholder follows the country (`944 123 456` for Syria, `50 123 4567` for Saudi Arabia); typing keeps digits, spaces and `-` only (`09ab44-12 3x456` → `0944-12 3456`).
+  - `0944123456` in Syria → phone saved as `+963 944 123 456` and WhatsApp as `963944123456`; the public WhatsApp button of that clinic opens `https://wa.me/963944123456?text=…` and the public phone shows `+963 944 123 456`.
+  - `12345` in Syria → 422 "رقم غير صحيح لهذا البلد", typed value kept. Damascus landline `11 223 4567` as WhatsApp → 422 "رقم واتساب يجب أن يكون رقم جوال".
+  - "نفس رقم الهاتف": ticking copies the phone country and number into the WhatsApp fields, locks them, and follows later changes of the phone; unticking unlocks them. The server also copies phone → WhatsApp when the checkbox is sent without the WhatsApp fields (a clinic posted with phone `0955111222` and no WhatsApp fields was saved with WhatsApp `963955111222`, and its public button opens `wa.me/963955111222`).
+  - Editing a sample clinic opens with Saudi Arabia selected and national `500000001` for both numbers, and saving it unchanged works (the Saudi sample numbers are valid for libphonenumber).
+  - `libphonenumber-js/max` is imported only by server files; the built client bundle contains no libphonenumber code.
+- Part C — singular wording: with one visible clinic the nav, mobile menu, footer link, hero and About buttons (text and `data-t`), the clinics eyebrow all say "العيادة", step 1 of "كيف تحجز" becomes "تعرّف على العيادة / اطّلع على موقع العيادة وساعات عملها.", and the badge says "في عيادة واحدة". With two clinics everything says "العيادات" and the badge "في عيادتين".
+- Not checked: the dashboard on a phone-sized screen for the new phone row (only the layout CSS was written for it); `0` visible clinics (counts as plural by design); the exact look of the phone row in screenshots (they became unreliable late in the session, so the row was checked by DOM state).
+- Notes for planner:
+  - The error for a phone is shown under the phone field (`phone` / `whatsapp` keys), not under the number input only.
+  - A number typed with `+` and another country code is refused ("رقم غير صحيح لهذا البلد"), so the selected country always matches the stored number.
+  - `parseForm` got an optional third argument (`extra.raw` / `extra.values`) so the two-input phone fields can be mapped without changing other forms.
+  - While testing I overwrote the in-memory sample clinics (name, address, coordinates); I restarted the dev server afterwards so the sample data is fresh. The test clinics were deleted.
+  - `gh` is at `C:\Program Files\GitHub CLI\gh.exe` and logged in.

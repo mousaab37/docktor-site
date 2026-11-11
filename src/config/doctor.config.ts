@@ -37,6 +37,7 @@ const raw = {
   contact: {
     phone: "+966 50 000 0000",
     whatsapp: "966500000000",
+    defaultCountry: "SY",
     email: "clinic@example.com",
     socials: [{ platform: "instagram", url: "https://instagram.com/example" }],
   },

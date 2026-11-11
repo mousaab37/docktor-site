@@ -1,7 +1,7 @@
 ---
 import { doctorConfig } from "@/config";
 import type { ClinicWithHours, Statistic } from "@/lib/types";
-import { clinicsPhrase } from "@/lib/arabic";
+import { clinicsPhrase, clinicsWord } from "@/lib/arabic";
 import BookingNotice from "./BookingNotice.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
@@ -33,7 +33,7 @@ const facts = statistics.slice(0, 3);
         <p class="lead">{doctor.shortIntro}</p>
         <div class="cta-row">
           <WhatsAppButton />
-          <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="العيادات والمواعيد">العيادات والمواعيد</span></span></a>
+          <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t={`${clinicsWord(clinics.length)} والمواعيد`}>{clinicsWord(clinics.length)} والمواعيد</span></span></a>
         </div>
         <BookingNotice compact />
         {facts.length > 0 && (

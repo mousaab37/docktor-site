@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COUNTRY_CODES } from "../lib/phone";
 
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "must be #RRGGBB");
 const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "must be kebab-case");
@@ -35,6 +36,8 @@ export const doctorConfigSchema = z.object({
   contact: z.object({
     phone: text,
     whatsapp: z.string().regex(/^\d{8,15}$/, "digits only, 8-15"),
+    /** The country pre-selected in the dashboard phone pickers. */
+    defaultCountry: z.enum(COUNTRY_CODES).default("SY"),
     email: z.email().optional(),
     socials: z.array(
       z.object({

@@ -3,6 +3,7 @@ import BaseLayout from "./BaseLayout.astro";
 import Header from "@/components/public/Header.astro";
 import Footer from "@/components/public/Footer.astro";
 import CompareButton from "@/components/dev/CompareButton.astro";
+import { getActiveClinicCount } from "@/lib/data";
 
 interface Props {
   title?: string;
@@ -12,12 +13,13 @@ interface Props {
 }
 
 const { title, description, ogImage, noindex } = Astro.props;
+const clinicCount = await getActiveClinicCount();
 ---
 <BaseLayout title={title} description={description} ogImage={ogImage} noindex={noindex}>
   <slot name="head" slot="head" />
-  <Header />
+  <Header clinicCount={clinicCount} />
   <main id="main"><slot /></main>
-  <Footer />
+  <Footer clinicCount={clinicCount} />
   <CompareButton to="old" />
   <script>
     import "@/scripts/motion";

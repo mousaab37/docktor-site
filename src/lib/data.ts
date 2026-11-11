@@ -40,3 +40,9 @@ export async function getLatestArticles(limit: number): Promise<Article[]> {
     .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
     .slice(0, limit);
 }
+
+/** How many clinics the public site shows (used for the singular/plural wording). */
+export async function getActiveClinicCount(): Promise<number> {
+  const rows = await getRepo().clinics.list();
+  return rows.filter((c) => c.is_active).length;
+}

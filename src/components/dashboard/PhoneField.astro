@@ -1,0 +1,62 @@
+---
+import { PHONE_COUNTRIES, PHONE_PLACEHOLDERS, callingCode, type PhoneCountry } from "@/lib/phone";
+
+interface Props {
+  /** Base name: the fields are `<name>_country` and `<name>_national`. */
+  name: "phone" | "whatsapp";
+  label: string;
+  country: PhoneCountry;
+  national: string;
+  error?: string;
+  hint?: string;
+  required?: boolean;
+}
+
+const { name, label, country, national, error, hint, required = false } = Astro.props;
+const id = `f-${name}_national`;
+const LRM = "‎";
+---
+<div class:list={["field", "phone-field", error && "has-error"]} data-phone-field={name}>
+  <label for={id}>{label}{required && <span class="req" aria-hidden="true">*</span>}</label>
+  <div class="phone-row" dir="ltr">
+    <select name={`${name}_country`} aria-label={`${label}: الدولة`}>
+      {PHONE_COUNTRIES.map((c) => (
+        <option value={c.code} data-placeholder={PHONE_PLACEHOLDERS[c.code]} selected={c.code === country}>
+          {`${c.flag} ${LRM}+${callingCode(c.code)} ${c.nameAr}`}
+        </option>
+      ))}
+    </select>
+    <input
+      id={id}
+      name={`${name}_national`}
+      type="tel"
+      inputmode="tel"
+      autocomplete="tel-national"
+      value={national}
+      maxlength={20}
+      placeholder={PHONE_PLACEHOLDERS[country]}
+      aria-invalid={error ? "true" : undefined}
+      aria-describedby={[hint ? `${id}-hint` : null, error ? `${id}-err` : null].filter(Boolean).join(" ") || undefined}
+    />
+  </div>
+  {hint && <p class="hint" id={`${id}-hint`}>{hint}</p>}
+  {error && <p class="err" id={`${id}-err`}>{error}</p>}
+</div>
+
+<script>
+  // Changing the country updates the placeholder; typing allows digits, spaces and "-" only.
+  document.querySelectorAll<HTMLElement>("[data-phone-field]").forEach((box) => {
+    const select = box.querySelector<HTMLSelectElement>("select");
+    const input = box.querySelector<HTMLInputElement>("input");
+    if (!select || !input) return;
+    const syncPlaceholder = () => {
+      input.placeholder = select.selectedOptions[0]?.dataset.placeholder ?? "";
+    };
+    select.addEventListener("change", syncPlaceholder);
+    input.addEventListener("input", () => {
+      const clean = input.value.replace(/[^\d\s-]/g, "");
+      if (clean !== input.value) input.value = clean;
+    });
+    syncPlaceholder();
+  });
+</script>
