@@ -30,6 +30,13 @@ The same pattern, at `/dashboard/testimonials`, `/new` and `/[id]`.
 - Validation errors appear under each field, in Arabic, with the typed values kept.
 - Moving the first item up or the last item down does nothing, with no error. The buttons for those cases are disabled.
 
+## Small polish from the task 8 review: Overview counts
+The Overview cards count **all** rows, hidden ones included, so "3 عيادات" can appear while the site shows 2. Under each big number, add a small grey line with the visible count:
+- statistics, certificates and clinics: `{n} ظاهرة في الموقع`
+- testimonials: `{n} منشورة`
+
+Articles already have separate published and draft cards.
+
 ## Acceptance criteria
 - [ ] Add, edit, hide, show, reorder and delete a statistic, and check `/` each time (the hero facts and the green statement panel).
 - [ ] The same for testimonials (the testimonials section on `/`). An unpublished testimonial never appears on `/`.
