@@ -2,6 +2,14 @@
 
 The builder does **one task at a time, in order**. Each task ends with one commit and a `taskN-result.md` file (see `AGENTS.md` §8–9).
 
+## Workflow (from task 10 on): one branch + one Pull Request per task
+1. **Builder:** `git pull` main → branch `task/N-name` → work → commit → push the branch → open the PR, or print the compare link when `gh` isn't installed.
+2. **Planner:** reviews the branch (code + browser check) and writes the verdict: accept, or a fix task `taskNb.md`.
+3. **Owner:** clicks **Merge** on GitHub.
+4. **Planner:** pulls `main`, marks the task done here, and pushes that **docs-only** commit straight to `main`. Docs never go through a PR.
+
+Tasks 1–9a were committed straight to `main`, before this workflow existed.
+
 Before task 1, the owner must:
 1. Create the git repo in `Doctor site` and push it if you want a remote.
 2. Make one first commit of the current files, for example `git add -A && git commit -m "initial: averin template + PRD + docs"`. This way `git status` is clean when task 1 starts.

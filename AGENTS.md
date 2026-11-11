@@ -8,7 +8,7 @@ Instructions for the coding agent working in this repo. Read this file fully bef
 - **Do only what the task says.** Do not start the next task. Do not refactor, rename, or "improve" files the task does not list. If something outside the task is broken, write it under *Notes for planner* in the result file (see §8) instead of fixing it.
 - **If the task is unclear or contradicts this file or the PRD, stop and ask** rather than guess.
 - **Never delete files** unless the task says so by exact path.
-- **Git is required** (see §9). One task = one commit.
+- **Git is required** (see §9). One task = one branch = one commit = one Pull Request.
 
 ## 2. Source of truth (read in this order when a task points to them)
 
@@ -102,6 +102,7 @@ When the task is done, **create a new file** next to the task: `docs/taskes/task
 
 ```md
 # Task N — Result
+- Branch / PR: (branch name + PR link or compare link)
 - Commit: (short hash + message)
 - Status: done | blocked
 - Files changed: (list)
@@ -115,15 +116,34 @@ Do not mark a task `done` unless `npm run build` and `npx astro check` both pass
 ## 9. Git
 
 - The repo is created by the owner. If `git status` says "not a git repository", stop and report it. Do not run `git init` yourself.
-- Work on the `main` branch unless the task names another branch.
-- Before starting, `git status` must be clean. If it isn't, stop and report what is uncommitted.
-- At the end of each task, after build and type-check pass:
-  ```bash
-  git add -A
-  git commit -m "taskN: <short summary in English>"
-  git push            # only if a remote is configured (git remote -v shows one)
-  ```
+- Remote: `origin` = `https://github.com/mousaab37/docktor-site`.
+- **One task = one branch = one Pull Request.** Never commit task work directly to `main`. The owner merges PRs on GitHub.
+
+**Start of a task**
+```bash
+git checkout main
+git pull --ff-only origin main      # get the latest main (merged PRs + planner docs)
+git status                          # must be clean; if not, stop and report what is uncommitted
+git checkout -b task/N-short-name   # e.g. task/10-certificates, task/9b-fix-dialog
+```
+If `git pull --ff-only` fails, stop and report it. Don't merge, rebase or reset by yourself.
+
+**End of a task** (after build and type-check pass):
+```bash
+git add -A
+git commit -m "taskN: <short summary in English>"
+git push -u origin task/N-short-name
+```
+Then open the PR:
+- If `gh` is installed: `gh pr create --base main --title "taskN: <summary>" --body-file docs/taskes/taskN-result.md`.
+- If it isn't installed: don't install it. Print this link for the owner, who opens the PR from it:
+  `https://github.com/mousaab37/docktor-site/compare/main...task/N-short-name?expand=1`
+- Put the PR link (or the compare link) in your final message, and in the result file under *Commit*.
+
+**Rules**
 - The result file `docs/taskes/taskN-result.md` is part of the same commit.
+- **Never merge** the PR yourself, never push to `main`, and never delete branches. The owner merges after the planner's review.
+- If review fixes are needed, the planner writes them in a new task file (`taskNb.md`), done on its own new branch. Don't keep adding commits to an already-open PR unless the task says so.
 - Never commit `.env`, `.dev.vars`, `node_modules/`, `dist/` or `.wrangler/`. Check `.gitignore` covers them before your first commit.
 - Never use `git push --force`, `git reset --hard` or rewrite history.
 
