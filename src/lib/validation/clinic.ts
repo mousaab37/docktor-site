@@ -13,7 +13,7 @@ export const clinicInput = z
     is_active: z.boolean(),
   })
   .refine((d) => (d.latitude == null) === (d.longitude == null), {
-    message: "أدخل خط العرض وخط الطول معًا، أو اتركهما فارغين",
+    message: "أدخل خط العرض والطول معًا أو اتركهما فارغين",
     path: ["latitude"],
   });
 

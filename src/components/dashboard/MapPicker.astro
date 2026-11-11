@@ -1,0 +1,197 @@
+---
+import Field from "./Field.astro";
+
+interface Props {
+  /** The saved point (the initial marker), or null when no location is set. */
+  lat: number | null;
+  lng: number | null;
+  latName?: string;
+  lngName?: string;
+  /** What to show in the inputs (the typed text after a failed save). Defaults to the numbers above. */
+  latText?: string;
+  lngText?: string;
+  latError?: string;
+  lngError?: string;
+}
+
+const {
+  lat,
+  lng,
+  latName = "latitude",
+  lngName = "longitude",
+  latText = lat === null ? "" : String(lat),
+  lngText = lng === null ? "" : String(lng),
+  latError,
+  lngError,
+} = Astro.props;
+---
+<div class="map-picker" data-map-picker data-lat={lat ?? ""} data-lng={lng ?? ""} data-lat-name={latName} data-lng-name={lngName}>
+  <div class="d-form-row">
+    <Field name={latName} type="number" step="any" min="-90" max="90" dir="ltr" label="خط العرض" value={latText} error={latError} />
+    <Field name={lngName} type="number" step="any" min="-180" max="180" dir="ltr" label="خط الطول" value={lngText} error={lngError} />
+  </div>
+  <div class="map-picker-actions">
+    <button class="d-link-btn" type="button" data-picker-locate>موقعي الحالي</button>
+    <button class="d-link-btn" type="button" data-picker-clear>مسح الموقع</button>
+  </div>
+  <p class="err" data-picker-msg hidden></p>
+  <div class="clinic-map" dir="ltr" data-picker-map role="application" aria-label="خريطة لتحديد موقع العيادة"></div>
+  <p class="hint">انقر على الخريطة أو اسحب المؤشر لتحديد موقع العيادة.</p>
+</div>
+
+<script>
+  // Location picker. Leaflet is loaded only when the map is near the viewport.
+  // No geocoding / address search for now (PRD open decision #4): the doctor clicks the map or types the numbers.
+  // TODO: default center from config
+  const DEFAULT_CENTER: [number, number] = [24.7136, 46.6753]; // Riyadh
+  const DEFAULT_ZOOM = 11;
+  const POINT_ZOOM = 16;
+
+  document.querySelectorAll<HTMLElement>("[data-map-picker]").forEach((root) => {
+    const mapEl = root.querySelector<HTMLElement>("[data-picker-map]");
+    const latQuery = root.querySelector<HTMLInputElement>(`[name="${root.dataset.latName}"]`);
+    const lngQuery = root.querySelector<HTMLInputElement>(`[name="${root.dataset.lngName}"]`);
+    const msg = root.querySelector<HTMLElement>("[data-picker-msg]");
+    const locateBtn = root.querySelector<HTMLButtonElement>("[data-picker-locate]");
+    const clearBtn = root.querySelector<HTMLButtonElement>("[data-picker-clear]");
+    if (!mapEl || !latQuery || !lngQuery || !msg) return;
+    // New names so the "not null" check also holds inside the functions below.
+    const latInput: HTMLInputElement = latQuery;
+    const lngInput: HTMLInputElement = lngQuery;
+
+    const say = (text: string | null) => {
+      msg.textContent = text ?? "";
+      msg.hidden = !text;
+    };
+    if (!("geolocation" in navigator) && locateBtn) locateBtn.hidden = true;
+
+    // The point currently typed in the inputs (both must be valid numbers inside the range).
+    const readInputs = (): [number, number] | null => {
+      if (latInput.value.trim() === "" || lngInput.value.trim() === "") return null;
+      const la = Number(latInput.value);
+      const ln = Number(lngInput.value);
+      if (Number.isNaN(la) || Number.isNaN(ln) || Math.abs(la) > 90 || Math.abs(ln) > 180) return null;
+      return [la, ln];
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        void start();
+      },
+      { rootMargin: "300px 0px" },
+    );
+    io.observe(mapEl);
+
+    async function start() {
+      const [{ default: L }] = await Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]);
+      const touch = L.Browser.mobile;
+      // On phones one finger scrolls the page; two fingers pan the map (same rule as the public map).
+      // `tap` is a real Leaflet 1.x option that @types/leaflet does not declare.
+      const options: L.MapOptions & { tap?: boolean } = { scrollWheelZoom: false, dragging: !touch, tap: false };
+      const map = L.map(mapEl as HTMLElement, options);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      // A forest dot with a white ring; no default marker images.
+      const icon = L.divIcon({ className: "pick-dot", html: "<span></span>", iconSize: [26, 26], iconAnchor: [13, 13] });
+      let marker: L.Marker | null = null;
+
+      const write = (la: number, ln: number) => {
+        latInput.value = la.toFixed(6);
+        lngInput.value = ln.toFixed(6);
+      };
+      const place = (la: number, ln: number) => {
+        if (marker) {
+          marker.setLatLng([la, ln]);
+          return;
+        }
+        marker = L.marker([la, ln], { icon, draggable: true }).addTo(map);
+        marker.on("dragend", () => {
+          const p = marker?.getLatLng();
+          if (p) write(p.lat, p.lng);
+        });
+      };
+      const clear = () => {
+        latInput.value = "";
+        lngInput.value = "";
+        marker?.remove();
+        marker = null;
+      };
+
+      const start0 = readInputs();
+      if (start0) {
+        place(start0[0], start0[1]);
+        map.setView(start0, POINT_ZOOM);
+      } else {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      }
+
+      // Click -> move the marker there and fill both inputs.
+      map.on("click", (e: L.LeafletMouseEvent) => {
+        say(null);
+        place(e.latlng.lat, e.latlng.lng);
+        write(e.latlng.lat, e.latlng.lng);
+      });
+
+      // Typing in the inputs moves the marker.
+      const fromInputs = () => {
+        const p = readInputs();
+        if (p) {
+          place(p[0], p[1]);
+          map.setView(p, Math.max(map.getZoom(), POINT_ZOOM - 2));
+        } else if (latInput.value.trim() === "" && lngInput.value.trim() === "") {
+          marker?.remove();
+          marker = null;
+        }
+      };
+      latInput.addEventListener("change", fromInputs);
+      lngInput.addEventListener("change", fromInputs);
+
+      clearBtn?.addEventListener("click", () => {
+        say(null);
+        clear();
+      });
+
+      locateBtn?.addEventListener("click", () => {
+        say(null);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            place(pos.coords.latitude, pos.coords.longitude);
+            write(pos.coords.latitude, pos.coords.longitude);
+            map.setView([pos.coords.latitude, pos.coords.longitude], POINT_ZOOM);
+          },
+          () => say("تعذّر تحديد موقعك. اسمح للمتصفح بالوصول إلى الموقع، أو انقر على الخريطة لتحديده يدويًا."),
+          { enableHighAccuracy: true, timeout: 10000 },
+        );
+      });
+
+      if (touch) {
+        const hint = document.createElement("div");
+        hint.className = "map-hint";
+        hint.setAttribute("aria-hidden", "true");
+        hint.textContent = "استخدم إصبعين لتحريك الخريطة";
+        mapEl?.appendChild(hint);
+        let shown = false;
+        mapEl?.addEventListener(
+          "touchstart",
+          (e) => {
+            if (e.touches.length >= 2) {
+              map.dragging.enable();
+            } else if (!shown) {
+              shown = true;
+              hint.classList.add("show");
+              window.setTimeout(() => hint.classList.remove("show"), 1500);
+            }
+          },
+          { passive: true },
+        );
+        mapEl?.addEventListener("touchend", () => map.dragging.disable(), { passive: true });
+        mapEl?.addEventListener("touchcancel", () => map.dragging.disable(), { passive: true });
+      }
+    }
+  });
+</script>

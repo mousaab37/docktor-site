@@ -2,7 +2,54 @@
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
 import EmptyState from "@/components/dashboard/EmptyState.astro";
+import Flash from "@/components/dashboard/Flash.astro";
+import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import { getRepo } from "@/lib/repo";
+
+const repo = getRepo();
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  if (fd.get("intent") === "delete") {
+    // The repo removes the clinic's working hours too.
+    await repo.clinics.remove(String(fd.get("id") ?? ""));
+    return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
+  }
+}
+
+// No ordering for clinics: the list is sorted by name.
+const rows = (await repo.clinics.list()).sort((a, b) => a.name.localeCompare(b.name, "ar"));
 ---
-<DashboardLayout title="العيادات">
-  <Card><EmptyState message="قيد البناء — المهمة 11" /></Card>
+<DashboardLayout title="العيادات" description="العيادات التي تظهر في الصفحة الرئيسية مع خريطتها.">
+  <Flash />
+  <div class="d-toolbar">
+    <span></span>
+    <a class="btn btn-sm" href="/dashboard/clinics/new">إضافة عيادة</a>
+  </div>
+  {rows.length === 0 ? (
+    <Card><EmptyState message="لا توجد عيادات بعد." addHref="/dashboard/clinics/new" addLabel="إضافة عيادة" /></Card>
+  ) : (
+    <ul class="clinic-list">
+      {rows.map((c) => (
+        <li class="d-card">
+          <div class="cert-head">
+            <strong>{c.name}</strong>
+            <StatusBadge kind={c.is_active ? "visible" : "hidden"} />
+          </div>
+          <p class="d-note">{c.address}</p>
+          {c.phone && <p class="d-note"><bdi dir="ltr">{c.phone}</bdi></p>}
+          <p class="d-note">{c.latitude !== null && c.longitude !== null ? "📍 تم تحديد الموقع" : "لم يُحدَّد الموقع"}</p>
+          <div class="d-row-actions">
+            <a class="d-link-btn" href={`/dashboard/clinics/${c.id}`}>تعديل</a>
+            <a class="d-link-btn" href={`/dashboard/hours?clinic=${c.id}`}>ساعات العمل</a>
+            <form method="post">
+              <input type="hidden" name="intent" value="delete" />
+              <input type="hidden" name="id" value={c.id} />
+              <button class="d-link-btn d-danger" type="submit" data-confirm="سيتم حذف العيادة وكل ساعات عملها. هل أنت متأكد؟">حذف</button>
+            </form>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
 </DashboardLayout>
