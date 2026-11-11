@@ -1,7 +1,7 @@
 # Task 14 — Dashboard: SEO settings + technical SEO output (sitemap, robots, privacy, 404, JSON-LD)
 
 ## Goal
-The 8th and last dashboard section, plus the remaining public system pages, so the site is complete before the database and login are added.
+The last dashboard section, plus the remaining public system pages, so the site is complete before the database and login are added.
 
 ## Before you start
 - Task 13 is done.

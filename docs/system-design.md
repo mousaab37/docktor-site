@@ -1,7 +1,7 @@
 # Doctor Website — System Design
 
 Based on: `doctor-website-prd-v1.1.md` (PRD) + the existing Averin Astro template in this folder.
-Goal: turn the one-page English clinic template into a reusable, Arabic RTL, single-doctor product with a private 8-section dashboard.
+Goal: turn the one-page English clinic template into a reusable, Arabic RTL, single-doctor product with a private 7-section dashboard (working hours live inside each clinic).
 
 ---
 
@@ -93,7 +93,7 @@ src/
   layouts/
     BaseLayout.astro          # <html lang="ar" dir="rtl">, meta, OG, canonical, JSON-LD
     PublicLayout.astro        # header + footer
-    Dashboard.astro           # sidebar with exactly 8 links
+    Dashboard.astro           # sidebar with exactly 7 links
   components/
     public/                   # Hero, StatsBand, ServicesGrid, ClinicCard, HoursTable, CertificatesStrip,
                               # Testimonials, ArticleCard, WhatsAppButton, ClinicMap (Leaflet island)
@@ -221,7 +221,7 @@ No service-role key in the app. Doctor user is created once from the Supabase da
 
 1. **Foundation** — Cloudflare adapter, Tailwind v4 with template tokens, Arabic fonts, RTL base layout, port template components to Arabic/RTL, `doctor.config.ts`.
 2. **Database & auth** — `db/01-setup.sql` (copy and paste into the Supabase SQL Editor, see `db/README.md`), Supabase clients, middleware, login/logout.
-3. **Dashboard** — 8 sections.
+3. **Dashboard** — 7 sections (hours inside Clinics).
 4. **Public site** — all routes wired to config + public data.
 5. **Integration** — uploads, Leaflet, WhatsApp, SEO, sitemap.
 6. **Deploy & test** — test doctor deployment, RLS tests, backup/restore docs.

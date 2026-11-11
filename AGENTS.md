@@ -33,7 +33,7 @@ Do **not** create separate About, Services, Clinics, Booking or Contact pages. T
 ## 4. Hard rules (never break)
 
 **Scope**
-- The dashboard has **exactly 8 sections**: Overview, Statistics, Certificates, Clinics, Working Hours, Blog, Testimonials, SEO Settings.
+- The dashboard has **exactly 7 sections**: Overview, Statistics, Certificates, Clinics, Blog, Testimonials, SEO Settings. **Working hours are edited inside each clinic's page**, not in their own tab (owner decision 2026-11-11; overrides PRD §5).
 - **Never add** dashboard sections for Profile, Website Settings (logo, colors, branding, contact), Media Library, or Services.
 - Profile, branding, contact details and services come from `src/config/doctor.config.ts`. They are not stored in the database and not editable in the dashboard.
 - No booking engine, no payments, no patient accounts, no FAQ, no prices section, no public review form.
