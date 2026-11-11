@@ -38,7 +38,7 @@ The owner asked to build the dashboard **before** the database and login. Every 
 | 9a | [task9a.md](task9a.md) | Owner feedback: statistics + testimonials edit/add in a popup (`FormDialog`); statistic description removed | ✅ done (reviewed) |
 | 10 | [task10.md](task10.md) | Certificates, with image upload inside the form (+ description field removed, owner request) | ✅ done (PR #1 merged) |
 | 11 | [task11.md](task11.md) | Clinics, with the map location picker | ✅ done (PR #2 merged) |
-| 11b | [task11b.md](task11b.md) | Owner feedback: address filled from the map click, coordinates hidden, one mini map per clinic on the home page, shared Leaflet code | ✅ done (PR #3 merged) |
+| 11b | [task11b.md](task11b.md) | Owner feedback: address filled from the map click, coordinates hidden, one mini map per clinic on the home page, shared Leaflet code | ✅ reviewed, PR #3 (merge pending) |
 | 11c | [task11c.md](task11c.md) | Owner feedback: address above the map, phone/WhatsApp country picker (Syria default, libphonenumber + Zod), singular "العيادة" when one clinic | todo |
 | 12 | [task12.md](task12.md) | **Owner decision:** hours tab removed (7 sections); week hours editor inside each clinic form | todo |
 | 13 | [task13.md](task13.md) | Blog: Arabic RTL editor (Tiptap), drafts and publish, HTML sanitizer, public `/blog` + `/blog/[slug]` | todo |
