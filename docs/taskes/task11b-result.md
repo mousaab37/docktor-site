@@ -1,0 +1,27 @@
+# Task 11b — Result
+- Branch: `task/11b-clinic-maps` (started from the latest `main`, after PR #2 was merged)
+- Commit: task11b: address from map, hidden coordinates, per-clinic maps (hash: see the PR)
+- PR: see the link in the final message (opened with `gh`)
+- Status: done
+- Files changed:
+  - New: src/scripts/leaflet-shared.ts, src/components/public/ClinicMiniMap.astro
+  - Edited: src/components/dashboard/MapPicker.astro (rewritten), src/components/dashboard/ClinicForm.astro, src/components/public/ClinicsSection.astro, src/styles/global.css, src/styles/dashboard.css
+  - **Deleted: src/components/public/ClinicMap.astro** — nothing uses it any more (the home page has one map per clinic now), as the task allowed.
+  - docs/taskes/task11b-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: restart `npm run dev`, open `/dashboard/clinics/new`, click the map; then open `/` and look at the clinics section.
+- Part A — shared code: `leaflet-shared.ts` exports `loadLeaflet()` (cached, Leaflet + CSS), `whenNear()`, `addOsmTiles()`, `enableTwoFingerPan()`, `clinicDotIcon()` and a small `baseMapOptions()` (no wheel zoom, dragging off on phones, `tap: false`). `MapPicker` and the new mini map use it; the behavior of the two-finger rule and the hint is the same as in task 7a. The `.pick-dot` marker style moved from `dashboard.css` to `global.css` because the home page uses it too.
+- Part B — dashboard picker (checked with real clicks and drags in the browser pane):
+  - No latitude/longitude numbers or labels anywhere in the clinic form; the two values are hidden inputs (still submitted and validated; the server check for "one without the other" is kept). The status line reads "لم يُحدَّد موقع العيادة بعد. انقر على الخريطة لتحديده." and then "✓ تم تحديد موقع العيادة على الخريطة".
+  - No Nominatim request on page load. A click filled the address with a real Arabic result ("طريق العروبة، الورود، الرياض"), updated the counter (`28 / 300`), and showed "جارٍ جلب العنوان…" and then "تمت تعبئة العنوان من الخريطة، يمكنك تعديله." Dragging the marker triggers one request at the **end** of the drag and updates the address.
+  - Three quick clicks produced **one** extra request (the last point): 600 ms debounce, the previous request is aborted, at most one request per second, cache by coordinates rounded to 5 decimals.
+  - With the request blocked (fetch rejected) the message is "تعذّر جلب العنوان، اكتبه يدويًا.", the point is still stored, and the address field is untouched. An address typed by hand afterwards was kept on save (and shows on `/`).
+  - "مسح الموقع" clears the hidden fields, the marker and the status and leaves the address text alone; it also works before the map has started. "موقعي الحالي" is kept and triggers the address lookup. The "type numbers to move the marker" behavior is removed.
+- Part C — home page: the shared map is gone; each clinic card has two columns on desktop (content at the inline-start, a map box at the inline-end, as tall as the card, min 280px) and the cards are one per row. A clinic without coordinates has no map box and a single column (checked by clearing a clinic's location). On 375px the map box sits under the hours, 220px tall, no horizontal scroll. Each mini map starts only near the viewport (0 tile requests at the top of the page), has one marker, no popups, zoom buttons, no wheel zoom, dragging on desktop; "الاتجاهات" is unchanged. The BookingNotice and the `.rv` reveal stay.
+- Mobile two-finger rule: checked with scripted touch events on a home mini map (hint on one finger, dragging on with two fingers, off again at the end).
+- Not checked: the dashboard picker's two-finger rule on mobile (the map had not started in my test because the pane pauses observers while hidden; it uses the same helper as the mini map, which passed); "موقعي الحالي" with a real permission prompt; screenshots were unreliable late in the session (the pane returned blank images), so the home layout was verified with element geometry.
+- Notes for planner:
+  - Nominatim's public API is used from the browser, with the comment the task asked for (PRD open decision #4).
+  - The Arabic address is built from `address` (road + house number, neighbourhood/suburb, city) and falls back to `display_name` without country and postcode.
+  - The test clinics I created were deleted. The dev server was restarted at the start so the hidden sample clinic was fresh.
+  - `gh` is at `C:\Program Files\GitHub CLI\gh.exe` and logged in.

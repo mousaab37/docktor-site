@@ -1,0 +1,40 @@
+---
+interface Props {
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+const { name, latitude, longitude } = Astro.props;
+---
+<div class="clinic-card-map">
+  <div
+    class="mini-map"
+    dir="ltr"
+    data-mini-map
+    data-lat={latitude}
+    data-lng={longitude}
+    role="region"
+    aria-label={`خريطة ${name}`}
+  ></div>
+</div>
+
+<script>
+  import { addOsmTiles, baseMapOptions, clinicDotIcon, enableTwoFingerPan, loadLeaflet, whenNear } from "@/scripts/leaflet-shared";
+
+  // One small map per clinic. Leaflet starts only when the box is near the viewport.
+  // No popups: the "الاتجاهات" button is the way to open Google Maps.
+  document.querySelectorAll<HTMLElement>("[data-mini-map]").forEach((el) => {
+    const lat = Number(el.dataset.lat);
+    const lng = Number(el.dataset.lng);
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+    whenNear(el, async () => {
+      const L = await loadLeaflet();
+      const map = L.map(el, baseMapOptions());
+      addOsmTiles(map);
+      L.marker([lat, lng], { icon: clinicDotIcon(), interactive: false, keyboard: false }).addTo(map);
+      map.setView([lat, lng], 16);
+      enableTwoFingerPan(map, el);
+    });
+  });
+</script>
