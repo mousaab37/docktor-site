@@ -1,0 +1,25 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import TestimonialForm from "@/components/dashboard/TestimonialForm.astro";
+import { getRepo } from "@/lib/repo";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { testimonialInput } from "@/lib/validation/testimonial";
+
+// New testimonials are unpublished by default.
+let values: FormValues = { display_name: "", content: "", testimonial_date: "", is_published: false };
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const result = parseForm(testimonialInput, await Astro.request.formData());
+  if (result.ok) {
+    await getRepo().testimonials.create(result.data);
+    return Astro.redirect("/dashboard/testimonials?ok=saved", 303);
+  }
+  values = result.values;
+  errors = result.errors;
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="إضافة رأي">
+  <TestimonialForm values={values} errors={errors} cancelHref="/dashboard/testimonials" />
+</DashboardLayout>

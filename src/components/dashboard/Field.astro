@@ -65,7 +65,7 @@ const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-err` : null].fil
       aria-invalid={error ? "true" : undefined} aria-describedby={describedBy}
       data-counter={maxlength ? "" : undefined} />
   )}
-  {maxlength && as !== "select" && <span class="counter" data-counter-for={id} aria-hidden="true"><bdi>{current.length}</bdi> / <bdi>{maxlength}</bdi></span>}
+  {maxlength && as !== "select" && <span class="counter" data-counter-for={id} aria-hidden="true" dir="ltr"><bdi>{current.length}</bdi> / <bdi>{maxlength}</bdi></span>}
   {hint && <p class="hint" id={`${id}-hint`}>{hint}</p>}
   {error && <p class="err" id={`${id}-err`}>{error}</p>}
 </div>

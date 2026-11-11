@@ -1,0 +1,24 @@
+# Task 9 — Result
+- Commit: see `git log` (task9: dashboard statistics and testimonials)
+- Status: done
+- Files changed:
+  - Statistics: src/pages/dashboard/statistics.astro (list, replaces the placeholder), statistics/new.astro, statistics/[id].astro, src/components/dashboard/StatisticForm.astro
+  - Testimonials: src/pages/dashboard/testimonials.astro (list, replaces the placeholder), testimonials/new.astro, testimonials/[id].astro, src/components/dashboard/TestimonialForm.astro
+  - Overview polish: src/pages/dashboard/index.astro (visible counts under the numbers)
+  - src/components/dashboard/RowActions.astro (move buttons now post `intent=move` + `direction`, as the task specifies); src/components/dashboard/Field.astro (counter is `dir="ltr"`); src/styles/dashboard.css (list rows, toolbar, notes)
+  - docs/taskes/task9-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard/statistics` and `/dashboard/testimonials`; add, edit, hide/show, reorder and delete, reloading `/` each time.
+- Checked (dev server, real forms and HTTP posts):
+  - Statistics: empty label → 422 with "هذا الحقل مطلوب"; 81-character label → 422 with "الحد الأقصى 80 حرفًا", typed values kept; create → 303 to `/dashboard/statistics?ok=saved`; the new row shows in the statement panel of `/`; editing through the form (label changed, toggle off) hid it from `/` and showed the badge "مخفي"; "move up" on the last row reordered the list; the first row's ↑ and the last row's ↓ are disabled; delete asks `هل أنت متأكد من الحذف؟` (cancel keeps the row, OK deletes it); unknown id → 404; a cross-origin post (`Origin: http://evil.example`) → 403 (Astro `checkOrigin` is still on).
+  - Testimonials: empty fields → 2 required errors; 1001 characters → max-length error; invalid date → "تاريخ غير صالح"; new form has the "منشور في الموقع" toggle **off** and the permission notice; unpublished testimonial does not appear on `/` (0 matches), publishing it makes it appear, deleting removes it; unknown id → 404.
+  - Overview: "3 عيادات / 2 ظاهرة في الموقع", "5 شهادات / 4 ظاهرة", "7 آراء / 6 منشورة", "4 إحصائيات / 3 ظاهرة".
+  - 375px: lists and forms are usable, no horizontal scroll; the error state re-renders the form with status 422 and keeps what was typed; the character counter updates (`10 / 1000`).
+- Not checked: the empty state (`EmptyState`) was not rendered because I did not delete every row; the toast fade was not observed visually (the pane pauses animations when hidden); the `Flash` error box (the pages show errors only under each field, as the task says).
+- Notes for planner:
+  - Test data was changed in the dev server's memory (I deleted the seeded hidden statistic "إحصائية مخفية (مثال)" while testing delete); restarting the dev server restores the sample data.
+  - The statistics and testimonials list pages stay as `statistics.astro` / `testimonials.astro` next to the `statistics/` and `testimonials/` folders (Astro allows both), so no file had to be moved.
+  - Redirects after POST use status 303.
+  - Fixed a small visual bug in the Task 8 `Field` counter: in RTL it showed `80 / 0`; it now reads `0 / 80`.
+  - The testimonial list row uses the badges "منشور" and "مخفي".
+  - Dev server on port 4321 is still the one started with `preview_start`.

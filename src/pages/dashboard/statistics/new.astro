@@ -1,0 +1,24 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import StatisticForm from "@/components/dashboard/StatisticForm.astro";
+import { getRepo } from "@/lib/repo";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { statisticInput } from "@/lib/validation/statistic";
+
+let values: FormValues = { label: "", value: "", description: "", is_active: true };
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const result = parseForm(statisticInput, await Astro.request.formData());
+  if (result.ok) {
+    await getRepo().statistics.create(result.data);
+    return Astro.redirect("/dashboard/statistics?ok=saved", 303);
+  }
+  values = result.values;
+  errors = result.errors;
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="إضافة إحصائية">
+  <StatisticForm values={values} errors={errors} cancelHref="/dashboard/statistics" />
+</DashboardLayout>

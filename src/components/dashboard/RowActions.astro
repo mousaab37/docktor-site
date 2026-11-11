@@ -15,14 +15,16 @@ const { id, editHref, orderable = true, first = false, last = false } = Astro.pr
   {orderable && (
     <>
       <form method="post">
-        <input type="hidden" name="intent" value="move_up" />
+        <input type="hidden" name="intent" value="move" />
+        <input type="hidden" name="direction" value="up" />
         <input type="hidden" name="id" value={id} />
         <button class="d-icon-btn" type="submit" disabled={first} aria-label="نقل لأعلى" title="نقل لأعلى">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6" /></svg>
         </button>
       </form>
       <form method="post">
-        <input type="hidden" name="intent" value="move_down" />
+        <input type="hidden" name="intent" value="move" />
+        <input type="hidden" name="direction" value="down" />
         <input type="hidden" name="id" value={id} />
         <button class="d-icon-btn" type="submit" disabled={last} aria-label="نقل لأسفل" title="نقل لأسفل">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>

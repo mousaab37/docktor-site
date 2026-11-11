@@ -2,7 +2,59 @@
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
 import EmptyState from "@/components/dashboard/EmptyState.astro";
+import Flash from "@/components/dashboard/Flash.astro";
+import RowActions from "@/components/dashboard/RowActions.astro";
+import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import { getRepo } from "@/lib/repo";
+
+const repo = getRepo();
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  const intent = fd.get("intent");
+  const id = String(fd.get("id") ?? "");
+  if (intent === "move") {
+    await repo.testimonials.move(id, fd.get("direction") === "down" ? "down" : "up");
+    return Astro.redirect(Astro.url.pathname + "?ok=moved", 303);
+  }
+  if (intent === "delete") {
+    await repo.testimonials.remove(id);
+    return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
+  }
+}
+
+const rows = await repo.testimonials.list();
+const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long", timeZone: "UTC" });
+const excerpt = (text: string) => {
+  const chars = Array.from(text);
+  return chars.length > 120 ? chars.slice(0, 120).join("") + "…" : text;
+};
 ---
-<DashboardLayout title="آراء المرضى">
-  <Card><EmptyState message="قيد البناء — المهمة 9" /></Card>
+<DashboardLayout title="آراء المرضى" description="آراء تظهر في قسم الآراء بالصفحة الرئيسية.">
+  <Flash />
+  <div class="d-toolbar">
+    <p class="d-note">انشر رأي المريض فقط بعد أخذ إذنه.</p>
+    <a class="btn btn-sm" href="/dashboard/testimonials/new">إضافة رأي</a>
+  </div>
+  <Card>
+    {rows.length === 0 ? (
+      <EmptyState message="لا توجد آراء بعد." addHref="/dashboard/testimonials/new" addLabel="إضافة رأي" />
+    ) : (
+      <ul class="d-list">
+        {rows.map((t, i) => (
+          <li class="d-item" style="grid-template-columns:minmax(0,1fr) auto auto">
+            <div class="d-item-body">
+              <strong>{excerpt(t.content)}</strong>
+              <p class="d-item-meta">
+                {t.display_name}
+                {t.testimonial_date && <> · {dateFmt.format(new Date(t.testimonial_date))}</>}
+              </p>
+            </div>
+            <StatusBadge kind={t.is_published ? "published" : "hidden"} />
+            <RowActions id={t.id} editHref={`/dashboard/testimonials/${t.id}`} first={i === 0} last={i === rows.length - 1} />
+          </li>
+        ))}
+      </ul>
+    )}
+  </Card>
 </DashboardLayout>

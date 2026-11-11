@@ -1,0 +1,33 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import StatisticForm from "@/components/dashboard/StatisticForm.astro";
+import { getRepo } from "@/lib/repo";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { statisticInput } from "@/lib/validation/statistic";
+
+const repo = getRepo();
+const row = await repo.statistics.get(Astro.params.id ?? "");
+if (!row) return new Response("Not found", { status: 404 });
+
+let values: FormValues = {
+  label: row.label,
+  value: row.value,
+  description: row.description ?? "",
+  is_active: row.is_active,
+};
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const result = parseForm(statisticInput, await Astro.request.formData());
+  if (result.ok) {
+    await repo.statistics.update(row.id, result.data);
+    return Astro.redirect("/dashboard/statistics?ok=saved", 303);
+  }
+  values = result.values;
+  errors = result.errors;
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="تعديل إحصائية">
+  <StatisticForm values={values} errors={errors} cancelHref="/dashboard/statistics" />
+</DashboardLayout>

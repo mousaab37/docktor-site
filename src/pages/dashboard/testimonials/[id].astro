@@ -1,0 +1,33 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import TestimonialForm from "@/components/dashboard/TestimonialForm.astro";
+import { getRepo } from "@/lib/repo";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { testimonialInput } from "@/lib/validation/testimonial";
+
+const repo = getRepo();
+const row = await repo.testimonials.get(Astro.params.id ?? "");
+if (!row) return new Response("Not found", { status: 404 });
+
+let values: FormValues = {
+  display_name: row.display_name,
+  content: row.content,
+  testimonial_date: row.testimonial_date ?? "",
+  is_published: row.is_published,
+};
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const result = parseForm(testimonialInput, await Astro.request.formData());
+  if (result.ok) {
+    await repo.testimonials.update(row.id, result.data);
+    return Astro.redirect("/dashboard/testimonials?ok=saved", 303);
+  }
+  values = result.values;
+  errors = result.errors;
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="تعديل رأي">
+  <TestimonialForm values={values} errors={errors} cancelHref="/dashboard/testimonials" />
+</DashboardLayout>

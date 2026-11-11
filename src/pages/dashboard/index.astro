@@ -13,13 +13,13 @@ const [articles, clinics, certificates, testimonials, statistics] = await Promis
 ]);
 
 // Content counts (PRD §5.1), not medical metrics.
-const counts = [
+const counts: { label: string; value: number; href: string; sub?: string }[] = [
   { label: "مقالات منشورة", value: articles.filter((a) => a.status === "published").length, href: "/dashboard/blog" },
   { label: "مسودات", value: articles.filter((a) => a.status === "draft").length, href: "/dashboard/blog" },
-  { label: "العيادات", value: clinics.length, href: "/dashboard/clinics" },
-  { label: "الشهادات", value: certificates.length, href: "/dashboard/certificates" },
-  { label: "آراء المرضى", value: testimonials.length, href: "/dashboard/testimonials" },
-  { label: "الإحصائيات", value: statistics.length, href: "/dashboard/statistics" },
+  { label: "العيادات", value: clinics.length, href: "/dashboard/clinics", sub: `${clinics.filter((c) => c.is_active).length} ظاهرة في الموقع` },
+  { label: "الشهادات", value: certificates.length, href: "/dashboard/certificates", sub: `${certificates.filter((c) => c.is_active).length} ظاهرة في الموقع` },
+  { label: "آراء المرضى", value: testimonials.length, href: "/dashboard/testimonials", sub: `${testimonials.filter((t) => t.is_published).length} منشورة` },
+  { label: "الإحصائيات", value: statistics.length, href: "/dashboard/statistics", sub: `${statistics.filter((s) => s.is_active).length} ظاهرة في الموقع` },
 ];
 ---
 <DashboardLayout title="لوحة التحكم" description="نظرة سريعة على محتوى موقعك.">
@@ -28,6 +28,7 @@ const counts = [
       <a class="d-count" href={c.href}>
         <b><bdi>{c.value}</bdi></b>
         <span>{c.label}</span>
+        {c.sub && <small>{c.sub}</small>}
       </a>
     ))}
   </div>
