@@ -44,6 +44,7 @@ export function sanitizeArticleHtml(html: string): string
   - **`content = sanitizeArticleHtml(content)` before saving**
   - publish sets the status to `published`; `published_at` is set by the repo the first time
 - Deleting an article also removes its featured image.
+- Reuse `applyImageChange()` from `src/lib/dashboard/images.ts` (task 10) for the featured image: read the current value from the stored row, never from the form.
 
 ## Part D — Public pages (use `PublicLayout`, same design language as the landing page)
 - `src/pages/blog/index.astro`: the title "المقالات", then a grid of published articles in the `.card` style from `ArticlesSection`, newest first. Empty → a friendly message. SEO title and description from `getSeoSetting("blog")` when set (add that function to `data.ts`), otherwise "المقالات | {doctor name}".
