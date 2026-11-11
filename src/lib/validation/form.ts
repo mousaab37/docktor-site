@@ -88,7 +88,12 @@ export function parseValues<S extends z.ZodType>(
  * - empty string -> `null` for nullable fields, `undefined` for the others
  * - numeric strings -> numbers where the schema expects a number
  */
-export function parseForm<S extends z.ZodType>(schema: S, formData: FormData): ParseResult<z.output<S>> {
+export function parseForm<S extends z.ZodType>(
+  schema: S,
+  formData: FormData,
+  /** Fields the generic reader cannot build (for example a phone made of two inputs), and the values to show again. */
+  extra: { raw?: Record<string, unknown>; values?: FormValues } = {},
+): ParseResult<z.output<S>> {
   const shape = (schema as unknown as { shape?: Record<string, { def: AnyDef }> }).shape ?? {};
   const raw: Record<string, unknown> = {};
   const values: FormValues = {};
@@ -115,6 +120,8 @@ export function parseForm<S extends z.ZodType>(schema: S, formData: FormData): P
       raw[key] = str;
     }
   }
+  Object.assign(raw, extra.raw);
+  Object.assign(values, extra.values);
   const result = parseValues(schema, raw, values);
   if (!result.ok) {
     for (const key of notNumbers) result.errors[key] = "أدخل رقمًا صحيحًا";

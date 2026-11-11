@@ -1,5 +1,6 @@
 ---
 import { doctorConfig } from "@/config";
+import { clinicsWord } from "@/lib/arabic";
 import { clinicMessage } from "@/lib/whatsapp";
 import type { ClinicWithHours } from "@/lib/types";
 import BookingNotice from "./BookingNotice.astro";
@@ -19,7 +20,7 @@ const { contact, whatsapp } = doctorConfig;
     <div class="wrap">
       <div class="sec-head">
         <div>
-          <span class="eyebrow">العيادات</span>
+          <span class="eyebrow">{clinicsWord(clinics.length)}</span>
           <h2 class="h2" id="clinics-h" data-split>أين تجدنا <em>ومتى</em></h2>
         </div>
         <p class="lead rv">اختر العيادة الأقرب وراسلنا على واتساب. ستجد اسم العيادة في الرسالة الجاهزة.</p>

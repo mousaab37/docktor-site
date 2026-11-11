@@ -31,9 +31,9 @@ const [statistics, clinics, certificates, testimonials, articles] = await Promis
   <HeroSection clinics={clinics} statistics={statistics} />
   <StatementSection statistics={statistics} />
   <ServicesSection />
-  <HowToBookSection />
+  <HowToBookSection clinicCount={clinics.length} />
   <BandSection />
-  <AboutSection />
+  <AboutSection clinicCount={clinics.length} />
   <CertificatesSection certificates={certificates} />
   <ClinicsSection clinics={clinics} />
   <TestimonialsSection testimonials={testimonials} />

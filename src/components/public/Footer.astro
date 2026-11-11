@@ -1,9 +1,15 @@
 ---
 import { doctorConfig } from "@/config";
-import { sectionLinks } from "@/lib/nav";
+import { getSectionLinks } from "@/lib/nav";
 import { waLink } from "@/lib/whatsapp";
 import Logo from "./Logo.astro";
 
+interface Props {
+  clinicCount: number;
+}
+
+const { clinicCount } = Astro.props;
+const sectionLinks = getSectionLinks(clinicCount);
 const { doctor, contact, brand, whatsapp } = doctorConfig;
 const year = new Date().getFullYear();
 const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;

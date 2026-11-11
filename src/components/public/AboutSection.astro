@@ -1,6 +1,12 @@
 ---
 import { doctorConfig } from "@/config";
+import { clinicsWord } from "@/lib/arabic";
 
+interface Props {
+  clinicCount: number;
+}
+
+const { clinicCount } = Astro.props;
 const { doctor } = doctorConfig;
 const rest = doctor.bio.slice(1);
 ---
@@ -11,7 +17,7 @@ const rest = doctor.bio.slice(1);
         <span class="eyebrow">نبذة</span>
         <h2 id="about-h">عن الطبيب</h2>
         {rest.map((p) => <p>{p}</p>)}
-        <div><a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="العيادات والمواعيد">العيادات والمواعيد</span></span></a></div>
+        <div><a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t={`${clinicsWord(clinicCount)} والمواعيد`}>{clinicsWord(clinicCount)} والمواعيد</span></span></a></div>
       </div>
       <div class="ph"><img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" loading="lazy" data-par="0.06" /></div>
     </div>

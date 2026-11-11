@@ -1,9 +1,15 @@
 ---
 import { doctorConfig } from "@/config";
-import { sectionLinks } from "@/lib/nav";
+import { getSectionLinks } from "@/lib/nav";
 import Logo from "./Logo.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
+interface Props {
+  clinicCount: number;
+}
+
+const { clinicCount } = Astro.props;
+const sectionLinks = getSectionLinks(clinicCount);
 const { contact, services } = doctorConfig;
 const promo = services[0];
 // Generic medical icons for the mega menu items (cycled).

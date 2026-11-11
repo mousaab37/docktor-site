@@ -6,3 +6,8 @@ export function clinicsPhrase(n: number): string {
   if (n >= 11) return `في ${n} عيادة`;
   return "";
 }
+
+/** "العيادة" for exactly one clinic, otherwise "العيادات" (zero counts as plural). */
+export function clinicsWord(n: number): "العيادة" | "العيادات" {
+  return n === 1 ? "العيادة" : "العيادات";
+}
