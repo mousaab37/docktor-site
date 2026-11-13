@@ -4,11 +4,12 @@ Instructions for the coding agent working in this repo. Read this file fully bef
 
 ## 1. How we work
 
-- **Planner vs. builder.** The tasks are written by a planner model in `docs/taskes/taskN.md`. You are the builder: you implement **one task file at a time**, exactly as written.
-- **Do only what the task says.** Do not start the next task. Do not refactor, rename, or "improve" files the task does not list. If something outside the task is broken, write it under *Notes for planner* in the result file (see §8) instead of fixing it.
+- **Planner vs. builder.** The tasks are written by a planner model in `docs/taskes/taskN.md`. You are the builder: you implement task files exactly as written.
+- **Two tasks per run.** Each run, do the **next two `todo` tasks** from `docs/taskes/README.md`, in order, on **one branch** (`task/N-M-short-name`), with **one commit per task**, **one result file per task**, and **one PR** for both. Finish and check the first task (build + check) before starting the second. If the first task is blocked, stop there.
+- **Do only what the tasks say.** Don't start a third task. Do not refactor, rename, or "improve" files the task does not list. If something outside the task is broken, write it under *Notes for planner* in the result file (see §8) instead of fixing it.
 - **If the task is unclear or contradicts this file or the PRD, stop and ask** rather than guess.
 - **Never delete files** unless the task says so by exact path.
-- **Git is required** (see §9). One task = one branch = one commit = one Pull Request.
+- **Git is required** (see §9). Two tasks = one branch = two commits = one Pull Request.
 
 ## 2. Source of truth (read in this order when a task points to them)
 
@@ -117,27 +118,27 @@ Do not mark a task `done` unless `npm run build` and `npx astro check` both pass
 
 - The repo is created by the owner. If `git status` says "not a git repository", stop and report it. Do not run `git init` yourself.
 - Remote: `origin` = `https://github.com/mousaab37/docktor-site`.
-- **One task = one branch = one Pull Request.** Never commit task work directly to `main`. The owner merges PRs on GitHub.
+- **Two tasks = one branch = one Pull Request** (one commit per task). Never commit task work directly to `main`. The owner merges PRs on GitHub.
 
 **Start of a task**
 ```bash
 git checkout main
 git pull --ff-only origin main      # get the latest main (merged PRs + planner docs)
 git status                          # must be clean; if not, stop and report what is uncommitted
-git checkout -b task/N-short-name   # e.g. task/10-certificates, task/9b-fix-dialog
+git checkout -b task/N-M-short-name # e.g. task/13-14-blog-seo
 ```
 If `git pull --ff-only` fails, stop and report it. Don't merge, rebase or reset by yourself.
 
 **End of a task** (after build and type-check pass):
 ```bash
 git add -A
-git commit -m "taskN: <short summary in English>"
-git push -u origin task/N-short-name
+git commit -m "taskN: <short summary in English>"   # once per task
+git push -u origin task/N-M-short-name   # after both tasks
 ```
 Then open the PR:
-- If `gh` is installed: `gh pr create --base main --title "taskN: <summary>" --body-file docs/taskes/taskN-result.md`.
+- If `gh` is installed: `gh pr create --base main --title "taskN + taskM: <summary>" --body "See docs/taskes/taskN-result.md and taskM-result.md"`.
 - If it isn't installed: don't install it. Print this link for the owner, who opens the PR from it:
-  `https://github.com/mousaab37/docktor-site/compare/main...task/N-short-name?expand=1`
+  `https://github.com/mousaab37/docktor-site/compare/main...task/N-M-short-name?expand=1`
 - Put the PR link (or the compare link) in your final message, and in the result file under *Commit*.
 
 **Rules**
