@@ -7,7 +7,7 @@ import { sanitizeArticleHtml } from "@/lib/sanitize";
 
 // A missing slug and a draft both answer 404.
 const article = await getPublishedArticleBySlug(Astro.params.slug ?? "");
-if (!article) return new Response("Not found", { status: 404 });
+if (!article) return Astro.rewrite("/404");
 
 const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
 const title = article.seo_title || article.title;

@@ -11,23 +11,30 @@ import ClinicsSection from "@/components/public/ClinicsSection.astro";
 import TestimonialsSection from "@/components/public/TestimonialsSection.astro";
 import ArticlesSection from "@/components/public/ArticlesSection.astro";
 import ContactSection from "@/components/public/ContactSection.astro";
+import { doctorConfig } from "@/config";
+import { buildJsonLd, serializeJsonLd } from "@/lib/jsonld";
 import {
   getActiveCertificates,
   getActiveClinicsWithHours,
   getActiveStatistics,
   getLatestArticles,
   getPublishedTestimonials,
+  getSeoSetting,
 } from "@/lib/data";
 
-const [statistics, clinics, certificates, testimonials, articles] = await Promise.all([
+const [statistics, clinics, certificates, testimonials, articles, seo] = await Promise.all([
   getActiveStatistics(),
   getActiveClinicsWithHours(),
   getActiveCertificates(),
   getPublishedTestimonials(),
   getLatestArticles(3),
+  getSeoSetting("global"),
 ]);
+// Empty SEO fields fall back to the config defaults (the layout's defaults).
+const jsonLd = serializeJsonLd(buildJsonLd(doctorConfig, clinics));
 ---
-<PublicLayout>
+<PublicLayout title={seo?.seo_title || undefined} description={seo?.seo_description || undefined} ogImage={seo?.og_image || undefined}>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd}></script>
   <HeroSection clinics={clinics} statistics={statistics} />
   <StatementSection statistics={statistics} />
   <ServicesSection />

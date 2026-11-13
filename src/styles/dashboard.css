@@ -417,3 +417,9 @@
 .d-tab { padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--color-line); background: #fff; color: var(--color-ink); font-size: 14px; font-weight: 600; text-decoration: none; }
 .d-tab[aria-current="page"] { background: var(--color-forest); border-color: var(--color-forest); color: #fff; }
 @media (max-width: 760px) { .art-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* Google-style SEO preview (task 14) */
+.seo-preview { padding: 14px 16px; border: 1px solid var(--color-line); border-radius: 12px; background: #fff; display: grid; gap: 2px; }
+.seo-p-title { color: #1a0dab; font-size: 19px; line-height: 1.5; }
+.seo-p-url { color: #006621; font-size: 14px; line-height: 1.5; text-align: left; }
+.seo-p-desc { color: #545454; font-size: 14px; line-height: 1.6; }
