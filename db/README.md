@@ -67,10 +67,10 @@
 1. **Project Settings** ← **API** (أو **API Keys**).
 2. انسخ:
    - **Project URL** ← `PUBLIC_SUPABASE_URL`
-   - **anon public** أو **publishable** key ← `PUBLIC_SUPABASE_ANON_KEY`
+   - **Publishable key** (يبدأ بـ `sb_publishable_`، وفي المشاريع القديمة اسمه **anon public**) ← `PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 3. ضعهما في ملف `.env` على جهازك للتطوير، وفي متغيرات Cloudflare للنشر.
 
-> ⛔ **لا تنسخ أبدًا** مفتاح `service_role` أو `secret`. هذا المفتاح يتجاوز كل الحماية، والموقع لا يحتاجه إطلاقًا.
+> ⛔ **لا تنسخ أبدًا** مفتاح **Secret key** (`sb_secret_…`) أو `service_role`. هذا المفتاح يتجاوز كل الحماية، والموقع لا يحتاجه إطلاقًا.
 
 ### 9) (اختياري) فعّل المصادقة الثنائية لحسابك أنت
 **Account** ← **Security** ← **Multi-factor authentication**. حسابك يصل لعشرات المشاريع، فحمايته أهم من أي شيء.

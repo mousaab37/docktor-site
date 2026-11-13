@@ -5,7 +5,7 @@ The dashboard built in tasks 8–14 becomes private. Only the doctor, logged in 
 
 ## Before you start
 - Tasks 8–15 are done.
-- The owner has a **dev Supabase project** set up with `db/README.md` (01-setup, the doctor user, 02-add-doctor, 03-check all green), and `.env` has `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`. If not, stop and report it.
+- The owner has a **dev Supabase project** set up with `db/README.md` (01-setup, the doctor user, 02-add-doctor, 03-check all green), and `.env` has `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`. If not, stop and report it.
 - Read the official `@supabase/ssr` guide for **Astro** (`createServerClient` with `cookies.getAll` / `setAll`).
 
 ## Files
@@ -70,3 +70,11 @@ Replace the task 8 **dev gate** step with an **auth** step (keep `sequence()` an
 
 ## Out of scope
 Switching data to Supabase (task 17). Password reset. Sign-up.
+
+## Note (planner): Supabase's new API keys
+Supabase now issues a **Publishable key** (`sb_publishable_…`) instead of the old `anon` key, and its quick-start names variables `SUPABASE_URL` / `SUPABASE_KEY`. In this project the variables are:
+```
+PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+```
+Pass the publishable key exactly where the docs pass the anon key (`createClient(url, key)` / `createServerClient(url, key, …)`). It works the same, and RLS still protects everything. **Never** use the Secret key (`sb_secret_…`). `.env.example` and `src/env.d.ts` already use these names.
