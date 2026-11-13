@@ -85,6 +85,7 @@ function seed(): Store {
       image_path: s.image?.src ?? null,
       display_order: i + 1,
       is_active: true,
+      is_featured: i === 0, // SAMPLE: the first service starts as the featured one
       created_at: t,
       updated_at: t,
     })),
@@ -105,6 +106,8 @@ const db = (): Store => (globalThis.__doctorSiteStore ??= seed());
 
 /** Copies a row so callers can never change the store by accident. */
 const copy = <T>(row: T): T => structuredClone(row);
+
+type ServiceInputLike = Parameters<ContentRepo["services"]["create"]>[0];
 
 /** Applies an input on top of a row. `undefined` means "not sent", `null` clears the value. */
 function patch<T extends object>(row: T, input: Partial<Record<string, unknown>>): T {
@@ -163,6 +166,31 @@ function orderableTable<T extends { id: string; display_order: number; updated_a
       a.display_order = b.display_order;
       b.display_order = tmp;
       a.updated_at = b.updated_at = now();
+    },
+  };
+}
+
+/** Saving a service as featured un-features all the others, so at most one is featured. */
+function featuredServices(base: CrudTable<Service, ServiceInputLike> & Orderable): CrudTable<Service, ServiceInputLike> & Orderable {
+  const unfeatureOthers = (id: string) => {
+    for (const s of db().services) {
+      if (s.id !== id && s.is_featured) {
+        s.is_featured = false;
+        s.updated_at = now();
+      }
+    }
+  };
+  return {
+    ...base,
+    async create(input) {
+      const row = await base.create(input);
+      if (row.is_featured) unfeatureOthers(row.id);
+      return row;
+    },
+    async update(id, input) {
+      const row = await base.update(id, input);
+      if (row.is_featured) unfeatureOthers(row.id);
+      return row;
     },
   };
 }
@@ -228,7 +256,7 @@ export const memoryRepo: ContentRepo = {
     },
   },
 
-  services: orderableTable<Service, Parameters<ContentRepo["services"]["create"]>[0]>(
+  services: featuredServices(orderableTable<Service, Parameters<ContentRepo["services"]["create"]>[0]>(
     () => db().services,
     (input, order) => ({
       id: crypto.randomUUID(),
@@ -237,10 +265,11 @@ export const memoryRepo: ContentRepo = {
       image_path: input.image_path ?? null,
       display_order: order,
       is_active: input.is_active,
+      is_featured: input.is_featured,
       created_at: now(),
       updated_at: now(),
     }),
-  ),
+  )),
 
   clinics: {
     async list() {

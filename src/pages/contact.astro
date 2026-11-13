@@ -1,23 +1,18 @@
 ---
 import BookingNotice from "@/components/public/BookingNotice.astro";
-import ClinicMiniMap from "@/components/public/ClinicMiniMap.astro";
 import ContactCtaCard from "@/components/public/ContactCtaCard.astro";
-import HoursTable from "@/components/public/HoursTable.astro";
-import WhatsAppButton from "@/components/public/WhatsAppButton.astro";
 import { doctorConfig } from "@/config";
 import PublicLayout from "@/layouts/PublicLayout.astro";
-import { getActiveClinicsWithHours, getProfile, getSeoSetting } from "@/lib/data";
-import { clinicMessage, waLink } from "@/lib/whatsapp";
+import { getProfile, getSeoSetting } from "@/lib/data";
+import { waLink } from "@/lib/whatsapp";
+import SocialIcon from "@/components/public/SocialIcon.astro";
+import { SOCIAL_NAMES } from "@/lib/services";
 
-const [profile, clinics, seo] = await Promise.all([getProfile(), getActiveClinicsWithHours(), getSeoSetting("contact")]);
+const [profile, seo] = await Promise.all([getProfile(), getSeoSetting("contact")]);
 const name = `${profile.honorific} ${profile.full_name}`;
 const title = seo?.seo_title || `تواصل | ${name}`;
 const description = seo?.seo_description || doctorConfig.site.defaultDescription;
 const ogImage = seo?.og_image || undefined;
-const socialNames: Record<string, string> = {
-  instagram: "إنستغرام", x: "إكس", facebook: "فيسبوك", tiktok: "تيك توك",
-  youtube: "يوتيوب", linkedin: "لينكدإن", snapchat: "سناب شات", telegram: "تيليجرام",
-};
 ---
 <PublicLayout title={title} description={description} ogImage={ogImage}>
   <section class="sec" style="padding-top:clamp(120px,14vw,170px)" aria-labelledby="contact-h">
@@ -44,9 +39,11 @@ const socialNames: Record<string, string> = {
               <div>
                 <dt>حساباتنا</dt>
                 <dd>
-                  {profile.socials.map((s, i) => (
-                    <>{i > 0 && " · "}<a href={s.url} target="_blank" rel="noopener">{socialNames[s.platform] ?? s.platform}</a></>
-                  ))}
+                  <ul class="social-links">
+                    {profile.socials.map((s) => (
+                      <li><a href={s.url} target="_blank" rel="noopener" aria-label={SOCIAL_NAMES[s.platform] ?? s.platform}><SocialIcon platform={s.platform} /></a></li>
+                    ))}
+                  </ul>
                 </dd>
               </div>
             )}
@@ -55,36 +52,8 @@ const socialNames: Record<string, string> = {
         <ContactCtaCard profile={profile} />
       </div>
 
-      {clinics.map((c) => {
-        const hasPoint = c.latitude !== null && c.longitude !== null;
-        return (
-          <article class="card clinic-card rv" style="margin-top:28px" aria-label={c.name}>
-            <div class="clinic-card-b">
-              <h2 class="h3">{c.name}</h2>
-              <p class="addr">{c.address}</p>
-              {c.phone && <p><a class="plain" href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}><bdi dir="ltr">{c.phone}</bdi></a></p>}
-              <HoursTable hours={c.working_hours} caption={`ساعات عمل ${c.name}`} />
-              <div class="cta-row">
-                <WhatsAppButton
-                  number={c.whatsapp ?? profile.whatsapp}
-                  message={clinicMessage(doctorConfig.site.clinicMessage, c.name)}
-                  label="احجز عبر واتساب"
-                  size="sm"
-                />
-                {hasPoint && (
-                  <a class="btn btn-ghost btn-sm" href={`https://www.google.com/maps/dir/?api=1&destination=${c.latitude},${c.longitude}`} target="_blank" rel="noopener">
-                    <span class="roll"><span data-t="الاتجاهات">الاتجاهات</span></span>
-                  </a>
-                )}
-              </div>
-              <BookingNotice compact />
-            </div>
-            {hasPoint && c.latitude !== null && c.longitude !== null && (
-              <ClinicMiniMap name={c.name} latitude={c.latitude} longitude={c.longitude} />
-            )}
-          </article>
-        );
-      })}
+      <p class="lead" style="margin-top:28px"><a href="/#clinics">مواعيد العيادات وأماكنها</a></p>
+      <div style="margin-top:20px"><BookingNotice /></div>
     </div>
   </section>
 </PublicLayout>

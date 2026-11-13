@@ -17,6 +17,12 @@ if (Astro.request.method === "POST") {
     await repo.services.move(id, fd.get("direction") === "down" ? "down" : "up");
     return Astro.redirect(Astro.url.pathname + "?ok=moved", 303);
   }
+  if (intent === "feature") {
+    // Making a service featured un-features the others (the repo does that).
+    const row = await repo.services.get(id);
+    if (row) await repo.services.update(id, { title: row.title, description: row.description, image_path: row.image_path, is_active: row.is_active, is_featured: true });
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
   if (intent === "delete") {
     // Deleting a service also removes its image.
     const row = await repo.services.get(id);
@@ -46,10 +52,20 @@ const rows = await repo.services.list();
           <div class="cert-body">
             <div class="cert-head">
               <strong>{c.title}</strong>
-              <StatusBadge kind={c.is_active ? "visible" : "hidden"} />
+              <span class="cert-badges">
+                {c.is_featured && <span class="d-badge-star">⭐ مميزة</span>}
+                <StatusBadge kind={c.is_active ? "visible" : "hidden"} />
+              </span>
             </div>
             <p class="d-note">{c.description}</p>
             <RowActions id={c.id} editHref={`/dashboard/services/${c.id}`} first={i === 0} last={i === rows.length - 1} />
+            {!c.is_featured && (
+              <form method="post">
+                <input type="hidden" name="intent" value="feature" />
+                <input type="hidden" name="id" value={c.id} />
+                <button class="d-link-btn" type="submit">اجعلها مميزة</button>
+              </form>
+            )}
           </div>
         </li>
       ))}
