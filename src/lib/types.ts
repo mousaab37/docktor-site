@@ -129,3 +129,14 @@ export interface Service {
   created_at: string;
   updated_at: string;
 }
+
+export interface Faq {
+  id: string;
+  question: string;
+  /** Plain text; line breaks are allowed. Never rendered as HTML. */
+  answer: string;
+  display_order: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}

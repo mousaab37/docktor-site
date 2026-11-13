@@ -1,0 +1,55 @@
+---
+import Card from "./Card.astro";
+import Field from "./Field.astro";
+import FormActions from "./FormActions.astro";
+import Toggle from "./Toggle.astro";
+import type { FormValues } from "@/lib/validation/form";
+
+interface Props {
+  values: FormValues;
+  errors?: Record<string, string>;
+  cancelHref: string;
+  /** Rendered inside a FormDialog: no outer card, a small notice, a hidden id, and "cancel" closes the dialog. */
+  inDialog?: boolean;
+}
+
+const { values, errors = {}, cancelHref, inDialog = false } = Astro.props;
+const Wrapper = inDialog ? "div" : Card;
+---
+<Wrapper>
+  <form method="post" class="d-form" novalidate data-faq-form action={inDialog ? "/dashboard/faq" : undefined}>
+    <input type="hidden" name="intent" value="save" />
+    {inDialog && <input type="hidden" name="id" value={String(values.id ?? "")} />}
+    <Field name="question" label="السؤال" value={String(values.question ?? "")} error={errors.question} required maxlength={200} hint="اكتبه كما يكتبه المريض في جوجل" />
+    <Field as="textarea" name="answer" label="الجواب" value={String(values.answer ?? "")} error={errors.answer} required maxlength={1500} rows={7} hint="ابدأ بإجابة مباشرة في الجملة الأولى ثم التفاصيل" />
+    <Toggle name="is_published" label="منشور في الموقع" checked={values.is_published === true} />
+    <FormActions cancelHref={cancelHref} dialog={inDialog} />
+  </form>
+</Wrapper>
+
+<script>
+  // When the form lives in a dialog, fill it from the row JSON on the button that opened the dialog.
+  interface Row {
+    id: string;
+    question: string;
+    answer: string;
+    is_published: boolean;
+  }
+  document.querySelectorAll<HTMLFormElement>("dialog form[data-faq-form]").forEach((form) => {
+    const dialog = form.closest("dialog");
+    dialog?.addEventListener("dialog-prefill", (e) => {
+      const trigger = (e as CustomEvent<{ trigger: HTMLElement }>).detail.trigger;
+      const row: Row = JSON.parse(trigger.dataset.row ?? "{}");
+      const set = (name: string, value: string) => {
+        (form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement).value = value;
+      };
+      set("id", row.id ?? "");
+      set("question", row.question ?? "");
+      set("answer", row.answer ?? "");
+      (form.elements.namedItem("is_published") as HTMLInputElement).checked = row.is_published === true;
+      form.querySelectorAll(".err").forEach((el) => el.remove());
+      form.querySelectorAll(".has-error").forEach((el) => el.classList.remove("has-error"));
+      form.querySelectorAll("input, textarea").forEach((el) => el.dispatchEvent(new Event("input")));
+    });
+  });
+</script>

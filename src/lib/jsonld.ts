@@ -1,11 +1,11 @@
 // Structured data for the home page (PRD §10). No ratings and no reviews: they would be fake.
 import type { DoctorConfig } from "@/config";
 import { groupHours } from "./hours";
-import type { ClinicWithHours, Profile } from "./types";
+import type { ClinicWithHours, Faq, Profile } from "./types";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
 
-export function buildJsonLd(config: DoctorConfig, profile: Profile, clinics: ClinicWithHours[]) {
+export function buildJsonLd(config: DoctorConfig, profile: Profile, clinics: ClinicWithHours[], faqs: Faq[] = []) {
   const { site } = config;
   const abs = (path: string) => new URL(path, site.url).href;
 
@@ -41,10 +41,24 @@ export function buildJsonLd(config: DoctorConfig, profile: Profile, clinics: Cli
     ),
   }));
 
-  return { "@context": "https://schema.org", "@graph": [physician, ...medicalClinics] };
+  // Only the FAQs that are visible on the page (the caller passes published ones).
+  const faqPage = faqs.length
+    ? [
+        {
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
+          })),
+        },
+      ]
+    : [];
+
+  return { "@context": "https://schema.org", "@graph": [physician, ...medicalClinics, ...faqPage] };
 }
 
 /** JSON for a <script type="application/ld+json">: `<` is escaped so no string can close the tag. */
 export function serializeJsonLd(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, "\u003c");
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }

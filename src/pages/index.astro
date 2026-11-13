@@ -10,6 +10,7 @@ import CertificatesSection from "@/components/public/CertificatesSection.astro";
 import ClinicsSection from "@/components/public/ClinicsSection.astro";
 import TestimonialsSection from "@/components/public/TestimonialsSection.astro";
 import ArticlesSection from "@/components/public/ArticlesSection.astro";
+import FaqSection from "@/components/public/FaqSection.astro";
 import ContactSection from "@/components/public/ContactSection.astro";
 import { doctorConfig } from "@/config";
 import { buildJsonLd, serializeJsonLd } from "@/lib/jsonld";
@@ -20,11 +21,12 @@ import {
   getActiveClinicsWithHours,
   getActiveStatistics,
   getLatestArticles,
+  getPublishedFaqs,
   getPublishedTestimonials,
   getSeoSetting,
 } from "@/lib/data";
 
-const [statistics, clinics, certificates, testimonials, articles, seo, profile, services] = await Promise.all([
+const [statistics, clinics, certificates, testimonials, articles, seo, profile, services, faqs] = await Promise.all([
   getActiveStatistics(),
   getActiveClinicsWithHours(),
   getActiveCertificates(),
@@ -33,9 +35,10 @@ const [statistics, clinics, certificates, testimonials, articles, seo, profile, 
   getSeoSetting("global"),
   getProfile(),
   getActiveServices(),
+  getPublishedFaqs(),
 ]);
 // Empty SEO fields fall back to the config defaults (the layout's defaults).
-const jsonLd = serializeJsonLd(buildJsonLd(doctorConfig, profile, clinics));
+const jsonLd = serializeJsonLd(buildJsonLd(doctorConfig, profile, clinics, faqs));
 ---
 <PublicLayout title={seo?.seo_title || undefined} description={seo?.seo_description || undefined} ogImage={seo?.og_image || undefined}>
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd}></script>
@@ -49,5 +52,6 @@ const jsonLd = serializeJsonLd(buildJsonLd(doctorConfig, profile, clinics));
   <ClinicsSection clinics={clinics} profile={profile} />
   <TestimonialsSection testimonials={testimonials} />
   <ArticlesSection articles={articles} />
+  <FaqSection faqs={faqs} />
   <ContactSection />
 </PublicLayout>

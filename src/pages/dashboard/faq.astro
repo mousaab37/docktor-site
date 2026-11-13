@@ -1,0 +1,108 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import Card from "@/components/dashboard/Card.astro";
+import EmptyState from "@/components/dashboard/EmptyState.astro";
+import Flash from "@/components/dashboard/Flash.astro";
+import FormDialog from "@/components/dashboard/FormDialog.astro";
+import RowActions from "@/components/dashboard/RowActions.astro";
+import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import FaqForm from "@/components/dashboard/FaqForm.astro";
+import { getRepo } from "@/lib/repo";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { faqInput } from "@/lib/validation/faq";
+
+const repo = getRepo();
+
+// Dialog state: closed by default, opened again by the server after a validation error.
+let dialogOpen = false;
+let dialogTitle = "إضافة سؤال";
+// New questions are published by default.
+let values: FormValues = { id: "", question: "", answer: "", is_published: true };
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  const intent = fd.get("intent");
+  const id = String(fd.get("id") ?? "");
+  if (intent === "move") {
+    await repo.faqs.move(id, fd.get("direction") === "down" ? "down" : "up");
+    return Astro.redirect(Astro.url.pathname + "?ok=moved", 303);
+  }
+  if (intent === "delete") {
+    await repo.faqs.remove(id);
+    return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
+  }
+  if (intent === "save") {
+    // An empty id means "add", otherwise "edit" (an unknown id is a 404).
+    if (id && !(await repo.faqs.get(id))) return new Response("Not found", { status: 404 });
+    const result = parseForm(faqInput, fd);
+    if (result.ok) {
+      if (id) await repo.faqs.update(id, result.data);
+      else await repo.faqs.create(result.data);
+      return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+    }
+    dialogOpen = true;
+    dialogTitle = id ? "تعديل سؤال" : "إضافة سؤال";
+    values = { ...result.values, id };
+    errors = result.errors;
+    Astro.response.status = 422;
+  }
+}
+
+const rows = await repo.faqs.list();
+const excerpt = (text: string) => {
+  const chars = Array.from(text);
+  return chars.length > 120 ? chars.slice(0, 120).join("") + "…" : text;
+};
+const addAttrs = {
+  "data-dialog-open": "faq-dialog",
+  "data-title": "إضافة سؤال",
+  "data-row": JSON.stringify({ id: "", question: "", answer: "", is_published: true }),
+};
+const editAttrs = (t: (typeof rows)[number]) => ({
+  "data-dialog-open": "faq-dialog",
+  "data-title": "تعديل سؤال",
+  "data-row": JSON.stringify({
+    id: t.id,
+    question: t.question,
+    answer: t.answer,
+    is_published: t.is_published,
+  }),
+});
+---
+<DashboardLayout title="الأسئلة الشائعة" description="أسئلة وأجوبة تظهر في الصفحة الرئيسية وتُرسَل لمحركات البحث.">
+  <Flash />
+  <div class="d-notice" role="note">اكتب السؤال كما يكتبه المريض في جوجل، وابدأ الجواب بإجابة مباشرة في الجملة الأولى ثم التفاصيل. هذا يساعد جوجل ومحركات الذكاء الاصطناعي على عرض إجاباتك.</div>
+  <div class="d-toolbar">
+    <span></span>
+    <a class="btn btn-sm" href="/dashboard/faq/new" {...addAttrs}>إضافة سؤال</a>
+  </div>
+  <Card>
+    {rows.length === 0 ? (
+      <EmptyState message="لا توجد أسئلة بعد." addHref="/dashboard/faq/new" addLabel="إضافة سؤال" addAttrs={addAttrs} />
+    ) : (
+      <ul class="d-list">
+        {rows.map((t, i) => (
+          <li class="d-item" style="grid-template-columns:minmax(0,1fr) auto auto">
+            <div class="d-item-body">
+              <strong>{t.question}</strong>
+              <p class="d-item-meta">{excerpt(t.answer)}</p>
+            </div>
+            <StatusBadge kind={t.is_published ? "published" : "hidden"} />
+            <RowActions
+              id={t.id}
+              editHref={`/dashboard/faq/${t.id}`}
+              editAttrs={editAttrs(t)}
+              first={i === 0}
+              last={i === rows.length - 1}
+            />
+          </li>
+        ))}
+      </ul>
+    )}
+  </Card>
+
+  <FormDialog id="faq-dialog" title={dialogTitle} open={dialogOpen} size="md">
+    <FaqForm values={values} errors={errors} cancelHref="/dashboard/faq" inDialog />
+  </FormDialog>
+</DashboardLayout>

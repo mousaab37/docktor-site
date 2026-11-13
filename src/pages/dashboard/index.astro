@@ -4,7 +4,7 @@ import Card from "@/components/dashboard/Card.astro";
 import { getRepo } from "@/lib/repo";
 
 const repo = getRepo();
-const [articles, clinics, certificates, testimonials, statistics, services, profile] = await Promise.all([
+const [articles, clinics, certificates, testimonials, statistics, services, profile, faqs] = await Promise.all([
   repo.articles.list(),
   repo.clinics.list(),
   repo.certificates.list(),
@@ -12,6 +12,7 @@ const [articles, clinics, certificates, testimonials, statistics, services, prof
   repo.statistics.list(),
   repo.services.list(),
   repo.profile.get(),
+  repo.faqs.list(),
 ]);
 
 // Content counts (PRD §5.1), not medical metrics.
@@ -20,6 +21,7 @@ const counts: { label: string; value: number; href: string; sub?: string }[] = [
   { label: "مسودات", value: articles.filter((a) => a.status === "draft").length, href: "/dashboard/blog" },
   { label: "العيادات", value: clinics.length, href: "/dashboard/clinics", sub: `${clinics.filter((c) => c.is_active).length} ظاهرة في الموقع` },
   { label: "الخدمات", value: services.length, href: "/dashboard/services", sub: `${services.filter((s) => s.is_active).length} ظاهرة في الموقع` },
+  { label: "الأسئلة الشائعة", value: faqs.length, href: "/dashboard/faq", sub: `${faqs.filter((f) => f.is_published).length} منشورة` },
   { label: "الشهادات", value: certificates.length, href: "/dashboard/certificates", sub: `${certificates.filter((c) => c.is_active).length} ظاهرة في الموقع` },
   { label: "آراء المرضى", value: testimonials.length, href: "/dashboard/testimonials", sub: `${testimonials.filter((t) => t.is_published).length} منشورة` },
   { label: "الإحصائيات", value: statistics.length, href: "/dashboard/statistics", sub: `${statistics.filter((s) => s.is_active).length} ظاهرة في الموقع` },
@@ -32,6 +34,7 @@ const checklist = [
   { done: clinics.some((c) => c.is_active && c.latitude !== null && c.longitude !== null), label: "عيادة واحدة على الأقل بموقع على الخريطة", href: "/dashboard/clinics" },
   { done: services.some((s) => s.is_active), label: "خدمة واحدة على الأقل", href: "/dashboard/services" },
   { done: articles.some((a) => a.status === "published"), label: "مقال منشور", href: "/dashboard/blog" },
+  { done: faqs.filter((f) => f.is_published).length >= 3, label: "3 أسئلة شائعة منشورة على الأقل", href: "/dashboard/faq" },
 ];
 ---
 <DashboardLayout title="لوحة التحكم" description="نظرة سريعة على محتوى موقعك.">

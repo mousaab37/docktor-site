@@ -1091,6 +1091,32 @@
   }
 }
 
+/* FAQ (task 14e): port of the original .qa accordion, mirrored for RTL */
+@layer components {
+  .faq-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 48px clamp(40px, 6vw, 96px); align-items: start; }
+  .faq-l { position: sticky; top: calc(var(--hdr, 80px) + 24px); }
+  .faq-l .lead { margin-top: 20px; }
+  .faq-l .cta-row { margin-top: 28px; }
+  .faq-list { border-top: 1px solid var(--color-line); }
+  .qa { border-bottom: 1px solid var(--color-line); }
+  .qa summary { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 26px 0; cursor: pointer; list-style: none; font-size: clamp(19px, 2vw, 25px); font-weight: 600; line-height: 1.5; }
+  .qa summary::-webkit-details-marker { display: none; }
+  .qa summary i { position: relative; width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1.5px solid var(--color-ink); transition: background-color .3s, transform .5s var(--ease-soft); }
+  .qa summary i::before, .qa summary i::after { content: ""; position: absolute; inset: 0; width: 14px; height: 1.5px; margin: auto; background: currentColor; transition: transform .5s var(--ease-soft); }
+  .qa summary i::after { transform: rotate(90deg); }
+  .qa[open] summary i { background: var(--color-lime); border-color: var(--color-lime); transform: rotate(180deg); }
+  .qa[open] summary i::after { transform: rotate(0deg); }
+  .qa summary:hover i { background: var(--color-mint); }
+  .qa[open] summary:hover i { background: var(--color-lime-2); }
+  .qa summary:focus-visible { outline: 2px solid var(--color-forest); outline-offset: 4px; border-radius: 8px; }
+  .qa p { max-width: 40em; padding-inline-end: 56px; padding-block-end: 28px; color: var(--color-ink-2); line-height: 1.9; }
+  .js .qa[open] p { animation: qa .55s var(--ease-soft); }
+  @keyframes qa { from { opacity: 0; transform: translateY(-8px); } }
+  @media (max-width: 1023px) { .faq-grid { grid-template-columns: minmax(0, 1fr); } .faq-l { position: static; } }
+  @media (max-width: 640px) { .qa p { padding-inline-end: 0; } }
+  @media (prefers-reduced-motion: reduce) { .js .qa[open] p { animation: none; } .qa summary i, .qa summary i::before, .qa summary i::after { transition: none; } }
+}
+
 /* Clinic marker: the owner's pin, used by the dashboard picker and the home page maps */
 @layer components {
   .clinic-pin { background: none; border: 0; filter: drop-shadow(0 3px 4px rgb(13 43 34 / .35)); }
