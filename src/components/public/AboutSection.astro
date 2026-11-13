@@ -1,13 +1,15 @@
 ---
-import { doctorConfig } from "@/config";
 import { clinicsWord } from "@/lib/arabic";
+import { profileView } from "@/lib/profile-view";
+import type { Profile } from "@/lib/types";
 
 interface Props {
   clinicCount: number;
+  profile: Profile;
 }
 
-const { clinicCount } = Astro.props;
-const { doctor } = doctorConfig;
+const { clinicCount, profile } = Astro.props;
+const doctor = profileView(profile);
 const rest = doctor.bio.slice(1);
 ---
 <section class="sec" id="about" aria-labelledby="about-h">
@@ -19,7 +21,7 @@ const rest = doctor.bio.slice(1);
         {rest.map((p) => <p>{p}</p>)}
         <div><a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t={`${clinicsWord(clinicCount)} والمواعيد`}>{clinicsWord(clinicCount)} والمواعيد</span></span></a></div>
       </div>
-      <div class="ph"><img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" loading="lazy" data-par="0.06" /></div>
+      <div class="ph">{doctor.photo && <img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" loading="lazy" data-par="0.06" />}</div>
     </div>
 
     {(doctor.education.length > 0 || doctor.experience.length > 0) && (

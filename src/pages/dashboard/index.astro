@@ -4,12 +4,14 @@ import Card from "@/components/dashboard/Card.astro";
 import { getRepo } from "@/lib/repo";
 
 const repo = getRepo();
-const [articles, clinics, certificates, testimonials, statistics] = await Promise.all([
+const [articles, clinics, certificates, testimonials, statistics, services, profile] = await Promise.all([
   repo.articles.list(),
   repo.clinics.list(),
   repo.certificates.list(),
   repo.testimonials.list(),
   repo.statistics.list(),
+  repo.services.list(),
+  repo.profile.get(),
 ]);
 
 // Content counts (PRD §5.1), not medical metrics.
@@ -17,9 +19,19 @@ const counts: { label: string; value: number; href: string; sub?: string }[] = [
   { label: "مقالات منشورة", value: articles.filter((a) => a.status === "published").length, href: "/dashboard/blog" },
   { label: "مسودات", value: articles.filter((a) => a.status === "draft").length, href: "/dashboard/blog" },
   { label: "العيادات", value: clinics.length, href: "/dashboard/clinics", sub: `${clinics.filter((c) => c.is_active).length} ظاهرة في الموقع` },
+  { label: "الخدمات", value: services.length, href: "/dashboard/services", sub: `${services.filter((s) => s.is_active).length} ظاهرة في الموقع` },
   { label: "الشهادات", value: certificates.length, href: "/dashboard/certificates", sub: `${certificates.filter((c) => c.is_active).length} ظاهرة في الموقع` },
   { label: "آراء المرضى", value: testimonials.length, href: "/dashboard/testimonials", sub: `${testimonials.filter((t) => t.is_published).length} منشورة` },
   { label: "الإحصائيات", value: statistics.length, href: "/dashboard/statistics", sub: `${statistics.filter((s) => s.is_active).length} ظاهرة في الموقع` },
+];
+
+// "Start here" checklist: each item is really checked against the stored data.
+const checklist = [
+  { done: !!profile.photo_path, label: "صورة شخصية", href: "/dashboard/profile" },
+  { done: /^\d{8,15}$/.test(profile.whatsapp), label: "رقم واتساب", href: "/dashboard/profile" },
+  { done: clinics.some((c) => c.is_active && c.latitude !== null && c.longitude !== null), label: "عيادة واحدة على الأقل بموقع على الخريطة", href: "/dashboard/clinics" },
+  { done: services.some((s) => s.is_active), label: "خدمة واحدة على الأقل", href: "/dashboard/services" },
+  { done: articles.some((a) => a.status === "published"), label: "مقال منشور", href: "/dashboard/blog" },
 ];
 ---
 <DashboardLayout title="لوحة التحكم" description="نظرة سريعة على محتوى موقعك.">
@@ -35,6 +47,15 @@ const counts: { label: string; value: number; href: string; sub?: string }[] = [
 
   <Card>
     <h2 style="font-size:20px;font-weight:600">ابدأ من هنا</h2>
+    <ul class="d-check">
+      {checklist.map((c) => (
+        <li class={c.done ? "ok" : "todo"}>
+          <span class="mark" aria-hidden="true">{c.done ? "✓" : "✗"}</span>
+          <a href={c.href}>{c.label}</a>
+          <span class="sr-only">{c.done ? "(تم)" : "(غير مكتمل)"}</span>
+        </li>
+      ))}
+    </ul>
     <div class="d-links">
       <a class="btn btn-sm" href="/dashboard/blog/new">إضافة مقال</a>
       <a class="btn btn-ghost btn-sm" href="/dashboard/clinics/new">إضافة عيادة</a>

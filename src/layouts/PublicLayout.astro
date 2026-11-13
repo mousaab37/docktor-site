@@ -3,7 +3,7 @@ import BaseLayout from "./BaseLayout.astro";
 import Header from "@/components/public/Header.astro";
 import Footer from "@/components/public/Footer.astro";
 import CompareButton from "@/components/dev/CompareButton.astro";
-import { getActiveClinicCount } from "@/lib/data";
+import { getActiveClinicCount, getActiveServices, getProfile } from "@/lib/data";
 
 interface Props {
   title?: string;
@@ -13,13 +13,14 @@ interface Props {
 }
 
 const { title, description, ogImage, noindex } = Astro.props;
-const clinicCount = await getActiveClinicCount();
+// Loaded once per page and passed down.
+const [clinicCount, profile, services] = await Promise.all([getActiveClinicCount(), getProfile(), getActiveServices()]);
 ---
 <BaseLayout title={title} description={description} ogImage={ogImage} noindex={noindex}>
   <slot name="head" slot="head" />
-  <Header clinicCount={clinicCount} />
+  <Header clinicCount={clinicCount} profile={profile} services={services} />
   <main id="main"><slot /></main>
-  <Footer clinicCount={clinicCount} />
+  <Footer clinicCount={clinicCount} profile={profile} />
   <CompareButton to="old" />
   <script>
     import "@/scripts/motion";

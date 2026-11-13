@@ -1,0 +1,47 @@
+---
+import { doctorConfig } from "@/config";
+import type { ClinicWithHours } from "@/lib/types";
+import { clinicMessage } from "@/lib/whatsapp";
+import ClinicMiniMap from "./ClinicMiniMap.astro";
+import HoursTable from "./HoursTable.astro";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  clinic: ClinicWithHours;
+  /** The doctor's main WhatsApp number, used when the clinic has none. */
+  fallbackNumber: string;
+  /** Position in the list, for the staggered reveal. */
+  index?: number;
+}
+
+const { clinic: c, fallbackNumber, index = 0 } = Astro.props;
+const hasPoint = c.latitude !== null && c.longitude !== null;
+---
+<article class:list={["card", "clinic-card", "rv", hasPoint && "has-map"]} style={index > 0 ? `--d:${index}` : undefined}>
+  <div class="clinic-card-b">
+    <h3>{c.name}</h3>
+    <p class="addr">{c.address}</p>
+    {c.phone && <p><a class="plain" href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}><bdi dir="ltr">{c.phone}</bdi></a></p>}
+    {c.description && <p>{c.description}</p>}
+    <HoursTable hours={c.working_hours} caption={`ساعات عمل ${c.name}`} />
+    <div class="cta-row">
+      <WhatsAppButton
+        number={c.whatsapp ?? fallbackNumber}
+        message={clinicMessage(doctorConfig.site.clinicMessage, c.name)}
+        label="احجز عبر واتساب"
+        size="sm"
+      />
+      {hasPoint && (
+        <a
+          class="btn btn-ghost btn-sm"
+          href={`https://www.google.com/maps/dir/?api=1&destination=${c.latitude},${c.longitude}`}
+          target="_blank"
+          rel="noopener"
+        ><span class="roll"><span data-t="الاتجاهات">الاتجاهات</span></span></a>
+      )}
+    </div>
+  </div>
+  {hasPoint && c.latitude !== null && c.longitude !== null && (
+    <ClinicMiniMap name={c.name} latitude={c.latitude} longitude={c.longitude} />
+  )}
+</article>

@@ -1,0 +1,348 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import Card from "@/components/dashboard/Card.astro";
+import Field from "@/components/dashboard/Field.astro";
+import Flash from "@/components/dashboard/Flash.astro";
+import ImageUpload from "@/components/dashboard/ImageUpload.astro";
+import PhoneField from "@/components/dashboard/PhoneField.astro";
+import { doctorConfig } from "@/config";
+import { applyImageChange } from "@/lib/dashboard/images";
+import { COUNTRY_CODES, callingCode, splitPhone, type PhoneCountry } from "@/lib/phone";
+import { getRepo } from "@/lib/repo";
+import { readBackground, readContact, readIdentity, readIntro, readSocials, type CardTyped } from "@/lib/validation/profile";
+
+type CardName = "identity" | "intro" | "background" | "contact" | "socials";
+interface Failed {
+  card: CardName;
+  typed: CardTyped;
+  errors: Record<string, string>;
+}
+
+const repo = getRepo();
+let profile = await repo.profile.get();
+
+// When a card is refused: which card, what the person typed, and the Arabic messages.
+// Only that card shows the typed values; nothing on it was saved.
+const state: { failed: Failed | null } = { failed: null };
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  const intent = String(fd.get("intent") ?? "");
+  const fail = (card: CardName, typed: CardTyped, errors: Record<string, string>) => {
+    state.failed = { card, typed, errors };
+    Astro.response.status = 422;
+  };
+  let saved = false;
+
+  if (intent === "save-identity") {
+    const { typed, result } = readIdentity(fd);
+    if (!result.ok) fail("identity", typed, result.errors);
+    else {
+      // The current photo comes from the stored profile, never from the form.
+      // task 17: own bucket
+      const image = await applyImageChange(repo, "certificates", fd, "photo", profile.photo_path);
+      if (image.error) fail("identity", typed, { photo: image.error });
+      else {
+        await repo.profile.update({ ...result.data, photo_path: image.path });
+        if (image.oldToRemove) await repo.images.remove("certificates", image.oldToRemove);
+        saved = true;
+      }
+    }
+  } else if (intent === "save-intro") {
+    const { typed, result } = readIntro(fd);
+    if (!result.ok) fail("intro", typed, result.errors);
+    else {
+      await repo.profile.update(result.data);
+      saved = true;
+    }
+  } else if (intent === "save-background") {
+    const { typed, result } = readBackground(fd);
+    if (!result.ok) fail("background", typed, result.errors);
+    else {
+      await repo.profile.update(result.data);
+      saved = true;
+    }
+  } else if (intent === "save-contact") {
+    const { typed, result } = readContact(fd);
+    if (!result.ok) fail("contact", typed, result.errors);
+    else {
+      await repo.profile.update({
+        phone: result.data.phone,
+        whatsapp: result.data.whatsapp ?? profile.whatsapp, // required by the schema, so never null here
+        email: result.data.email,
+        whatsapp_default_message: result.data.whatsapp_default_message,
+      });
+      saved = true;
+    }
+  } else if (intent === "save-socials") {
+    const { typed, result } = readSocials(fd);
+    if (!result.ok) fail("socials", typed, result.errors);
+    else {
+      await repo.profile.update(result.data);
+      saved = true;
+    }
+  }
+  if (saved) return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  profile = await repo.profile.get();
+}
+
+const failed = state.failed;
+const typedOf = (card: CardName): CardTyped | null => (failed && failed.card === card ? failed.typed : null);
+const errorsOf = (card: CardName): Record<string, string> => (failed && failed.card === card ? failed.errors : {});
+const t = (card: CardName, key: string, stored: string): string => {
+  const typed = typedOf(card);
+  const v = typed ? typed[key] : stored;
+  return typeof v === "string" ? v : stored;
+};
+const list = (e: Record<string, string>) => [...new Set(Object.values(e))];
+
+const idErr = errorsOf("identity");
+const introErr = errorsOf("intro");
+const bgErr = errorsOf("background");
+const ctErr = errorsOf("contact");
+const soErr = errorsOf("socials");
+
+const bio = ((typedOf("intro")?.bio as string[] | undefined) ?? profile.bio).slice();
+if (bio.length === 0) bio.push("");
+
+const bg = typedOf("background");
+const education = ((bg?.education as { degree: string; institution: string; year: number | null }[] | undefined) ?? profile.education).map((e) => ({
+  degree: e.degree,
+  institution: e.institution,
+  year: e.year === null ? "" : e.year === -1 ? "؟" : String(e.year),
+}));
+const experience = (bg?.experience as { role: string; place: string; period: string }[] | undefined) ?? profile.experience;
+const languages = (bg?.languages as string[] | undefined) ?? profile.languages;
+
+const ct = typedOf("contact");
+const fallbackCountry: PhoneCountry = doctorConfig.site.defaultCountry;
+const phone = (ct?.phone as { country: PhoneCountry; national: string } | undefined) ?? splitPhone(profile.phone, fallbackCountry);
+const wa = (ct?.whatsapp as { country: PhoneCountry; national: string } | undefined) ?? splitPhone(profile.whatsapp, fallbackCountry);
+const codes = Object.fromEntries(COUNTRY_CODES.map((c) => [c, callingCode(c)]));
+
+const socials = (typedOf("socials")?.socials as { platform: string; url: string }[] | undefined) ?? profile.socials;
+const platforms = [
+  { value: "instagram", label: "إنستغرام" },
+  { value: "x", label: "إكس" },
+  { value: "facebook", label: "فيسبوك" },
+  { value: "tiktok", label: "تيك توك" },
+  { value: "youtube", label: "يوتيوب" },
+  { value: "linkedin", label: "لينكدإن" },
+  { value: "snapchat", label: "سناب شات" },
+  { value: "telegram", label: "تيليجرام" },
+];
+---
+<DashboardLayout title="ملفي" description="بياناتك التي تظهر في الصفحة الرئيسية وفي كل الموقع. كل بطاقة تُحفظ وحدها.">
+  <Flash />
+  <p class="p-preview-link"><a class="btn btn-ghost btn-sm" href="/" target="_blank" rel="noopener">معاينة الموقع ↗</a></p>
+
+  <!-- 1. Photo and name -->
+  <Card>
+    <form method="post" class="d-form" enctype="multipart/form-data" novalidate id="card-identity">
+      <input type="hidden" name="intent" value="save-identity" />
+      <h2 class="d-h2">الصورة والاسم</h2>
+      <ImageUpload name="photo" label="الصورة الشخصية" value={profile.photo_path} bucket="certificates" error={idErr.photo} />
+      <div class="d-form-row">
+        <Field idPrefix="identity" name="honorific" label="اللقب" value={t("identity", "honorific", profile.honorific)} error={idErr.honorific} required maxlength={20} hint="مثل: د." />
+        <Field idPrefix="identity" name="full_name" label="الاسم الكامل" value={t("identity", "full_name", profile.full_name)} error={idErr.full_name} required maxlength={80} />
+      </div>
+      <Field idPrefix="identity" name="specialty" label="التخصص" value={t("identity", "specialty", profile.specialty)} error={idErr.specialty} required maxlength={80} />
+      <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
+    </form>
+  </Card>
+
+  <!-- 2. Introduction -->
+  <Card>
+    <form method="post" class="d-form" novalidate id="card-intro">
+      <input type="hidden" name="intent" value="save-intro" />
+      <h2 class="d-h2">التعريف</h2>
+      {list(introErr).length > 0 && <div class="d-errors" role="alert"><ul>{list(introErr).map((e) => <li>{e}</li>)}</ul></div>}
+      <Field idPrefix="intro" as="textarea" name="short_intro" label="تعريف قصير" rows={3} value={t("intro", "short_intro", profile.short_intro)} error={introErr.short_intro} required maxlength={220} />
+      <div class="d-form-row">
+        <Field idPrefix="intro" name="statement_line1" label="العبارة الكبيرة: السطر الأول" value={t("intro", "statement_line1", profile.statement_line1)} error={introErr.statement_line1} required maxlength={60} hint="العبارة الكبيرة في اللوحة الخضراء" />
+        <Field idPrefix="intro" name="statement_line2" label="العبارة الكبيرة: السطر الثاني" value={t("intro", "statement_line2", profile.statement_line2)} error={introErr.statement_line2} required maxlength={60} hint="العبارة الكبيرة في اللوحة الخضراء" />
+      </div>
+      <div class="field">
+        <span class="d-label">النبذة (فقرات)</span>
+        <div class="p-rows" data-rows data-max="6">
+          <div class="p-rows" data-row-list>
+            {bio.map((p, i) => (
+              <div class="p-row" data-row>
+                <textarea name={`bio_${i}`} rows="3" maxlength="1000" aria-label="فقرة">{p}</textarea>
+                <button type="button" class="p-rm" data-remove-row aria-label="حذف الفقرة">×</button>
+              </div>
+            ))}
+          </div>
+          <template data-row-template>
+            <div class="p-row" data-row>
+              <textarea name="bio___i__" rows="3" maxlength="1000" aria-label="فقرة"></textarea>
+              <button type="button" class="p-rm" data-remove-row aria-label="حذف الفقرة">×</button>
+            </div>
+          </template>
+          <button type="button" class="btn btn-ghost btn-sm p-add" data-add-row>+ فقرة</button>
+        </div>
+      </div>
+      <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
+    </form>
+  </Card>
+
+  <!-- 3. Education, experience, languages -->
+  <Card>
+    <form method="post" class="d-form" novalidate id="card-background">
+      <input type="hidden" name="intent" value="save-background" />
+      <h2 class="d-h2">التعليم والخبرة واللغات</h2>
+      {list(bgErr).length > 0 && <div class="d-errors" role="alert"><ul>{list(bgErr).map((e) => <li>{e}</li>)}</ul></div>}
+
+      <div class="field">
+        <span class="d-label">التعليم</span>
+        <div class="p-rows" data-rows data-max="6">
+          <div class="p-rows" data-row-list>
+            {education.map((e, i) => (
+              <div class="p-row" data-row>
+                <div class="p-row-fields">
+                  <input name={`education_degree_${i}`} value={e.degree} placeholder="الدرجة" maxlength="100" aria-label="الدرجة" />
+                  <input name={`education_institution_${i}`} value={e.institution} placeholder="الجهة" maxlength="100" aria-label="الجهة" />
+                  <input name={`education_year_${i}`} value={e.year} placeholder="السنة" inputmode="numeric" dir="ltr" maxlength="4" aria-label="السنة" />
+                </div>
+                <button type="button" class="p-rm" data-remove-row aria-label="حذف الصف">×</button>
+              </div>
+            ))}
+          </div>
+          <template data-row-template>
+            <div class="p-row" data-row>
+              <div class="p-row-fields">
+                <input name="education_degree___i__" placeholder="الدرجة" maxlength="100" aria-label="الدرجة" />
+                <input name="education_institution___i__" placeholder="الجهة" maxlength="100" aria-label="الجهة" />
+                <input name="education_year___i__" placeholder="السنة" inputmode="numeric" dir="ltr" maxlength="4" aria-label="السنة" />
+              </div>
+              <button type="button" class="p-rm" data-remove-row aria-label="حذف الصف">×</button>
+            </div>
+          </template>
+          <button type="button" class="btn btn-ghost btn-sm p-add" data-add-row>+ إضافة</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="d-label">الخبرة</span>
+        <div class="p-rows" data-rows data-max="6">
+          <div class="p-rows" data-row-list>
+            {experience.map((e, i) => (
+              <div class="p-row" data-row>
+                <div class="p-row-fields">
+                  <input name={`experience_role_${i}`} value={e.role} placeholder="المسمّى" maxlength="100" aria-label="المسمّى" />
+                  <input name={`experience_place_${i}`} value={e.place} placeholder="المكان" maxlength="100" aria-label="المكان" />
+                  <input name={`experience_period_${i}`} value={e.period} placeholder="الفترة" maxlength="40" aria-label="الفترة" />
+                </div>
+                <button type="button" class="p-rm" data-remove-row aria-label="حذف الصف">×</button>
+              </div>
+            ))}
+          </div>
+          <template data-row-template>
+            <div class="p-row" data-row>
+              <div class="p-row-fields">
+                <input name="experience_role___i__" placeholder="المسمّى" maxlength="100" aria-label="المسمّى" />
+                <input name="experience_place___i__" placeholder="المكان" maxlength="100" aria-label="المكان" />
+                <input name="experience_period___i__" placeholder="الفترة" maxlength="40" aria-label="الفترة" />
+              </div>
+              <button type="button" class="p-rm" data-remove-row aria-label="حذف الصف">×</button>
+            </div>
+          </template>
+          <button type="button" class="btn btn-ghost btn-sm p-add" data-add-row>+ إضافة</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="d-label" for="lang-input">اللغات</label>
+        <div class="tags-box" data-tags="language" data-max="6">
+          <span data-tag-list>
+            {languages.map((l, i) => (
+              <>
+                <span class="tag" data-tag={l}>{l}<button type="button" aria-label={`إزالة ${l}`}>×</button></span>
+                <input type="hidden" name={`language_${i}`} value={l} />
+              </>
+            ))}
+          </span>
+          <input id="lang-input" data-tag-input placeholder="اكتب لغة ثم اضغط Enter" maxlength="30" />
+        </div>
+      </div>
+      <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
+    </form>
+  </Card>
+
+  <!-- 4. Contact -->
+  <Card>
+    <form method="post" class="d-form" novalidate id="card-contact" data-wa-card data-codes={JSON.stringify(codes)}>
+      <input type="hidden" name="intent" value="save-contact" />
+      <h2 class="d-h2">التواصل</h2>
+      <PhoneField name="whatsapp" label="رقم واتساب" country={wa.country} national={wa.national} error={ctErr.whatsapp} required hint="الرقم الذي يصل إليه المرضى من أزرار واتساب" />
+      <PhoneField name="phone" label="رقم الهاتف (اختياري)" country={phone.country} national={phone.national} error={ctErr.phone} />
+      <Field idPrefix="contact" name="email" type="email" dir="ltr" label="البريد الإلكتروني (اختياري)" value={ct ? String(ct.email ?? "") : (profile.email ?? "")} error={ctErr.email} maxlength={120} />
+      <Field idPrefix="contact" as="textarea" rows={3} name="whatsapp_default_message" label="رسالة واتساب الجاهزة" value={t("contact", "whatsapp_default_message", profile.whatsapp_default_message)} error={ctErr.whatsapp_default_message} required maxlength={300} />
+      <p class="d-note">معاينة الرابط: <bdi dir="ltr" class="wa-preview" data-wa-preview></bdi></p>
+      <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
+    </form>
+  </Card>
+
+  <!-- 5. Social accounts -->
+  <Card>
+    <form method="post" class="d-form" novalidate id="card-socials">
+      <input type="hidden" name="intent" value="save-socials" />
+      <h2 class="d-h2">حسابات التواصل الاجتماعي</h2>
+      {list(soErr).length > 0 && <div class="d-errors" role="alert"><ul>{list(soErr).map((e) => <li>{e}</li>)}</ul></div>}
+      <div class="p-rows" data-rows data-max="8">
+        <div class="p-rows" data-row-list>
+          {socials.map((s, i) => (
+            <div class="p-row" data-row>
+              <div class="p-row-fields two">
+                <select name={`social_platform_${i}`} aria-label="المنصة">
+                  {platforms.map((p) => <option value={p.value} selected={p.value === s.platform}>{p.label}</option>)}
+                </select>
+                <input name={`social_url_${i}`} value={s.url} placeholder="https://" dir="ltr" maxlength="500" aria-label="الرابط" />
+              </div>
+              <button type="button" class="p-rm" data-remove-row aria-label="حذف الحساب">×</button>
+            </div>
+          ))}
+        </div>
+        <template data-row-template>
+          <div class="p-row" data-row>
+            <div class="p-row-fields two">
+              <select name="social_platform___i__" aria-label="المنصة">
+                {platforms.map((p) => <option value={p.value}>{p.label}</option>)}
+              </select>
+              <input name="social_url___i__" placeholder="https://" dir="ltr" maxlength="500" aria-label="الرابط" />
+            </div>
+            <button type="button" class="p-rm" data-remove-row aria-label="حذف الحساب">×</button>
+          </div>
+        </template>
+        <button type="button" class="btn btn-ghost btn-sm p-add" data-add-row>+ إضافة حساب</button>
+      </div>
+      <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
+    </form>
+  </Card>
+</DashboardLayout>
+
+<script>
+  import "@/scripts/repeat-rows";
+  import "@/scripts/tags-input";
+
+  // Live wa.me preview in the contact card.
+  const form = document.querySelector<HTMLFormElement>("[data-wa-card]");
+  if (form) {
+    const codes = JSON.parse(form.dataset.codes ?? "{}") as Record<string, string>;
+    const out = form.querySelector<HTMLElement>("[data-wa-preview]");
+    const num = form.querySelector<HTMLInputElement>('input[name="whatsapp_national"]');
+    const country = form.querySelector<HTMLInputElement>('input[name="whatsapp_country"]');
+    const msg = form.querySelector<HTMLTextAreaElement>('textarea[name="whatsapp_default_message"]');
+    const update = () => {
+      if (!out || !num || !country || !msg) return;
+      let digits = num.value.replace(/\D/g, "");
+      const code = codes[country.value] ?? "";
+      // A number typed in full ("+963…") already carries its calling code; otherwise drop the national leading zero.
+      if (!(num.value.trim().startsWith("+") || digits.startsWith(code))) digits = code + digits.replace(/^0+/, "");
+      out.textContent = `https://wa.me/${digits}?text=${encodeURIComponent(msg.value)}`;
+    };
+    form.addEventListener("input", update);
+    form.addEventListener("countrychange", update, true);
+    update();
+  }
+</script>

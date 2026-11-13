@@ -1,13 +1,14 @@
 ---
-import { doctorConfig } from "@/config";
-import type { Statistic } from "@/lib/types";
+import { profileView } from "@/lib/profile-view";
+import type { Profile, Statistic } from "@/lib/types";
 
 interface Props {
   statistics: Statistic[];
+  profile: Profile;
 }
 
-const { statistics } = Astro.props;
-const { doctor } = doctorConfig;
+const { statistics, profile } = Astro.props;
+const doctor = profileView(profile);
 const isNumeric = (v: string) => /^\d+$/.test(v.trim());
 ---
 <section class="bold dark" id="stats" aria-labelledby="why-h">
@@ -15,8 +16,8 @@ const isNumeric = (v: string) => /^\d+$/.test(v.trim());
     <span class="eyebrow rv">لماذا {doctor.honorific} {doctor.fullName}</span>
   </div>
   <h2 class="big" id="why-h">
-    <span class="ln wrap" data-drift="-1">رعاية تُصغي إليك.</span>
-    <span class="ln l2 wrap" data-drift="1">ولعائلتك كلها.</span>
+    <span class="ln wrap" data-drift="-1">{profile.statement_line1}</span>
+    <span class="ln l2 wrap" data-drift="1">{profile.statement_line2}</span>
   </h2>
   <div class="wrap bold-grid">
     <p class="fill" data-fill>{doctor.bio[0]}</p>

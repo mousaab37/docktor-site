@@ -1,11 +1,11 @@
 ---
 import { doctorConfig } from "@/config";
 import PublicLayout from "@/layouts/PublicLayout.astro";
-import { getPublishedArticles, getSeoSetting } from "@/lib/data";
+import { getProfile, getPublishedArticles, getSeoSetting } from "@/lib/data";
 
-const { doctor, site } = doctorConfig;
-const [articles, seo] = await Promise.all([getPublishedArticles(), getSeoSetting("blog")]);
-const title = seo?.seo_title || `المقالات | ${doctor.honorific} ${doctor.fullName}`;
+const { site } = doctorConfig;
+const [articles, seo, profile] = await Promise.all([getPublishedArticles(), getSeoSetting("blog"), getProfile()]);
+const title = seo?.seo_title || `المقالات | ${profile.honorific} ${profile.full_name}`;
 const description = seo?.seo_description || site.defaultDescription;
 const ogImage = seo?.og_image || undefined;
 const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });

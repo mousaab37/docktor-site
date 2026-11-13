@@ -1,0 +1,18 @@
+---
+import { profileView } from "@/lib/profile-view";
+import type { Profile } from "@/lib/types";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  profile: Profile;
+}
+
+const { profile } = Astro.props;
+const doctor = profileView(profile);
+---
+<div class="form-card contact-card rv">
+  <div class="ph contact-photo">{doctor.photo && <img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" loading="lazy" />}</div>
+  <p class="contact-line">أسرع طريقة للتواصل</p>
+  <p class="contact-sub">{doctor.displayName} · {doctor.specialty}</p>
+  <WhatsAppButton class="contact-cta" label="ابدأ المحادثة على واتساب" />
+</div>

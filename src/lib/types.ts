@@ -82,7 +82,7 @@ export interface Testimonial {
   updated_at: string;
 }
 
-export type SeoScope = "global" | "blog" | "privacy";
+export type SeoScope = "global" | "blog" | "privacy" | "contact";
 
 export interface SeoSetting {
   id: string;
@@ -90,5 +90,40 @@ export interface SeoSetting {
   seo_title: string | null;
   seo_description: string | null;
   og_image: string | null;
+  updated_at: string;
+}
+
+export type SocialPlatform = "instagram" | "x" | "facebook" | "tiktok" | "youtube" | "linkedin" | "snapchat" | "telegram";
+
+/** The doctor's profile: exactly one row. Editable in the dashboard ("ملفي"). */
+export interface Profile {
+  honorific: string;
+  full_name: string;
+  specialty: string;
+  short_intro: string; // hero text
+  bio: string[]; // About paragraphs (the first one is also the green statement paragraph)
+  statement_line1: string; // big green panel, line 1
+  statement_line2: string; // line 2 (lime)
+  photo_path: string | null;
+  education: { degree: string; institution: string; year: number | null }[];
+  experience: { role: string; place: string; period: string }[];
+  languages: string[];
+  phone: string | null; // "+963 944 123 456"
+  whatsapp: string; // digits "963944123456" (the main number)
+  email: string | null;
+  socials: { platform: SocialPlatform; url: string }[];
+  whatsapp_default_message: string;
+  updated_at: string;
+}
+
+/** A service shown on the site. Editable in the dashboard ("خدماتي"). */
+export interface Service {
+  id: string;
+  title: string;
+  description: string;
+  image_path: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
   updated_at: string;
 }

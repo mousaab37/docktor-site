@@ -1,5 +1,5 @@
 ---
-import { doctorConfig } from "@/config";
+import { getProfile } from "@/lib/data";
 import { waLink } from "@/lib/whatsapp";
 
 interface Props {
@@ -11,9 +11,11 @@ interface Props {
   class?: string;
 }
 
+// The doctor's main number and default message come from the profile (editable in the dashboard).
+const profile = await getProfile();
 const {
-  number = doctorConfig.contact.whatsapp,
-  message = doctorConfig.whatsapp.defaultMessage,
+  number = profile.whatsapp,
+  message = profile.whatsapp_default_message,
   label = "تواصل عبر واتساب",
   variant = "primary",
   size = "md",

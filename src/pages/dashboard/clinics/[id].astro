@@ -12,7 +12,7 @@ const repo = getRepo();
 const row = await repo.clinics.get(Astro.params.id ?? "");
 if (!row) return new Response("Not found", { status: 404 });
 
-let values: FormValues = clinicFormValues(row, doctorConfig.contact.defaultCountry);
+let values: FormValues = clinicFormValues(row, doctorConfig.site.defaultCountry);
 // A day with no stored rows shows as closed.
 let week: DayScheduleInput[] = weekFromHours(await repo.workingHours.listByClinic(row.id));
 let errors: Record<string, string> = {};

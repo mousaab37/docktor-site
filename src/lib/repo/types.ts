@@ -2,8 +2,10 @@ import type {
   Article,
   Certificate,
   Clinic,
+  Profile,
   SeoScope,
   SeoSetting,
+  Service,
   Statistic,
   Testimonial,
   WorkingHour,
@@ -11,7 +13,9 @@ import type {
 import type { ArticleInput } from "../validation/article";
 import type { CertificateInput } from "../validation/certificate";
 import type { ClinicInput } from "../validation/clinic";
+import type { ProfileInput } from "../validation/profile";
 import type { SeoInput } from "../validation/seo";
+import type { ServiceInput } from "../validation/service";
 import type { StatisticInput } from "../validation/statistic";
 import type { TestimonialInput } from "../validation/testimonial";
 import type { DayScheduleInput } from "../validation/working-hours";
@@ -35,6 +39,13 @@ export type ImageBucket = "certificates" | "articles";
 export interface ContentRepo {
   statistics: CrudTable<Statistic, StatisticInput> & Orderable;
   certificates: CrudTable<Certificate, CertificateInput> & Orderable;
+  /** The doctor's profile and contact details: exactly one row. */
+  profile: {
+    get(): Promise<Profile>;
+    /** Changes only the fields that are given (each card of the profile page saves its own fields). */
+    update(input: ProfileInput): Promise<Profile>;
+  };
+  services: CrudTable<Service, ServiceInput> & Orderable;
   /** remove() also removes the clinic's working hours. */
   clinics: CrudTable<Clinic, ClinicInput>;
   workingHours: {

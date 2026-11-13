@@ -1,7 +1,7 @@
 // Data access for the public site. It reads the content repository (in memory today, Supabase in task 17)
 // and applies the public filters (active / published) and the ordering here, in code.
 import { getRepo } from "./repo";
-import type { Article, Certificate, ClinicWithHours, SeoScope, SeoSetting, Statistic, Testimonial } from "./types";
+import type { Article, Certificate, ClinicWithHours, Profile, SeoScope, SeoSetting, Service, Statistic, Testimonial } from "./types";
 
 const byOrder = <T extends { display_order: number }>(a: T, b: T) => a.display_order - b.display_order;
 
@@ -65,4 +65,15 @@ export async function getPublishedArticleBySlug(slug: string): Promise<Article |
 export async function getSeoSetting(scope: SeoScope): Promise<SeoSetting | null> {
   const rows = await getRepo().seo.list();
   return rows.find((r) => r.scope === scope) ?? null;
+}
+
+/** The doctor's profile and contact details (editable in "ملفي"). */
+export async function getProfile(): Promise<Profile> {
+  return getRepo().profile.get();
+}
+
+/** The visible services, in the dashboard order. */
+export async function getActiveServices(): Promise<Service[]> {
+  const rows = await getRepo().services.list();
+  return rows.filter((s) => s.is_active).sort(byOrder);
 }

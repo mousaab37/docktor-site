@@ -1,16 +1,18 @@
 ---
-import { doctorConfig } from "@/config";
-import { getSectionLinks } from "@/lib/nav";
+import type { Profile, Service } from "@/lib/types";
+import { getSectionLinks, isCurrentLink } from "@/lib/nav";
 import Logo from "./Logo.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
   clinicCount: number;
+  profile: Profile;
+  services: Service[];
 }
 
-const { clinicCount } = Astro.props;
+const { clinicCount, profile, services } = Astro.props;
 const sectionLinks = getSectionLinks(clinicCount);
-const { contact, services } = doctorConfig;
+const current = (href: string) => (isCurrentLink(href, Astro.url.pathname) ? "page" : undefined);
 const promo = services[0];
 // Generic medical icons for the mega menu items (cycled).
 const icons = [
@@ -21,7 +23,8 @@ const icons = [
   "M5 12.5l4.5 4.5L19 7.5",
   "M12 5v14M5 12h14",
 ];
-const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
+const phone = profile.phone;
+const tel = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : null;
 ---
 <a class="skip" href="#main">تخطَّ إلى المحتوى</a>
 <header class="hdr" id="top">
@@ -31,19 +34,19 @@ const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
       {sectionLinks.map((l) =>
         l.href === "/#services" ? (
           <>
-            <a class="nojs-only" href={l.href}>{l.label}</a>
+            <a class="nojs-only" href={l.href} aria-current={current(l.href)}>{l.label}</a>
             <button class="js-only" type="button" aria-expanded="false" aria-controls="mega" data-mega>
               {l.label}
               <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 4.5l4 4 4-4" /></svg>
             </button>
           </>
         ) : (
-          <a href={l.href}>{l.label}</a>
+          <a href={l.href} aria-current={current(l.href)}>{l.label}</a>
         ),
       )}
     </nav>
     <div class="hdr-r">
-      <a class="hdr-tel" href={tel}><bdi dir="ltr">{contact.phone}</bdi></a>
+      {tel && phone && <a class="hdr-tel" href={tel}><bdi dir="ltr">{phone}</bdi></a>}
       <WhatsAppButton size="sm" label="واتساب" />
       <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" data-menu>
         <i aria-hidden="true"></i><span>القائمة</span>
@@ -61,24 +64,26 @@ const tel = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
           <span>{svc.description}</span>
         </a>
       ))}
+      {promo && (
       <div class="m-promo">
-        <span class="ph">{promo.image && <img src={promo.image.src} alt="" width="1600" height="1067" loading="lazy" />}</span>
+        <span class="ph">{promo.image_path && <img src={promo.image_path} alt="" width="1600" height="1067" loading="lazy" />}</span>
         <div>
           <span><small>خدمة مميزة</small><strong>{promo.title}</strong></span>
           <p>{promo.description}</p>
           <WhatsAppButton size="sm" label="اسأل عبر واتساب" message={`مرحبًا، أود الاستفسار عن: ${promo.title}`} />
         </div>
       </div>
+      )}
     </div>
   </div>
 </header>
 <nav class="menu" id="menu" aria-label="قائمة الموقع">
   <div class="menu-list">
     <ul>
-      {sectionLinks.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      {sectionLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
     </ul>
     <div class="menu-foot">
-      <a href={tel}><bdi dir="ltr">{contact.phone}</bdi></a>
+      {tel && phone && <a href={tel}><bdi dir="ltr">{phone}</bdi></a>}
       <WhatsAppButton size="sm" />
     </div>
   </div>
