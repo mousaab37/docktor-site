@@ -23,6 +23,7 @@ const { values, errors = {}, currentImage = null, cancelHref } = Astro.props;
     <Field as="textarea" name="description" label="وصف مختصر" value={String(values.description ?? "")} error={errors.description} required maxlength={300} rows={4} />
     <ImageUpload name="image" label="صورة الخدمة (اختياري)" value={currentImage} bucket="certificates" error={errors.image} />
     <Toggle name="is_active" label="ظاهر في الموقع" checked={values.is_active === true} />
+    <Toggle name="is_featured" label="خدمة مميزة (تظهر بشكل بارز في الصفحة الرئيسية)" checked={values.is_featured === true} />
     <FormActions cancelHref={cancelHref} />
   </form>
 </Card>

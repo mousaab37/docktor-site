@@ -1,5 +1,6 @@
 ---
 import type { Profile, Service } from "@/lib/types";
+import { servicesFeaturedFirst } from "@/lib/services";
 import { waLink } from "@/lib/whatsapp";
 
 interface Props {
@@ -7,7 +8,9 @@ interface Props {
   profile: Profile;
 }
 
-const { services, profile } = Astro.props;
+const { services: all, profile } = Astro.props;
+// The featured service (or the first active one) comes first: it is the dark card.
+const services = servicesFeaturedFirst(all);
 ---
 <section class="sec" id="services" aria-labelledby="svc-h">
   <div class="wrap">

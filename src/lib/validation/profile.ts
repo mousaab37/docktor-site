@@ -14,13 +14,6 @@ export const profileIdentityInput = z.object({
   specialty: text(1, 80),
 });
 
-export const profileIntroInput = z.object({
-  short_intro: text(1, 220),
-  statement_line1: text(1, 60),
-  statement_line2: text(1, 60),
-  bio: z.array(text(1, 1000)).min(1, "أضف فقرة واحدة على الأقل").max(6, "الحد الأقصى 6 فقرات"),
-});
-
 export const profileBackgroundInput = z.object({
   education: z
     .array(
@@ -34,7 +27,6 @@ export const profileBackgroundInput = z.object({
   experience: z
     .array(z.object({ role: text(1, 100), place: text(1, 100), period: text(1, 40) }))
     .max(6, "الحد الأقصى 6 عناصر"),
-  languages: z.array(text(1, 30)).max(6, "الحد الأقصى 6 لغات"),
 });
 
 export const profileContactInput = z.object({
@@ -83,16 +75,6 @@ export function readIdentity(fd: FormData): { typed: CardTyped; result: CardResu
   return { typed, result: run(profileIdentityInput, typed) };
 }
 
-export function readIntro(fd: FormData): { typed: CardTyped; result: CardResult<z.output<typeof profileIntroInput>> } {
-  const typed = {
-    short_intro: str(fd, "short_intro"),
-    statement_line1: str(fd, "statement_line1"),
-    statement_line2: str(fd, "statement_line2"),
-    bio: collectRows(fd, "bio", [], 8).map((r) => r.value),
-  };
-  return { typed, result: run(profileIntroInput, typed) };
-}
-
 export function readBackground(fd: FormData): { typed: CardTyped; result: CardResult<z.output<typeof profileBackgroundInput>> } {
   const typed = {
     education: collectRows(fd, "education", ["degree", "institution", "year"], 8).map((r) => ({
@@ -102,7 +84,6 @@ export function readBackground(fd: FormData): { typed: CardTyped; result: CardRe
       year: r.year === "" ? null : Number.isNaN(Number(r.year)) ? -1 : Number(r.year),
     })),
     experience: collectRows(fd, "experience", ["role", "place", "period"], 8),
-    languages: collectRows(fd, "language", [], 8).map((r) => r.value),
   };
   return { typed, result: run(profileBackgroundInput, typed) };
 }

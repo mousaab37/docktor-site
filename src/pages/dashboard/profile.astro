@@ -4,14 +4,15 @@ import Card from "@/components/dashboard/Card.astro";
 import Field from "@/components/dashboard/Field.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import ImageUpload from "@/components/dashboard/ImageUpload.astro";
+import SocialIcon from "@/components/public/SocialIcon.astro";
 import PhoneField from "@/components/dashboard/PhoneField.astro";
 import { doctorConfig } from "@/config";
 import { applyImageChange } from "@/lib/dashboard/images";
 import { COUNTRY_CODES, callingCode, splitPhone, type PhoneCountry } from "@/lib/phone";
 import { getRepo } from "@/lib/repo";
-import { readBackground, readContact, readIdentity, readIntro, readSocials, type CardTyped } from "@/lib/validation/profile";
+import { readBackground, readContact, readIdentity, readSocials, type CardTyped } from "@/lib/validation/profile";
 
-type CardName = "identity" | "intro" | "background" | "contact" | "socials";
+type CardName = "identity" | "background" | "contact" | "socials";
 interface Failed {
   card: CardName;
   typed: CardTyped;
@@ -47,13 +48,6 @@ if (Astro.request.method === "POST") {
         if (image.oldToRemove) await repo.images.remove("certificates", image.oldToRemove);
         saved = true;
       }
-    }
-  } else if (intent === "save-intro") {
-    const { typed, result } = readIntro(fd);
-    if (!result.ok) fail("intro", typed, result.errors);
-    else {
-      await repo.profile.update(result.data);
-      saved = true;
     }
   } else if (intent === "save-background") {
     const { typed, result } = readBackground(fd);
@@ -97,13 +91,9 @@ const t = (card: CardName, key: string, stored: string): string => {
 const list = (e: Record<string, string>) => [...new Set(Object.values(e))];
 
 const idErr = errorsOf("identity");
-const introErr = errorsOf("intro");
 const bgErr = errorsOf("background");
 const ctErr = errorsOf("contact");
 const soErr = errorsOf("socials");
-
-const bio = ((typedOf("intro")?.bio as string[] | undefined) ?? profile.bio).slice();
-if (bio.length === 0) bio.push("");
 
 const bg = typedOf("background");
 const education = ((bg?.education as { degree: string; institution: string; year: number | null }[] | undefined) ?? profile.education).map((e) => ({
@@ -112,7 +102,6 @@ const education = ((bg?.education as { degree: string; institution: string; year
   year: e.year === null ? "" : e.year === -1 ? "؟" : String(e.year),
 }));
 const experience = (bg?.experience as { role: string; place: string; period: string }[] | undefined) ?? profile.experience;
-const languages = (bg?.languages as string[] | undefined) ?? profile.languages;
 
 const ct = typedOf("contact");
 const fallbackCountry: PhoneCountry = doctorConfig.site.defaultCountry;
@@ -151,46 +140,11 @@ const platforms = [
     </form>
   </Card>
 
-  <!-- 2. Introduction -->
-  <Card>
-    <form method="post" class="d-form" novalidate id="card-intro">
-      <input type="hidden" name="intent" value="save-intro" />
-      <h2 class="d-h2">التعريف</h2>
-      {list(introErr).length > 0 && <div class="d-errors" role="alert"><ul>{list(introErr).map((e) => <li>{e}</li>)}</ul></div>}
-      <Field idPrefix="intro" as="textarea" name="short_intro" label="تعريف قصير" rows={3} value={t("intro", "short_intro", profile.short_intro)} error={introErr.short_intro} required maxlength={220} />
-      <div class="d-form-row">
-        <Field idPrefix="intro" name="statement_line1" label="العبارة الكبيرة: السطر الأول" value={t("intro", "statement_line1", profile.statement_line1)} error={introErr.statement_line1} required maxlength={60} hint="العبارة الكبيرة في اللوحة الخضراء" />
-        <Field idPrefix="intro" name="statement_line2" label="العبارة الكبيرة: السطر الثاني" value={t("intro", "statement_line2", profile.statement_line2)} error={introErr.statement_line2} required maxlength={60} hint="العبارة الكبيرة في اللوحة الخضراء" />
-      </div>
-      <div class="field">
-        <span class="d-label">النبذة (فقرات)</span>
-        <div class="p-rows" data-rows data-max="6">
-          <div class="p-rows" data-row-list>
-            {bio.map((p, i) => (
-              <div class="p-row" data-row>
-                <textarea name={`bio_${i}`} rows="3" maxlength="1000" aria-label="فقرة">{p}</textarea>
-                <button type="button" class="p-rm" data-remove-row aria-label="حذف الفقرة">×</button>
-              </div>
-            ))}
-          </div>
-          <template data-row-template>
-            <div class="p-row" data-row>
-              <textarea name="bio___i__" rows="3" maxlength="1000" aria-label="فقرة"></textarea>
-              <button type="button" class="p-rm" data-remove-row aria-label="حذف الفقرة">×</button>
-            </div>
-          </template>
-          <button type="button" class="btn btn-ghost btn-sm p-add" data-add-row>+ فقرة</button>
-        </div>
-      </div>
-      <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
-    </form>
-  </Card>
-
-  <!-- 3. Education, experience, languages -->
+  <!-- 2. Education and experience -->
   <Card>
     <form method="post" class="d-form" novalidate id="card-background">
       <input type="hidden" name="intent" value="save-background" />
-      <h2 class="d-h2">التعليم والخبرة واللغات</h2>
+      <h2 class="d-h2">التعليم والخبرة</h2>
       {list(bgErr).length > 0 && <div class="d-errors" role="alert"><ul>{list(bgErr).map((e) => <li>{e}</li>)}</ul></div>}
 
       <div class="field">
@@ -251,25 +205,11 @@ const platforms = [
         </div>
       </div>
 
-      <div class="field">
-        <label class="d-label" for="lang-input">اللغات</label>
-        <div class="tags-box" data-tags="language" data-max="6">
-          <span data-tag-list>
-            {languages.map((l, i) => (
-              <>
-                <span class="tag" data-tag={l}>{l}<button type="button" aria-label={`إزالة ${l}`}>×</button></span>
-                <input type="hidden" name={`language_${i}`} value={l} />
-              </>
-            ))}
-          </span>
-          <input id="lang-input" data-tag-input placeholder="اكتب لغة ثم اضغط Enter" maxlength="30" />
-        </div>
-      </div>
       <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
     </form>
   </Card>
 
-  <!-- 4. Contact -->
+  <!-- 3. Contact -->
   <Card>
     <form method="post" class="d-form" novalidate id="card-contact" data-wa-card data-codes={JSON.stringify(codes)}>
       <input type="hidden" name="intent" value="save-contact" />
@@ -283,18 +223,20 @@ const platforms = [
     </form>
   </Card>
 
-  <!-- 5. Social accounts -->
+  <!-- 4. Social accounts -->
   <Card>
     <form method="post" class="d-form" novalidate id="card-socials">
       <input type="hidden" name="intent" value="save-socials" />
       <h2 class="d-h2">حسابات التواصل الاجتماعي</h2>
       {list(soErr).length > 0 && <div class="d-errors" role="alert"><ul>{list(soErr).map((e) => <li>{e}</li>)}</ul></div>}
+      <p class="p-empty" data-social-empty hidden={socials.length > 0}>أضف حسابك على إنستغرام أو غيره</p>
       <div class="p-rows" data-rows data-max="8">
         <div class="p-rows" data-row-list>
           {socials.map((s, i) => (
             <div class="p-row" data-row>
-              <div class="p-row-fields two">
-                <select name={`social_platform_${i}`} aria-label="المنصة">
+              <div class="p-row-fields social">
+                <span class="social-ico" data-social-icon><SocialIcon platform={s.platform} /></span>
+                <select name={`social_platform_${i}`} aria-label="المنصة" data-social-select>
                   {platforms.map((p) => <option value={p.value} selected={p.value === s.platform}>{p.label}</option>)}
                 </select>
                 <input name={`social_url_${i}`} value={s.url} placeholder="https://" dir="ltr" maxlength="500" aria-label="الرابط" />
@@ -305,8 +247,9 @@ const platforms = [
         </div>
         <template data-row-template>
           <div class="p-row" data-row>
-            <div class="p-row-fields two">
-              <select name="social_platform___i__" aria-label="المنصة">
+            <div class="p-row-fields social">
+              <span class="social-ico" data-social-icon><SocialIcon platform="instagram" /></span>
+              <select name="social_platform___i__" aria-label="المنصة" data-social-select>
                 {platforms.map((p) => <option value={p.value}>{p.label}</option>)}
               </select>
               <input name="social_url___i__" placeholder="https://" dir="ltr" maxlength="500" aria-label="الرابط" />
@@ -319,11 +262,30 @@ const platforms = [
       <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
     </form>
   </Card>
+  <div hidden data-social-icons>
+    {platforms.map((pl) => <div data-p={pl.value}><SocialIcon platform={pl.value} /></div>)}
+  </div>
 </DashboardLayout>
 
 <script>
   import "@/scripts/repeat-rows";
-  import "@/scripts/tags-input";
+
+  // Social rows: the icon follows the selected platform; the empty message hides when there are rows.
+  const icons = new Map<string, string>();
+  document.querySelectorAll<HTMLElement>("[data-social-icons] [data-p]").forEach((d) => icons.set(d.dataset.p ?? "", d.innerHTML));
+  const socialForm = document.getElementById("card-socials");
+  const syncEmpty = () => {
+    const empty = socialForm?.querySelector<HTMLElement>("[data-social-empty]");
+    if (empty) empty.hidden = (socialForm?.querySelectorAll("[data-row]").length ?? 0) > 0;
+  };
+  socialForm?.addEventListener("change", (e) => {
+    const sel = e.target as HTMLElement;
+    if (sel instanceof HTMLSelectElement && sel.matches("[data-social-select]")) {
+      const slot = sel.closest("[data-row]")?.querySelector("[data-social-icon]");
+      if (slot) slot.innerHTML = icons.get(sel.value) ?? "";
+    }
+  });
+  socialForm?.addEventListener("click", () => setTimeout(syncEmpty));
 
   // Live wa.me preview in the contact card.
   const form = document.querySelector<HTMLFormElement>("[data-wa-card]");

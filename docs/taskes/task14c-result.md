@@ -1,0 +1,12 @@
+# Task 14c — Result
+- Branch / PR: `task/14c-profile-polish` (PR link in the final message)
+- Commit: `task14c: profile and services polish`
+- Status: done
+- Files changed: `src/pages/dashboard/profile.astro` (intro card and languages removed, social icon per row, empty state), `src/lib/validation/profile.ts` (intro and languages rules removed), `src/components/public/AboutSection.astro` (no languages), `src/pages/contact.astro` (no clinic cards, link to `/#clinics`, social icon buttons), `src/components/public/SocialIcon.astro` (new), `src/components/public/Footer.astro`, `src/components/public/Header.astro`, `src/components/public/ServicesSection.astro`, `src/lib/services.ts` (new: `pickFeatured`, `servicesFeaturedFirst`, `SOCIAL_NAMES`), `src/lib/types.ts`, `src/lib/validation/service.ts`, `src/lib/repo/memory.ts` (`is_featured`, only one featured), `src/components/dashboard/ServiceForm.astro`, `src/pages/dashboard/services.astro` + `services/new.astro` + `services/[id].astro`, `src/styles/dashboard.css`, `src/styles/global.css`
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅. `grep -rn "languages" src` only hits config, types, seed and `profile-view.ts` (field kept, unused in UI).
+- How to verify: `npm run dev`. `/dashboard/profile` has 4 cards (no التعريف, no languages) and each social row shows its platform icon, which changes with the select. `/contact` has no clinic cards, only the `/#clinics` link, and socials as round icons (also in the footer). `/dashboard/services`: click "اجعلها مميزة" on another service and the dark card on `/` changes; hide it and the first active service is used. Certificates and services lists are one row per item.
+- Notes for planner:
+  - DB needs a `services.is_featured boolean not null default false` column, and at most one `true` (enforce in the write path or with a partial unique index).
+  - The intro/statement/bio fields stay in `Profile` and are seeded only from `doctor.config.ts`; they are no longer editable.
+  - `src/scripts/tags-input.ts` and the `.tags-box` CSS are now unused (kept, since the task did not say to delete them).
+  - Tested with curl and the browser pane (375px: no horizontal scroll on the profile and services pages). Not tested: the 375px `/contact` and the footer icons visually after this change, and a real image upload.

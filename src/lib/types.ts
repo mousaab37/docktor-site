@@ -124,6 +124,8 @@ export interface Service {
   image_path: string | null;
   display_order: number;
   is_active: boolean;
+  /** At most one service is featured (the dark card on the home page). */
+  is_featured: boolean;
   created_at: string;
   updated_at: string;
 }

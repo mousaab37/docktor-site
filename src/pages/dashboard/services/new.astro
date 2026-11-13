@@ -7,7 +7,7 @@ import { serviceInput } from "@/lib/validation/service";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 
 const repo = getRepo();
-let values: FormValues = { title: "", description: "", is_active: true };
+let values: FormValues = { title: "", description: "", is_active: true, is_featured: false };
 let errors: Record<string, string> = {};
 
 if (Astro.request.method === "POST") {

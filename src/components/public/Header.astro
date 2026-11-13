@@ -1,4 +1,5 @@
 ---
+import { pickFeatured } from "@/lib/services";
 import type { Profile, Service } from "@/lib/types";
 import { getSectionLinks, isCurrentLink } from "@/lib/nav";
 import Logo from "./Logo.astro";
@@ -13,7 +14,7 @@ interface Props {
 const { clinicCount, profile, services } = Astro.props;
 const sectionLinks = getSectionLinks(clinicCount);
 const current = (href: string) => (isCurrentLink(href, Astro.url.pathname) ? "page" : undefined);
-const promo = services[0];
+const promo = pickFeatured(services);
 // Generic medical icons for the mega menu items (cycled).
 const icons = [
   "M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z",
