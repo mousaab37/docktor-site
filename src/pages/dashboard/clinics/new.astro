@@ -2,24 +2,35 @@
 import { doctorConfig } from "@/config";
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import ClinicForm from "@/components/dashboard/ClinicForm.astro";
+import { defaultWeek } from "@/lib/hours";
 import { getRepo } from "@/lib/repo";
 import { clinicFormValues, parseClinicForm } from "@/lib/validation/clinic";
 import type { FormValues } from "@/lib/validation/form";
+import { parseWeekForm, type DayScheduleInput } from "@/lib/validation/working-hours";
 
+const repo = getRepo();
 let values: FormValues = clinicFormValues(null, doctorConfig.contact.defaultCountry);
+// A new clinic starts with Saturday-Thursday 09:00-17:00 and Friday closed.
+let week: DayScheduleInput[] = defaultWeek();
 let errors: Record<string, string> = {};
 
 if (Astro.request.method === "POST") {
-  const result = parseClinicForm(await Astro.request.formData());
-  if (result.ok) {
-    await getRepo().clinics.create(result.data);
+  const fd = await Astro.request.formData();
+  const clinic = parseClinicForm(fd);
+  const hours = parseWeekForm(fd);
+  if (clinic.ok && hours.ok) {
+    // Both are valid: create the clinic, then its hours, in one go.
+    const created = await repo.clinics.create(clinic.data);
+    await repo.workingHours.replaceWeek(created.id, hours.data);
     return Astro.redirect("/dashboard/clinics?ok=saved", 303);
   }
-  values = result.values;
-  errors = result.errors;
+  // Any error: nothing is saved, and the form comes back with everything that was typed.
+  values = clinic.values;
+  week = hours.week;
+  errors = { ...(clinic.ok ? {} : clinic.errors), ...(hours.ok ? {} : hours.errors) };
   Astro.response.status = 422;
 }
 ---
 <DashboardLayout title="إضافة عيادة">
-  <ClinicForm values={values} errors={errors} cancelHref="/dashboard/clinics" />
+  <ClinicForm values={values} errors={errors} week={week} cancelHref="/dashboard/clinics" />
 </DashboardLayout>

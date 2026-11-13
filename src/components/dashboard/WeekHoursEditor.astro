@@ -1,0 +1,144 @@
+---
+import { weekdayNames } from "@/lib/hours";
+import type { DayScheduleInput } from "@/lib/validation/working-hours";
+import Toggle from "./Toggle.astro";
+
+interface Props {
+  /** The 7 days in displayOrder (Saturday first). */
+  week: DayScheduleInput[];
+  /** Keys like `d5` (the whole day) or `d5_1` (the second interval of that day). */
+  errors?: Record<string, string>;
+}
+
+const { week, errors = {} } = Astro.props;
+const MAX = 3;
+const hasErrors = Object.keys(errors).some((k) => /^d\d/.test(k) || k === "week");
+
+// An open day always shows at least one row.
+const rowsOf = (d: DayScheduleInput) => (d.intervals.length ? d.intervals : [{ from: "", to: "" }]);
+---
+<fieldset class="d-group d-hours" id="hours" data-week-editor data-max={MAX} data-has-errors={hasErrors ? "" : undefined}>
+  <legend>ساعات العمل</legend>
+  <div class="hours-tools">
+    <button class="d-link-btn" type="button" data-copy-saturday>نسخ السبت إلى باقي الأيام</button>
+  </div>
+  {errors.week && <p class="err">{errors.week}</p>}
+
+  {week.map((day) => (
+    <div class:list={["hours-day", day.closed && "is-closed"]} data-day={day.weekday}>
+      <div class="hours-day-head">
+        <strong>{weekdayNames[day.weekday as keyof typeof weekdayNames]}</strong>
+        <Toggle name={`d${day.weekday}_closed`} label="مغلق" checked={day.closed} />
+      </div>
+      <div class="hours-body" data-body>
+        <div class="hours-rows" data-rows>
+          {rowsOf(day).map((iv, i) => (
+            <div class="hours-row" data-row>
+              <input type="time" dir="ltr" name={`d${day.weekday}_from_${i}`} value={iv.from} aria-label={`من، ${weekdayNames[day.weekday as keyof typeof weekdayNames]}`} disabled={day.closed} />
+              <span aria-hidden="true">–</span>
+              <input type="time" dir="ltr" name={`d${day.weekday}_to_${i}`} value={iv.to} aria-label={`إلى، ${weekdayNames[day.weekday as keyof typeof weekdayNames]}`} disabled={day.closed} />
+              <button class="d-icon-btn" type="button" data-remove aria-label="حذف الفترة" title="حذف الفترة">×</button>
+              {errors[`d${day.weekday}_${i}`] && <p class="err hours-err">{errors[`d${day.weekday}_${i}`]}</p>}
+            </div>
+          ))}
+        </div>
+        {errors[`d${day.weekday}`] && <p class="err hours-err">{errors[`d${day.weekday}`]}</p>}
+        <button class="d-link-btn" type="button" data-add>+ فترة</button>
+      </div>
+    </div>
+  ))}
+
+  <template data-row-template>
+    <div class="hours-row" data-row>
+      <input type="time" dir="ltr" name="__from__" value="" aria-label="من" />
+      <span aria-hidden="true">–</span>
+      <input type="time" dir="ltr" name="__to__" value="" aria-label="إلى" />
+      <button class="d-icon-btn" type="button" data-remove aria-label="حذف الفترة" title="حذف الفترة">×</button>
+    </div>
+  </template>
+</fieldset>
+
+<script>
+  // No library: add and remove interval rows, "مغلق" hides and disables a day's inputs,
+  // and one button copies Saturday to Sunday-Thursday. Nothing is saved until the form is submitted.
+  document.querySelectorAll<HTMLElement>("[data-week-editor]").forEach((editor) => {
+    const max = Number(editor.dataset.max ?? 3);
+    const template = editor.querySelector<HTMLTemplateElement>("[data-row-template]");
+    if (!template) return;
+    const days = [...editor.querySelectorAll<HTMLElement>("[data-day]")];
+    const dayOf = (n: string | number) => days.find((d) => d.dataset.day === String(n));
+
+    const rowsOf = (day: HTMLElement) => [...day.querySelectorAll<HTMLElement>("[data-row]")];
+
+    // Names stay sequential (d{w}_from_0, d{w}_from_1 ...) after adds and removals, and the buttons follow the row count.
+    const refresh = (day: HTMLElement) => {
+      const w = day.dataset.day;
+      const rows = rowsOf(day);
+      rows.forEach((row, i) => {
+        const [from, to] = row.querySelectorAll<HTMLInputElement>("input[type=time]");
+        from.name = `d${w}_from_${i}`;
+        to.name = `d${w}_to_${i}`;
+        row.querySelector<HTMLButtonElement>("[data-remove]")!.hidden = rows.length === 1;
+      });
+      day.querySelector<HTMLElement>("[data-add]")!.hidden = rows.length >= max;
+    };
+
+    const setClosed = (day: HTMLElement, closed: boolean) => {
+      day.classList.toggle("is-closed", closed);
+      const box = day.querySelector<HTMLInputElement>('input[type="checkbox"]');
+      if (box) box.checked = closed;
+      day.querySelectorAll<HTMLInputElement>("input[type=time]").forEach((i) => (i.disabled = closed));
+    };
+
+    const addRow = (day: HTMLElement, from = "", to = "") => {
+      const rows = rowsOf(day);
+      if (rows.length >= max) return;
+      const node = template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const [a, b] = node.querySelectorAll<HTMLInputElement>("input[type=time]");
+      a.value = from;
+      b.value = to;
+      day.querySelector("[data-rows]")!.appendChild(node);
+      refresh(day);
+    };
+
+    days.forEach((day) => {
+      refresh(day);
+      day.querySelector<HTMLInputElement>('input[type="checkbox"]')?.addEventListener("change", (e) => {
+        setClosed(day, (e.target as HTMLInputElement).checked);
+      });
+      day.querySelector("[data-add]")?.addEventListener("click", () => addRow(day));
+    });
+
+    // Remove buttons (also on rows that are added later).
+    editor.addEventListener("click", (e) => {
+      const btn = (e.target as Element).closest<HTMLElement>("[data-remove]");
+      if (!btn) return;
+      const day = btn.closest<HTMLElement>("[data-day]");
+      const row = btn.closest("[data-row]");
+      if (!day || !row || rowsOf(day).length <= 1) return;
+      row.remove();
+      refresh(day);
+    });
+
+    // "نسخ السبت إلى باقي الأيام": Saturday (6) -> Sunday..Thursday (0-4). Friday (5) is left alone.
+    editor.querySelector("[data-copy-saturday]")?.addEventListener("click", () => {
+      const sat = dayOf(6);
+      if (!sat) return;
+      const closed = sat.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked ?? false;
+      const times = rowsOf(sat).map((r) => [...r.querySelectorAll<HTMLInputElement>("input[type=time]")].map((i) => i.value));
+      for (const n of [0, 1, 2, 3, 4]) {
+        const day = dayOf(n);
+        if (!day) continue;
+        rowsOf(day).forEach((r) => r.remove());
+        (times.length ? times : [["", ""]]).forEach(([from, to]) => addRow(day, from, to));
+        setClosed(day, closed);
+        refresh(day);
+      }
+    });
+
+    // After a failed save, scroll to the first error in the hours.
+    if (editor.hasAttribute("data-has-errors")) {
+      editor.querySelector(".err")?.scrollIntoView({ block: "center" });
+    }
+  });
+</script>

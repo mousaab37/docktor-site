@@ -131,6 +131,23 @@ function orderableTable<T extends { id: string; display_order: number; updated_a
   };
 }
 
+/** The stored rows of one day: one row per interval, or one explicit "closed" row. */
+function rowsForDay(clinicId: string, day: { weekday: number; closed: boolean; intervals: { from: string; to: string }[] }): WorkingHour[] {
+  const t = now();
+  const base = { clinic_id: clinicId, weekday: day.weekday as WorkingHour["weekday"], created_at: t, updated_at: t };
+  if (day.closed) {
+    return [{ ...base, id: crypto.randomUUID(), opening_time: null, closing_time: null, is_closed: true, interval_order: 0 }];
+  }
+  return day.intervals.map((iv, i) => ({
+    ...base,
+    id: crypto.randomUUID(),
+    opening_time: iv.from,
+    closing_time: iv.to,
+    is_closed: false,
+    interval_order: i,
+  }));
+}
+
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
@@ -215,29 +232,12 @@ export const memoryRepo: ContentRepo = {
       db().workingHours = db().workingHours.filter(
         (h) => !(h.clinic_id === clinicId && h.weekday === day.weekday),
       );
-      const t = now();
-      const base = { clinic_id: clinicId, weekday: day.weekday as WorkingHour["weekday"], created_at: t, updated_at: t };
-      if (day.closed) {
-        db().workingHours.push({
-          ...base,
-          id: crypto.randomUUID(),
-          opening_time: null,
-          closing_time: null,
-          is_closed: true,
-          interval_order: 0,
-        });
-        return;
-      }
-      day.intervals.forEach((iv, i) => {
-        db().workingHours.push({
-          ...base,
-          id: crypto.randomUUID(),
-          opening_time: iv.from,
-          closing_time: iv.to,
-          is_closed: false,
-          interval_order: i,
-        });
-      });
+      db().workingHours.push(...rowsForDay(clinicId, day));
+    },
+    async replaceWeek(clinicId, week) {
+      // All of the clinic's rows go, and the whole week is inserted again (a closed day is one explicit row).
+      db().workingHours = db().workingHours.filter((h) => h.clinic_id !== clinicId);
+      for (const day of week) db().workingHours.push(...rowsForDay(clinicId, day));
     },
   },
 
