@@ -47,7 +47,7 @@ export function publicImageUrl(path: string | null, bucket: "certificates" | "ar
 ```
 - `null` → `null`.
 - Values starting with `/`, `http` or `data:` → unchanged.
-- Otherwise → `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`.
+- Otherwise → `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`.
 - Use it **everywhere** an image path is shown: public certificates and articles, dashboard previews, OG images, JSON-LD.
 
 ### 5. `src/lib/data.ts`

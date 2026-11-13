@@ -66,8 +66,8 @@
 ### 8) انسخ المفاتيح للموقع
 1. **Project Settings** ← **API** (أو **API Keys**).
 2. انسخ:
-   - **Project URL** ← `PUBLIC_SUPABASE_URL`
-   - **Publishable key** (يبدأ بـ `sb_publishable_`، وفي المشاريع القديمة اسمه **anon public**) ← `PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - **Project URL** ← `SUPABASE_URL`
+   - **Publishable key** (يبدأ بـ `sb_publishable_`، وفي المشاريع القديمة اسمه **anon public**) ← `SUPABASE_KEY`
 3. ضعهما في ملف `.env` على جهازك للتطوير، وفي متغيرات Cloudflare للنشر.
 
 > ⛔ **لا تنسخ أبدًا** مفتاح **Secret key** (`sb_secret_…`) أو `service_role`. هذا المفتاح يتجاوز كل الحماية، والموقع لا يحتاجه إطلاقًا.

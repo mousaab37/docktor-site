@@ -57,7 +57,7 @@ Prepare the project for the real build: install the missing packages, switch Ast
 6. **Create `src/env.d.ts`**:
    ```ts
    interface ImportMetaEnv {
-     readonly PUBLIC_SUPABASE_URL: string;
+     readonly SUPABASE_URL: string;
      readonly PUBLIC_SUPABASE_ANON_KEY: string;
      readonly SITE_URL: string;
    }
@@ -68,7 +68,7 @@ Prepare the project for the real build: install the missing packages, switch Ast
 
 7. **Create `.env.example`**:
    ```
-   PUBLIC_SUPABASE_URL=
+   SUPABASE_URL=
    PUBLIC_SUPABASE_ANON_KEY=
    SITE_URL=http://localhost:4321
    ```

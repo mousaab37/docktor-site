@@ -208,8 +208,8 @@ As in PRD §6. Implementation choices:
 
 | Name | Where | Secret? |
 |---|---|---|
-| `PUBLIC_SUPABASE_URL` | `.env` / Cloudflare vars | no |
-| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `.env` / Cloudflare vars | no (protected by RLS) |
+| `SUPABASE_URL` | `.env` / Cloudflare vars | no |
+| `SUPABASE_KEY` | `.env` / Cloudflare vars | no (protected by RLS) |
 | `SITE_URL` | Cloudflare vars | no |
 | `HEALTH_ALERT_WEBHOOK` (optional) | Cloudflare secret | yes |
 
