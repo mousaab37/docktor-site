@@ -345,14 +345,20 @@
 
 .map-picker-label { font-size: 15px; font-weight: 600; line-height: 1.5; }
 
-/* Phone field: a country select and a number input that look like one field (LTR inside) */
-.phone-row { display: flex; }
-.phone-row select, .phone-row input { min-width: 0; padding: 12px 14px; border: 1.5px solid var(--color-line); background: #fff; font: inherit; font-size: 16px; line-height: 1.6; color: var(--color-ink); }
-.phone-row select { flex: 0 1 46%; border-radius: 12px 0 0 12px; border-right-width: 0; background: var(--color-mint); cursor: pointer; }
-.phone-row input { flex: 1 1 auto; border-radius: 0 12px 12px 0; }
-.phone-row select:focus, .phone-row input:focus { outline: 3px solid var(--color-lime); outline-offset: 1px; border-color: var(--color-forest); position: relative; z-index: 1; }
-.phone-field.has-error .phone-row select, .phone-field.has-error .phone-row input { border-color: #b42318; }
-.phone-row select:disabled, .phone-row input:disabled { opacity: .6; cursor: not-allowed; }
+/* Phone field: intl-tel-input, restyled to look like our other inputs (LTR inside, RTL around) */
+.phone-field .phone-box { display: block; }
+.phone-field .iti { display: block; width: 100%; --iti-border-color: var(--color-line); --iti-hover-color: var(--color-mint); --iti-country-selector-bg: #fff; --iti-icon-color: var(--color-ink-2); --iti-border-width: 1.5px; }
+.phone-field .iti__tel-input { width: 100%; padding-block: 12px; border: 1.5px solid var(--color-line); border-radius: 12px; background: #fff; font: inherit; font-size: 16px; line-height: 1.6; color: var(--color-ink); }
+.phone-field .iti__tel-input:focus { outline: 3px solid var(--color-lime); outline-offset: 1px; border-color: var(--color-forest); }
+.phone-field.has-error .iti__tel-input { border-color: #b42318; }
+.phone-field .iti__selected-country { border-radius: 12px 0 0 12px; }
+.phone-field .iti__selected-dial-code { font-size: 15px; color: var(--color-ink); }
+.phone-field .iti__country-container { border-inline-end: 1px solid var(--color-line); margin-block: 8px; padding-block: 0; }
+.phone-field .iti__dropdown-content, .phone-field .iti__country-selector { font-family: var(--font-sans); border-radius: 12px; border: 1px solid var(--color-line); box-shadow: 0 16px 40px -16px rgb(13 43 34 / .4); }
+.phone-field .iti__country-list { max-height: 280px; }
+.phone-field .iti__country-name { direction: rtl; unicode-bidi: plaintext; text-align: right; }
+.phone-field .iti__search-input { font: inherit; text-align: right; direction: rtl; }
+.phone-field .iti--disabled .iti__tel-input, .phone-field .iti__tel-input:disabled { background: #eef1ee; color: #7a877f; cursor: not-allowed; }
 .same-phone { display: inline-flex; align-items: center; gap: 8px; width: fit-content; font-weight: 500; cursor: pointer; margin-block: -8px; }
 .same-phone input { width: 18px; height: 18px; }
 
