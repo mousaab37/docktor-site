@@ -6,6 +6,11 @@
 --   2. The doctor user exists: Authentication → Users → Add user → Create new user
 --      (with "Auto Confirm User" ticked).
 --
+-- IMPORTANT: run it with the role "postgres"
+--   In the SQL Editor, the Role list next to the Run button must say "postgres".
+--   If it says "authenticated" or "anon", you get "permission denied for table users".
+--   Do NOT fix that error with GRANT on auth.users: it would expose every user's email.
+--
 -- HOW TO USE
 --   Change ONLY the email on the line marked  <<< CHANGE THIS  ,
 --   then SQL Editor → New query → paste → Run.

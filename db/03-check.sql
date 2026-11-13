@@ -1,6 +1,11 @@
 -- =====================================================================
 -- Doctor Website — health check of the setup (03-check.sql)
 --
+-- IMPORTANT: run it with the role "postgres"
+--   In the SQL Editor, the Role list next to the Run button must say "postgres".
+--   With "authenticated" or "anon" you get "permission denied" (the checks read
+--   auth.users and dashboard_users, which those roles must not read).
+--
 -- SQL Editor → New query → paste → Run.
 -- Every row must show ok = true. Read-only: it changes nothing.
 -- If a row is false, re-run 01-setup.sql (or 02-add-doctor.sql for the last row).
