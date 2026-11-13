@@ -1,5 +1,6 @@
 // Map code shared by the dashboard location picker and the per-clinic maps on the home page.
 import type * as Leaflet from "leaflet";
+import pinSvg from "@/assets/map-pin.svg?raw";
 
 type LeafletNS = typeof Leaflet;
 
@@ -80,7 +81,13 @@ export function enableTwoFingerPan(map: Leaflet.Map, el: HTMLElement): void {
   el.addEventListener("touchcancel", () => map.dragging.disable(), { passive: true });
 }
 
-/** The clinic marker: a forest dot with a white ring (no default marker images). */
-export function clinicDotIcon(): Leaflet.DivIcon {
-  return leaflet().divIcon({ className: "pick-dot", html: "<span></span>", iconSize: [26, 26], iconAnchor: [13, 13] });
+/** The clinic marker: the owner's pin (src/assets/map-pin.svg, brand color, white center). The tip sits on the point. */
+export function clinicPinIcon(): Leaflet.DivIcon {
+  return leaflet().divIcon({
+    className: "clinic-pin",
+    html: pinSvg,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -34],
+  });
 }

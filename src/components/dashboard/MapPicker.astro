@@ -41,7 +41,7 @@ const hasPoint = latText !== "" && lngText !== "";
 </div>
 
 <script>
-  import { addOsmTiles, baseMapOptions, clinicDotIcon, enableTwoFingerPan, loadLeaflet, whenNear } from "@/scripts/leaflet-shared";
+  import { addOsmTiles, baseMapOptions, clinicPinIcon, enableTwoFingerPan, loadLeaflet, whenNear } from "@/scripts/leaflet-shared";
 
   // Location picker. A click on the map (or the end of a marker drag) sets the point and asks Nominatim
   // for the address, which is written into the address field. The coordinates stay in hidden fields.
@@ -242,7 +242,7 @@ const hasPoint = latText !== "" && lngText !== "";
           marker.setLatLng([la, ln]);
           return;
         }
-        marker = L.marker([la, ln], { icon: clinicDotIcon(), draggable: true }).addTo(map);
+        marker = L.marker([la, ln], { icon: clinicPinIcon(), draggable: true }).addTo(map);
         marker.on("dragend", () => {
           const p = marker?.getLatLng();
           if (!p) return;
