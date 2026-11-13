@@ -42,10 +42,13 @@ The owner asked to build the dashboard **before** the database and login. Every 
 | 11c | [task11c.md](task11c.md) | Owner feedback: address above the map, phone/WhatsApp country picker (Syria default, libphonenumber + Zod), singular "العيادة" when one clinic | ✅ done (PR #4 merged) |
 | 11d | [task11d.md](task11d.md) | Owner feedback: phone fields restyled with `intl-tel-input` (flag images, Arabic search); server validation unchanged | ✅ done (PR #5 merged) |
 | 12 | [task12.md](task12.md) | **Owner decision:** hours tab removed (7 sections); week hours editor inside each clinic form | ✅ PR #6 (merge pending) |
-| 13 | [task13.md](task13.md) | Blog: Arabic RTL editor (Tiptap), drafts and publish, HTML sanitizer, public `/blog` + `/blog/[slug]` | ✅ PR #7 (merge pending) |
-| 14 | [task14.md](task14.md) | SEO settings (last section), sitemap, robots, privacy, 404, JSON-LD | ✅ PR #7 (merge pending) |
-| 14b | [task14b.md](task14b.md) | **Owner decision:** "ملفي" (profile + contact + socials) and "خدماتي" (services) tabs, 9 sections; "المقالات" → /blog; new /contact page; friendly overview checklist | ✅ PR #8 (merge pending) |
-| 14c | [task14c.md](task14c.md) | Owner feedback: remove "التعريف" card and languages, /contact without clinic cards, social icons, choose featured service, one-column lists | todo |
+| 13 | [task13.md](task13.md) | Blog: Arabic RTL editor (Tiptap), drafts and publish, HTML sanitizer, public `/blog` + `/blog/[slug]` | ✅ done (PR #7 merged) |
+| 14 | [task14.md](task14.md) | SEO settings (last section), sitemap, robots, privacy, 404, JSON-LD | ✅ done (PR #7 merged) |
+| 14b | [task14b.md](task14b.md) | **Owner decision:** "ملفي" (profile + contact + socials) and "خدماتي" (services) tabs, 9 sections; "المقالات" → /blog; new /contact page; friendly overview checklist | ✅ done (PR #8 merged) |
+| 14c | [task14c.md](task14c.md) | Owner feedback: remove "التعريف" card and languages, /contact without clinic cards, social icons, choose featured service, one-column lists | ✅ done (PR #9 merged) |
+| 14d | [task14d.md](task14d.md) | Owner request: custom map pin (brand color) on every map | ✅ PR #10 (merge pending) |
+| 14e | [task14e.md](task14e.md) | **Owner decision:** FAQ tab (10 sections) + FAQ section on / (original accordion) + FAQPage JSON-LD | todo |
+| 14f | [task14f.md](task14f.md) | **SEO + GEO hardening:** one SEO helper, full @graph JSON-LD (Physician, MedicalClinic, BlogPosting, Breadcrumbs), AI crawlers allowed, /llms.txt, answer-first summary + author box, `npm run seo:check`, Lighthouse SEO 100 | todo |
 
 ## Phase 3 — Database + login (at the end, as the owner asked)
 
@@ -77,5 +80,5 @@ The message is `ts(2322) boolean is not assignable to string`. Don't fix them. F
 - Add `wrangler.jsonc` (name, compatibility_date, `nodejs_compat`, cron trigger) when deployment and the health-check worker are set up. Build and dev work without it for now.
 
 - Real edge caching on Cloudflare (Workers responses aren't CDN-cached by default; `s-maxage` alone isn't enough). Decide on the Cache API or caching rules at deploy time.
-- **Planner, before task 15:** add `profile` (single row) and `services` (with `is_featured`) tables to `db/01-setup.sql` (RLS: public read, `is_dashboard_user()` write), update `03-check.sql` counts, re-test, and update tasks 15–17.
+- **Planner, before task 15:** add `profile` (single row), `services` (with `is_featured`) and `faqs` tables (+ `articles.summary` if task 14f adds it) to `db/01-setup.sql` (RLS: public read, `is_dashboard_user()` write), update `03-check.sql` counts, re-test, and update tasks 15–17.
 - Health-check cron worker (PRD §13), backup and restore docs (PRD §14), deployment guide per doctor (PRD §12). These are written after Phase 3.
