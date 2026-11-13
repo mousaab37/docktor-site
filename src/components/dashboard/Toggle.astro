@@ -3,12 +3,13 @@ interface Props {
   name: string;
   label: string;
   checked?: boolean;
+  disabled?: boolean;
 }
 
-const { name, label, checked = false } = Astro.props;
+const { name, label, checked = false, disabled = false } = Astro.props;
 ---
 <label class="toggle">
-  <input type="checkbox" name={name} checked={checked} role="switch" />
+  <input type="checkbox" name={name} checked={checked} disabled={disabled} role="switch" />
   <span class="toggle-track" aria-hidden="true"></span>
   <span>{label}</span>
 </label>

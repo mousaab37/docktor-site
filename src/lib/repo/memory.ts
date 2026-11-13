@@ -207,12 +207,14 @@ function featuredServices(base: CrudTable<Service, ServiceInputLike> & Orderable
   return {
     ...base,
     async create(input) {
-      const row = await base.create(input);
+      // A hidden service is never featured.
+      const row = await base.create({ ...input, is_featured: input.is_featured && input.is_active });
       if (row.is_featured) unfeatureOthers(row.id);
       return row;
     },
     async update(id, input) {
-      const row = await base.update(id, input);
+      // A hidden service is never featured; hiding the featured one leaves none featured.
+      const row = await base.update(id, { ...input, is_featured: input.is_featured && input.is_active });
       if (row.is_featured) unfeatureOthers(row.id);
       return row;
     },

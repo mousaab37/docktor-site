@@ -23,7 +23,25 @@ const { values, errors = {}, currentImage = null, cancelHref } = Astro.props;
     <Field as="textarea" name="description" label="وصف مختصر" value={String(values.description ?? "")} error={errors.description} required maxlength={300} rows={4} />
     <ImageUpload name="image" label="صورة الخدمة (اختياري)" value={currentImage} bucket="certificates" error={errors.image} />
     <Toggle name="is_active" label="ظاهر في الموقع" checked={values.is_active === true} />
-    <Toggle name="is_featured" label="خدمة مميزة (تظهر بشكل بارز في الصفحة الرئيسية)" checked={values.is_featured === true} />
+    <Toggle name="is_featured" label="خدمة مميزة (تظهر بشكل بارز في الصفحة الرئيسية)" checked={values.is_featured === true && values.is_active === true} disabled={values.is_active !== true} />
+    <p class="hint" data-feature-hint hidden={values.is_active === true}>أظهر الخدمة أولًا</p>
+    {errors.is_featured && <p class="err">{errors.is_featured}</p>}
     <FormActions cancelHref={cancelHref} />
   </form>
 </Card>
+
+<script>
+  // The featured toggle follows the visibility toggle. The server rule (the Zod check) is the real guard.
+  const form = document.querySelector<HTMLFormElement>("form.d-form");
+  const active = form?.querySelector<HTMLInputElement>('input[name="is_active"]');
+  const featured = form?.querySelector<HTMLInputElement>('input[name="is_featured"]');
+  const hint = form?.querySelector<HTMLElement>("[data-feature-hint]");
+  const sync = () => {
+    if (!active || !featured) return;
+    if (!active.checked) featured.checked = false;
+    featured.disabled = !active.checked;
+    if (hint) hint.hidden = active.checked;
+  };
+  active?.addEventListener("change", sync);
+  sync();
+</script>

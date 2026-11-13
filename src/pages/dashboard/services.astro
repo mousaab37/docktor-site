@@ -20,7 +20,8 @@ if (Astro.request.method === "POST") {
   if (intent === "feature") {
     // Making a service featured un-features the others (the repo does that).
     const row = await repo.services.get(id);
-    if (row) await repo.services.update(id, { title: row.title, description: row.description, image_path: row.image_path, is_active: row.is_active, is_featured: true });
+    // Featuring a hidden service does nothing.
+    if (row && row.is_active) await repo.services.update(id, { title: row.title, description: row.description, image_path: row.image_path, is_active: row.is_active, is_featured: true });
     return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
   }
   if (intent === "delete") {
@@ -53,13 +54,13 @@ const rows = await repo.services.list();
             <div class="cert-head">
               <strong>{c.title}</strong>
               <span class="cert-badges">
-                {c.is_featured && <span class="d-badge-star">⭐ مميزة</span>}
+                {c.is_featured && c.is_active && <span class="d-badge-star">⭐ مميزة</span>}
                 <StatusBadge kind={c.is_active ? "visible" : "hidden"} />
               </span>
             </div>
             <p class="d-note">{c.description}</p>
             <RowActions id={c.id} editHref={`/dashboard/services/${c.id}`} first={i === 0} last={i === rows.length - 1} />
-            {!c.is_featured && (
+            {!c.is_featured && c.is_active && (
               <form method="post">
                 <input type="hidden" name="intent" value="feature" />
                 <input type="hidden" name="id" value={c.id} />
