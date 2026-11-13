@@ -41,7 +41,7 @@ The owner asked to build the dashboard **before** the database and login. Every 
 | 11b | [task11b.md](task11b.md) | Owner feedback: address filled from the map click, coordinates hidden, one mini map per clinic on the home page, shared Leaflet code | ✅ done (PR #3 merged) |
 | 11c | [task11c.md](task11c.md) | Owner feedback: address above the map, phone/WhatsApp country picker (Syria default, libphonenumber + Zod), singular "العيادة" when one clinic | ✅ done (PR #4 merged) |
 | 11d | [task11d.md](task11d.md) | Owner feedback: phone fields restyled with `intl-tel-input` (flag images, Arabic search); server validation unchanged | ✅ done (PR #5 merged) |
-| 12 | [task12.md](task12.md) | **Owner decision:** hours tab removed (7 sections); week hours editor inside each clinic form | todo |
+| 12 | [task12.md](task12.md) | **Owner decision:** hours tab removed (7 sections); week hours editor inside each clinic form | ✅ PR #6 (merge pending) |
 | 13 | [task13.md](task13.md) | Blog: Arabic RTL editor (Tiptap), drafts and publish, HTML sanitizer, public `/blog` + `/blog/[slug]` | todo |
 | 14 | [task14.md](task14.md) | SEO settings (last section), sitemap, robots, privacy, 404, JSON-LD | todo |
 
