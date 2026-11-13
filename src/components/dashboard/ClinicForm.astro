@@ -7,15 +7,19 @@ import FormActions from "./FormActions.astro";
 import MapPicker from "./MapPicker.astro";
 import PhoneField from "./PhoneField.astro";
 import Toggle from "./Toggle.astro";
+import WeekHoursEditor from "./WeekHoursEditor.astro";
+import type { DayScheduleInput } from "@/lib/validation/working-hours";
 import type { FormValues } from "@/lib/validation/form";
 
 interface Props {
   values: FormValues;
   errors?: Record<string, string>;
   cancelHref: string;
+  /** The 7 days of working hours (Saturday first), edited in the same form. */
+  week: DayScheduleInput[];
 }
 
-const { values, errors = {}, cancelHref } = Astro.props;
+const { values, errors = {}, cancelHref, week } = Astro.props;
 const fallback = doctorConfig.contact.defaultCountry;
 const country = (v: string | boolean | undefined): PhoneCountry => (typeof v === "string" && v ? (v as PhoneCountry) : fallback);
 const num = (v: string | boolean | undefined) => {
@@ -60,6 +64,8 @@ const same = values.whatsapp_same === true;
         error={errors.latitude ?? errors.longitude}
       />
     </fieldset>
+
+    <WeekHoursEditor week={week} errors={errors} />
 
     <Toggle name="is_active" label="ظاهرة في الموقع" checked={values.is_active === true} />
     <FormActions cancelHref={cancelHref} />

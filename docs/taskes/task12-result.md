@@ -1,0 +1,30 @@
+# Task 12 — Result
+- Branch / PR: `task/12-clinic-hours` (PR link in the final message, opened with `gh`)
+- Commit: task12: working hours inside each clinic, remove hours tab (hash: see the PR)
+- Status: done
+- Files changed:
+  - New: src/components/dashboard/WeekHoursEditor.astro
+  - Part A: src/lib/dashboard-nav.ts (7 entries), src/pages/dashboard/hours.astro (now only a 302 redirect), src/pages/dashboard/clinics.astro (hours link `/dashboard/clinics/{id}#hours`, one-line hours summary)
+  - Part B: src/lib/validation/working-hours.ts (`weekScheduleInput`, `parseWeekForm`, Arabic messages as in the task), src/lib/repo/types.ts and src/lib/repo/memory.ts (`workingHours.replaceWeek`; `replaceDay` kept), src/lib/hours.ts (`hoursSummary`, `weekFromHours`, `defaultWeek`)
+  - Parts C and D: src/components/dashboard/ClinicForm.astro (hours editor after the location group, same form), src/pages/dashboard/clinics/new.astro and `[id].astro` (one save for the clinic and its hours), src/styles/dashboard.css
+  - docs/taskes/task12-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 2 hints in the old public/site.js)
+- How to verify: `npm run dev`, open `/dashboard/clinics`, edit a clinic and scroll to "ساعات العمل" (or open `/dashboard/hours?clinic={id}`).
+- Checked (dev server, real clicks and form submits in the browser pane, plus HTTP requests):
+  - The sidebar has **7** items (لوحة التحكم، الإحصائيات، الشهادات، العيادات، المدونة، آراء المرضى، إعدادات SEO); the mobile drawer uses the same list. `/dashboard/hours?clinic={id}` → 302 to `/dashboard/clinics/{id}#hours`; `/dashboard/hours` → 302 to `/dashboard/clinics`. `grep -rn "dashboard/hours" src` finds nothing (the redirect page does not need the path).
+  - The clinics list shows the summary under the address: "السبت–الخميس، الجمعة مغلق"; "الأحد–الخميس، السبت والجمعة مغلق"; "لم تُحدَّد الساعات" when a clinic has no rows.
+  - Editing a clinic: Friday closed, Saturday 09:00–13:00 + 16:00–21:00 (a second row added with "+ فترة"), Thursday 10:00–14:00; after saving, the home page shows exactly that for that clinic (Saturday first, Friday "مغلق"), and the list summary stays correct. The "+ فترة" button disappears at 3 rows and comes back after a row is removed; field names stay sequential (`d6_from_0`, `d6_from_1`…).
+  - Errors: an overlapping second interval (Sunday) and `from` ≥ `to` (Monday) came back with 422, "الفترات متداخلة" and "وقت البداية يجب أن يكون قبل النهاية" at the right days, **everything typed kept** (including a changed clinic name), the page scrolled to the first hours error, and **nothing was saved** (the clinic name and the hours were unchanged afterwards).
+  - New clinic: the default week is Saturday–Thursday 09:00–17:00 and Friday closed; saving it created the clinic and its hours (summary and home table).
+  - "نسخ السبت إلى باقي الأيام": copied Saturday's two intervals to Sunday–Thursday and left Friday alone; nothing was saved until "حفظ" (the clinic did not exist in the list before the submit). Ticking "مغلق" on Wednesday hid its rows and disabled its inputs, so the day was saved as closed.
+  - Deleting a clinic: the delete intent works and the edit page answers 404 afterwards; its hours are removed by the repo (`clinics.remove`, behavior unchanged since task 8).
+  - 375px: each day is a stacked block, time inputs are 48px tall, one interval per line with the × button, and no horizontal scroll (checked after a CSS fix for the first version, which overflowed by a few pixels).
+- Not checked: the "مغلق" day with an empty interval row from a clinic that has no stored hours at all (an edit page for such a clinic shows all 7 days closed by design); a real `type="time"` picker on a phone; JavaScript disabled (the editor needs JS for add/remove/copy; the saved fields are plain inputs).
+- Notes for planner:
+  - `weekFromHours` strips seconds (`slice(0, 5)`) so Supabase `time` values like `09:00:00` will work in task 17.
+  - A day with no stored rows is shown as closed in the editor, so saving a clinic with no hours writes seven explicit "closed" rows.
+  - `replaceDay` stays in the repo and in the memory implementation but nothing uses it.
+  - The editor ignores a fully empty interval row, but a row with only one time filled is an error (the time field message "الوقت بصيغة HH:MM" at that day).
+  - The error scroll uses `scrollIntoView` on the first `.err` of the editor; the map loads lazily below it, so the target is near, not always exactly centered.
+  - While testing I changed the in-memory hours of the second sample clinic and added/deleted a test clinic; I restarted the dev server afterwards, so the sample data is fresh. The old dev server on port 4321 was left over from earlier; I stopped it and started a new one.
+  - `gh` is at `C:\Program Files\GitHub CLI\gh.exe` and logged in.

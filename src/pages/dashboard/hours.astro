@@ -1,8 +1,5 @@
 ---
-import DashboardLayout from "@/layouts/DashboardLayout.astro";
-import Card from "@/components/dashboard/Card.astro";
-import EmptyState from "@/components/dashboard/EmptyState.astro";
+// Hours are edited inside each clinic (task 12). This page only keeps old links working.
+const clinic = Astro.url.searchParams.get("clinic");
+return Astro.redirect(clinic ? `/dashboard/clinics/${encodeURIComponent(clinic)}#hours` : "/dashboard/clinics", 302);
 ---
-<DashboardLayout title="ساعات العمل">
-  <Card><EmptyState message="قيد البناء — المهمة 12" /></Card>
-</DashboardLayout>

@@ -41,6 +41,8 @@ export interface ContentRepo {
     listByClinic(clinicId: string): Promise<WorkingHour[]>;
     /** Replaces all rows of that weekday. */
     replaceDay(clinicId: string, day: DayScheduleInput): Promise<void>;
+    /** Replaces ALL of a clinic's hours in one call (Supabase: one delete plus one insert). */
+    replaceWeek(clinicId: string, week: DayScheduleInput[]): Promise<void>;
   };
   articles: CrudTable<Article, ArticleInput> & {
     slugExists(slug: string, exceptId?: string): Promise<boolean>;

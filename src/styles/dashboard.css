@@ -365,3 +365,31 @@
 /* Grouped part of a form (task 11c: address + map) */
 .d-group { display: grid; gap: 16px; margin: 0; padding: 18px; border: 1px solid var(--color-line); border-radius: 16px; }
 .d-group legend { padding-inline: 8px; font-size: 16px; font-weight: 600; }
+
+/* Working hours editor inside the clinic form (task 12) */
+.d-hours { gap: 12px; }
+.hours-tools { display: flex; justify-content: flex-start; }
+.hours-day { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 10px 16px; align-items: start; padding-block: 12px; border-top: 1px solid var(--color-line); }
+.hours-day:first-of-type { border-top: 0; }
+.hours-day-head { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.hours-day-head strong { font-size: 16px; font-weight: 600; }
+.hours-body { display: grid; gap: 8px; justify-items: start; min-width: 0; }
+.hours-rows { display: grid; gap: 8px; width: 100%; }
+.hours-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.hours-row input[type="time"] { width: 130px; min-height: 44px; padding: 8px 10px; border: 1.5px solid var(--color-line); border-radius: 12px; background: #fff; font: inherit; font-size: 16px; color: var(--color-ink); }
+.hours-row input[type="time"]:focus { outline: 3px solid var(--color-lime); outline-offset: 1px; border-color: var(--color-forest); }
+.hours-row input[type="time"]:disabled { background: #eef1ee; color: #7a877f; }
+.hours-row .err { flex-basis: 100%; margin: 0; }
+.hours-row:has(.err) { flex-wrap: wrap; }
+.hours-day.is-closed .hours-body { display: none; }
+.hours-day [hidden] { display: none !important; }
+.hours-day .d-icon-btn { font-size: 20px; line-height: 1; }
+@media (max-width: 640px) {
+  .hours-day { grid-template-columns: minmax(0, 1fr); }
+  .hours-day-head { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; }
+  .hours-row { flex-wrap: nowrap; }
+  .hours-row { gap: 6px; }
+  .hours-row input[type="time"] { flex: 1 1 0; min-width: 0; width: auto; min-height: 48px; padding: 8px 6px; font-size: 14px; }
+  .hours-row .d-icon-btn { min-width: 32px; width: 32px; }
+  .hours-row .err { flex-basis: auto; }
+}
