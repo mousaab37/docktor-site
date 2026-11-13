@@ -42,3 +42,9 @@ Then write a temporary script that stubs `auth.users`, `auth.uid()`, `storage.bu
 
 ## Out of scope
 - No changes to `db/01-*`, `02-*`, `03-*` or `README.md`. No app code except the id alignment in `sample-data.ts`.
+
+## Update (planner, after task 14g): new tables
+`db/01-setup.sql` now also has `profile` (one row, `id = 1`), `services` (with `is_featured`), `faqs`, and the SEO scope `contact`. The seed must also:
+- `update public.profile set … where id = 1` with the sample profile from `doctor.config.ts`/`memory.ts` (jsonb for `bio`, `education`, `experience`, `languages`, `socials`)
+- insert the sample services, with exactly one `is_featured = true` on a visible service, and FAQs, including one unpublished, all with fixed UUIDs and `on conflict (id) do nothing`
+- fill fictional Arabic values for the 4 SEO rows

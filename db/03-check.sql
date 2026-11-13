@@ -9,7 +9,8 @@
 with
 content_tables(name) as (
   values ('statistics'), ('certificates'), ('clinics'), ('working_hours'),
-         ('articles'), ('testimonials'), ('seo_settings'), ('dashboard_users')
+         ('articles'), ('testimonials'), ('seo_settings'), ('dashboard_users'),
+         ('profile'), ('services'), ('faqs')
 ),
 tbl as (
   select ct.name,
@@ -18,19 +19,19 @@ tbl as (
                    where c.oid = to_regclass('public.' || ct.name)), false) as relrowsecurity
   from content_tables ct
 )
-select '1. all 8 tables exist' as check_name,
-       (select count(*) from tbl where oid is not null)::text || ' / 8' as result,
-       (select count(*) from tbl where oid is not null) = 8 as ok
+select '1. all 11 tables exist' as check_name,
+       (select count(*) from tbl where oid is not null)::text || ' / 11' as result,
+       (select count(*) from tbl where oid is not null) = 11 as ok
 
 union all
 select '2. RLS is ON for every table',
-       (select count(*) from tbl where relrowsecurity)::text || ' / 8',
-       (select count(*) from tbl where relrowsecurity) = 8
+       (select count(*) from tbl where relrowsecurity)::text || ' / 11',
+       (select count(*) from tbl where relrowsecurity) = 11
 
 union all
-select '3. table policies (expected 26)',
+select '3. table policies (expected 36)',
        (select count(*) from pg_policies where schemaname = 'public')::text,
-       (select count(*) from pg_policies where schemaname = 'public') = 26
+       (select count(*) from pg_policies where schemaname = 'public') = 36
 
 union all
 select '4. no write policy without is_dashboard_user()',
@@ -81,13 +82,13 @@ select '7. is_dashboard_user() is SECURITY DEFINER',
                    and pronamespace = 'public'::regnamespace), false)
 
 union all
-select '8. image buckets (certificates, articles)',
+select '8. image buckets (certificates, articles, profile, services)',
        coalesce((select string_agg(id || ' ' || (file_size_limit / 1048576)::text || 'MB', ', ' order by id)
-                 from storage.buckets where id in ('certificates','articles')), 'missing'),
+                 from storage.buckets where id in ('certificates','articles','profile','services')), 'missing'),
        (select count(*) from storage.buckets
-        where id in ('certificates','articles') and public and file_size_limit = 2097152
+        where id in ('certificates','articles','profile','services') and public and file_size_limit = 2097152
           and allowed_mime_types @> array['image/jpeg','image/png','image/webp']
-          and array_length(allowed_mime_types, 1) = 3) = 2
+          and array_length(allowed_mime_types, 1) = 3) = 4
 
 union all
 select '9. storage policies (expected 4)',
@@ -95,9 +96,9 @@ select '9. storage policies (expected 4)',
        (select count(*) from pg_policies where schemaname = 'storage' and policyname like 'doctor_site_images_%') = 4
 
 union all
-select '10. SEO rows (global, blog, privacy)',
-       (select count(*) from public.seo_settings)::text || ' / 3',
-       (select count(*) from public.seo_settings where scope in ('global','blog','privacy')) = 3
+select '10. SEO rows (global, blog, privacy, contact)',
+       (select count(*) from public.seo_settings)::text || ' / 4',
+       (select count(*) from public.seo_settings where scope in ('global','blog','privacy','contact')) = 4
 
 union all
 select '11. doctor has dashboard access',

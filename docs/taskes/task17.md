@@ -69,3 +69,11 @@ For `GET` 200 HTML responses outside `/dashboard`, `/login` and `/logout`, set `
 
 ## Out of scope
 Anything in `db/`. The security script (task 18).
+
+## Update (planner, after task 14g): profile, services, FAQs, buckets
+- **profile**: `get()` → `select * from profile where id = 1`. For every **empty string / empty array** column, fall back to the onboarding value from `doctor.config.ts` (the dashboard no longer edits intro, statement and bio). `update()` → `update … where id = 1`. There's no insert: the row is created by `01-setup.sql`.
+- **services**: the DB allows at most **one** featured service (unique index) and **no hidden featured** (check). So `feature(id)`, and saving with `is_featured`, must first `update services set is_featured = false where is_featured and id <> $id`, **then** set the new one. Hiding a service also sends `is_featured = false`.
+- **faqs**: a normal CRUD + move, like testimonials.
+- **Buckets**: profile photos go to the bucket `profile`, service images to `services`, certificates to `certificates`, articles to `articles`. Remove the `// task 17: own bucket` comments. `publicImageUrl` takes these 4 buckets.
+- The article summary is stored in `excerpt`; there's no new column.
+- SEO scopes are `global`, `blog`, `privacy` and `contact`.
