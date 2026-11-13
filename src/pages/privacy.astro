@@ -1,16 +1,15 @@
 ---
 import { doctorConfig } from "@/config";
 import PublicLayout from "@/layouts/PublicLayout.astro";
+import { breadcrumbNode } from "@/lib/jsonld";
 import { getProfile, getSeoSetting } from "@/lib/data";
 
 const { privacy, site } = doctorConfig;
 const [seo, doctor] = await Promise.all([getSeoSetting("privacy"), getProfile()]);
-const title = seo?.seo_title || `سياسة الخصوصية | ${doctor.honorific} ${doctor.full_name}`;
-const description = seo?.seo_description || undefined;
-const ogImage = seo?.og_image || undefined;
+const description = seo?.seo_description || `سياسة الخصوصية لموقع ${doctor.honorific} ${doctor.full_name}: ما نجمعه من بيانات وكيف نحميها.`;
 const updated = new Intl.DateTimeFormat("ar", { dateStyle: "long", timeZone: "UTC" }).format(new Date(privacy.lastUpdated));
 ---
-<PublicLayout title={title} description={description} ogImage={ogImage}>
+<PublicLayout title={seo?.seo_title || "سياسة الخصوصية"} fullTitle={!!seo?.seo_title} description={description} ogImage={seo?.og_image} graph={breadcrumbNode(site.url, [{ name: "الرئيسية", path: "/" }, { name: "سياسة الخصوصية", path: "/privacy" }])}>
   <section class="sec" style="padding-top:clamp(120px,14vw,170px)" aria-labelledby="privacy-h">
     <div class="wrap article-wrap">
       <h1 class="h2" id="privacy-h" data-split>سياسة الخصوصية</h1>

@@ -8,6 +8,7 @@ const raw = {
     defaultTitle: "د. سارة الأمين | طب الأسرة",
     defaultDescription: "عيادة طب الأسرة للدكتورة سارة الأمين: رعاية صحية شاملة لك ولعائلتك.", // SAMPLE
     ogImage: "/img/hero.webp",
+    city: "الرياض", // SAMPLE
     defaultCountry: "SY" as const,
     clinicMessage: "مرحبًا، أود الاستفسار عن موعد في {clinic}",
   },

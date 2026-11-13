@@ -67,7 +67,7 @@ const tel = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : null;
       ))}
       {promo && (
       <div class="m-promo">
-        <span class="ph">{promo.image_path && <img src={promo.image_path} alt="" width="1600" height="1067" loading="lazy" />}</span>
+        <span class="ph">{promo.image_path && <img src={promo.image_path} alt="" aria-hidden="true" width="1600" height="1067" loading="lazy" />}</span>
         <div>
           <span><small>خدمة مميزة</small><strong>{promo.title}</strong></span>
           <p>{promo.description}</p>

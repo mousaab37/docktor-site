@@ -22,7 +22,7 @@ const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
         {articles.map((a, i) => (
           <a class="card art-card rv" href={`/blog/${a.slug}`} style={i > 0 ? `--d:${i}` : undefined}>
             <div class="ph">
-              {a.featured_image && <img src={a.featured_image} alt="" width="1600" height="1067" loading="lazy" />}
+              {a.featured_image && <img src={a.featured_image} alt={a.title} width="1600" height="1067" loading="lazy" />}
             </div>
             <div class="art-b">
               {a.published_at && <time datetime={a.published_at}>{dateFmt.format(new Date(a.published_at))}</time>}

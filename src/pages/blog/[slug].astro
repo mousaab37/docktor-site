@@ -2,36 +2,95 @@
 import PublicLayout from "@/layouts/PublicLayout.astro";
 import BookingNotice from "@/components/public/BookingNotice.astro";
 import WhatsAppButton from "@/components/public/WhatsAppButton.astro";
-import { getPublishedArticleBySlug } from "@/lib/data";
+import { doctorConfig } from "@/config";
+import { getLatestArticles, getProfile, getPublishedArticleBySlug } from "@/lib/data";
+import { articleNode, breadcrumbNode } from "@/lib/jsonld";
+import { profileView } from "@/lib/profile-view";
 import { sanitizeArticleHtml } from "@/lib/sanitize";
+import { absoluteImage, clip } from "@/lib/seo";
 
 // A missing slug and a draft both answer 404.
 const article = await getPublishedArticleBySlug(Astro.params.slug ?? "");
 if (!article) return Astro.rewrite("/404");
 
+const [profile, latest] = await Promise.all([getProfile(), getLatestArticles(4)]);
+const doctor = profileView(profile);
+const related = latest.filter((a) => a.id !== article.id).slice(0, 3);
+const { site } = doctorConfig;
+
 const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
 const title = article.seo_title || article.title;
-const description = article.seo_description || article.excerpt || undefined;
+// The summary ("الخلاصة") is the best description: a direct answer.
+const description = article.seo_description || article.excerpt || clip(article.content.replace(/<[^>]*>/g, " "), 160);
 // The share image: a real http(s) URL or a local path; never a data URL.
-const img = article.featured_image;
-const ogImage = img && (/^https?:\/\//.test(img) || img.startsWith("/")) ? img : undefined;
+const ogImage = absoluteImage(article.featured_image, site.url);
 // Sanitized again on render, even though it was sanitized when saved.
 const html = sanitizeArticleHtml(article.content);
+const url = new URL(`/blog/${article.slug}`, site.url).href;
+const graph = [
+  ...articleNode(article, { siteUrl: site.url, url, description, image: ogImage }),
+  ...breadcrumbNode(site.url, [
+    { name: "الرئيسية", path: "/" },
+    { name: "المقالات", path: "/blog" },
+    { name: article.title, path: `/blog/${article.slug}` },
+  ]),
+];
 ---
-<PublicLayout title={title} description={description} ogImage={ogImage}>
+<PublicLayout
+  title={title}
+  fullTitle={!!article.seo_title}
+  description={description}
+  ogImage={ogImage}
+  ogType="article"
+  publishedTime={article.published_at}
+  modifiedTime={article.updated_at}
+  graph={graph}
+>
   <article class="sec" style="padding-top:clamp(120px,14vw,170px)">
     <div class="wrap article-wrap">
       <nav class="crumbs" aria-label="مسار التنقل"><a href="/blog">← كل المقالات</a></nav>
       {article.featured_image && (
-        <div class="ph article-hero"><img src={article.featured_image} alt="" width="1600" height="900" /></div>
+        <div class="ph article-hero"><img src={article.featured_image} alt={article.title} width="1600" height="900" fetchpriority="high" /></div>
       )}
       <h1 class="h2" style="margin-top:28px">{article.title}</h1>
-      {article.published_at && <p class="article-date"><time datetime={article.published_at}>{dateFmt.format(new Date(article.published_at))}</time></p>}
+      <p class="article-date">
+        {article.published_at && <>نُشر في <time datetime={article.published_at}>{dateFmt.format(new Date(article.published_at))}</time></>}
+        {article.updated_at.slice(0, 10) !== (article.published_at ?? "").slice(0, 10) && (
+          <> · حُدّث في <time datetime={article.updated_at}>{dateFmt.format(new Date(article.updated_at))}</time></>
+        )}
+      </p>
+
+      <div class="author-box">
+        {doctor.photo && <img class="author-photo" src={doctor.photo.src} alt={doctor.photo.alt} width="64" height="64" loading="lazy" />}
+        <div>
+          <p class="author-name">بقلم {doctor.displayName}</p>
+          <p class="author-meta">{doctor.specialty} · آخر مراجعة: <time datetime={article.updated_at}>{dateFmt.format(new Date(article.updated_at))}</time></p>
+          <a class="author-link" href="/#about">تعرّف على الطبيب</a>
+        </div>
+      </div>
+
+      {article.excerpt && (
+        <aside class="summary-box" aria-labelledby="summary-h">
+          <h2 id="summary-h">الخلاصة</h2>
+          <p>{article.excerpt}</p>
+        </aside>
+      )}
+
       <div class="prose-ar" set:html={html}></div>
       <div class="article-end">
         <WhatsAppButton />
+        <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="مواعيد العيادات وأماكنها">مواعيد العيادات وأماكنها</span></span></a>
         <BookingNotice />
       </div>
+
+      {related.length > 0 && (
+        <section class="related" aria-labelledby="related-h">
+          <h2 id="related-h">مقالات ذات صلة</h2>
+          <ul>
+            {related.map((a) => <li><a href={`/blog/${a.slug}`}>{a.title}</a></li>)}
+          </ul>
+        </section>
+      )}
     </div>
   </article>
 </PublicLayout>

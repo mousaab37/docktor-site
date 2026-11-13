@@ -1091,6 +1091,22 @@
   }
 }
 
+/* Article: summary, author box, related (task 14f) */
+@layer components {
+  .summary-box { margin-top: 24px; padding: 20px 24px; border-radius: 20px; background: var(--color-tint); border-inline-start: 5px solid var(--color-lime); }
+  .summary-box h2 { font-size: 15px; font-weight: 700; color: var(--color-ink-2); margin: 0 0 6px; }
+  .summary-box p { margin: 0; font-size: 18px; line-height: 1.9; font-weight: 500; }
+  .author-box { display: flex; gap: 14px; align-items: center; margin-top: 20px; padding: 14px 0; border-block: 1px solid var(--color-line); }
+  .author-photo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; flex: none; }
+  .author-name { margin: 0; font-weight: 700; }
+  .author-meta { margin: 2px 0 0; color: var(--color-ink-2); font-size: 15px; }
+  .author-link { font-size: 15px; text-decoration: underline; text-underline-offset: 4px; }
+  .related { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--color-line); }
+  .related h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; }
+  .related ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .related a { text-decoration: underline; text-underline-offset: 4px; }
+}
+
 /* FAQ (task 14e): port of the original .qa accordion, mirrored for RTL */
 @layer components {
   .faq-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 48px clamp(40px, 6vw, 96px); align-items: start; }

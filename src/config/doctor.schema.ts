@@ -13,6 +13,8 @@ export const doctorConfigSchema = z.object({
     defaultTitle: text,
     defaultDescription: z.string().min(1).max(160),
     ogImage: text,
+    /** The city used in titles and structured data when no clinic address gives one. */
+    city: text,
     /** The country pre-selected in the dashboard phone pickers (not editable by the doctor). */
     defaultCountry: z.enum(COUNTRY_CODES).default("SY"),
     /** Template of the WhatsApp message of a clinic. It must contain {clinic}. */

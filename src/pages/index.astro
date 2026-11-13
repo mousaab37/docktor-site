@@ -12,8 +12,7 @@ import TestimonialsSection from "@/components/public/TestimonialsSection.astro";
 import ArticlesSection from "@/components/public/ArticlesSection.astro";
 import FaqSection from "@/components/public/FaqSection.astro";
 import ContactSection from "@/components/public/ContactSection.astro";
-import { doctorConfig } from "@/config";
-import { buildJsonLd, serializeJsonLd } from "@/lib/jsonld";
+import { faqNode } from "@/lib/jsonld";
 import {
   getActiveCertificates,
   getActiveServices,
@@ -37,11 +36,9 @@ const [statistics, clinics, certificates, testimonials, articles, seo, profile, 
   getActiveServices(),
   getPublishedFaqs(),
 ]);
-// Empty SEO fields fall back to the config defaults (the layout's defaults).
-const jsonLd = serializeJsonLd(buildJsonLd(doctorConfig, profile, clinics, faqs));
+// Empty SEO fields fall back to the defaults built in `buildMeta`.
 ---
-<PublicLayout title={seo?.seo_title || undefined} description={seo?.seo_description || undefined} ogImage={seo?.og_image || undefined}>
-  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd}></script>
+<PublicLayout title={seo?.seo_title || undefined} fullTitle={!!seo?.seo_title} description={seo?.seo_description} ogImage={seo?.og_image} graph={faqNode(faqs)}>
   <HeroSection clinics={clinics} statistics={statistics} profile={profile} />
   <StatementSection statistics={statistics} profile={profile} />
   <ServicesSection services={services} profile={profile} />

@@ -1,16 +1,15 @@
 ---
 import { doctorConfig } from "@/config";
+import { breadcrumbNode } from "@/lib/jsonld";
 import PublicLayout from "@/layouts/PublicLayout.astro";
 import { getProfile, getPublishedArticles, getSeoSetting } from "@/lib/data";
 
 const { site } = doctorConfig;
 const [articles, seo, profile] = await Promise.all([getPublishedArticles(), getSeoSetting("blog"), getProfile()]);
-const title = seo?.seo_title || `المقالات | ${profile.honorific} ${profile.full_name}`;
-const description = seo?.seo_description || site.defaultDescription;
-const ogImage = seo?.og_image || undefined;
+const description = seo?.seo_description || `مقالات صحية مبسّطة يكتبها ${profile.honorific} ${profile.full_name} في ${profile.specialty}.`;
 const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
 ---
-<PublicLayout title={title} description={description} ogImage={ogImage}>
+<PublicLayout title={seo?.seo_title || "المقالات"} fullTitle={!!seo?.seo_title} description={description} ogImage={seo?.og_image} graph={breadcrumbNode(site.url, [{ name: "الرئيسية", path: "/" }, { name: "المقالات", path: "/blog" }])}>
   <section class="sec" style="padding-top:clamp(120px,14vw,170px)" aria-labelledby="blog-h">
     <div class="wrap">
       <div class="sec-head">
@@ -27,7 +26,7 @@ const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
           {articles.map((a, i) => (
             <a class="card art-card rv" href={`/blog/${a.slug}`} style={i > 0 ? `--d:${i % 3}` : undefined}>
               <div class="ph">
-                {a.featured_image && <img src={a.featured_image} alt="" width="1600" height="1067" loading="lazy" />}
+                {a.featured_image && <img src={a.featured_image} alt={a.title} width="1600" height="1067" loading="lazy" />}
               </div>
               <div class="art-b">
                 {a.published_at && <time datetime={a.published_at}>{dateFmt.format(new Date(a.published_at))}</time>}
