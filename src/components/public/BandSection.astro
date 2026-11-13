@@ -1,7 +1,13 @@
 ---
-import { doctorConfig } from "@/config";
+import type { Profile, Service } from "@/lib/types";
 
-const words = [...doctorConfig.services.map((s) => s.title), doctorConfig.doctor.specialty];
+interface Props {
+  services: Service[];
+  profile: Profile;
+}
+
+const { services, profile } = Astro.props;
+const words = [...services.map((s) => s.title), profile.specialty];
 ---
 <div class="band" aria-hidden="true">
   <div class="track">

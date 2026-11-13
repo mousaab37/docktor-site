@@ -423,3 +423,30 @@
 .seo-p-title { color: #1a0dab; font-size: 19px; line-height: 1.5; }
 .seo-p-url { color: #006621; font-size: 14px; line-height: 1.5; text-align: left; }
 .seo-p-desc { color: #545454; font-size: 14px; line-height: 1.6; }
+
+/* Profile page: repeatable rows, tags, preview link */
+.p-rows { display: grid; gap: 12px; }
+.p-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 14px; border: 1px solid var(--color-line, #e5e7eb); border-radius: 14px; }
+.p-row-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.p-row-fields.one { grid-template-columns: minmax(0, 1fr); }
+.p-row-fields.two { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+.p-rm { min-width: 44px; min-height: 44px; border-radius: 12px; border: 1px solid #fecdca; background: #fff; color: #b42318; font-size: 20px; cursor: pointer; }
+.p-add { justify-self: start; }
+.p-add:disabled { opacity: .5; cursor: not-allowed; }
+.tags-box { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px; border: 1px solid var(--color-line, #d0d5dd); border-radius: 12px; background: #fff; min-height: 52px; }
+.tags-box .tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; border-radius: 999px; background: #eef4ee; font-size: 15px; }
+.tags-box .tag button { border: 0; background: transparent; cursor: pointer; font-size: 18px; line-height: 1; min-width: 28px; min-height: 28px; }
+.tags-box input[data-tag-input] { flex: 1 1 140px; border: 0; outline: 0; background: transparent; min-height: 36px; font: inherit; }
+.p-preview-link { margin-block-end: 4px; }
+.wa-preview { word-break: break-all; }
+@media (max-width: 640px) {
+  .p-row-fields, .p-row-fields.two { grid-template-columns: minmax(0, 1fr); }
+}
+.d-h2 { font-size: 20px; font-weight: 600; }
+.d-label { display: block; font-weight: 600; margin-block-end: 8px; }
+.d-check { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 4px; }
+.d-check li { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.d-check .mark { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 700; flex: none; }
+.d-check .ok .mark { background: #dcfae6; color: #067647; }
+.d-check .todo .mark { background: #fef3f2; color: #b42318; }
+.d-check a { color: inherit; }

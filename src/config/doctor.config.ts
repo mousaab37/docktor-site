@@ -8,6 +8,8 @@ const raw = {
     defaultTitle: "د. سارة الأمين | طب الأسرة",
     defaultDescription: "عيادة طب الأسرة للدكتورة سارة الأمين: رعاية صحية شاملة لك ولعائلتك.", // SAMPLE
     ogImage: "/img/hero.webp",
+    defaultCountry: "SY" as const,
+    clinicMessage: "مرحبًا، أود الاستفسار عن موعد في {clinic}",
   },
   doctor: {
     honorific: "د.",
@@ -37,7 +39,6 @@ const raw = {
   contact: {
     phone: "+966 50 000 0000",
     whatsapp: "966500000000",
-    defaultCountry: "SY",
     email: "clinic@example.com",
     socials: [{ platform: "instagram", url: "https://instagram.com/example" }],
   },
@@ -75,7 +76,6 @@ const raw = {
   ],
   whatsapp: {
     defaultMessage: "مرحبًا، أود الاستفسار عن موعد.",
-    clinicMessage: "مرحبًا، أود الاستفسار عن موعد في {clinic}",
   },
   privacy: {
     lastUpdated: "2026-01-01",

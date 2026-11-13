@@ -15,6 +15,8 @@ import { doctorConfig } from "@/config";
 import { buildJsonLd, serializeJsonLd } from "@/lib/jsonld";
 import {
   getActiveCertificates,
+  getActiveServices,
+  getProfile,
   getActiveClinicsWithHours,
   getActiveStatistics,
   getLatestArticles,
@@ -22,28 +24,30 @@ import {
   getSeoSetting,
 } from "@/lib/data";
 
-const [statistics, clinics, certificates, testimonials, articles, seo] = await Promise.all([
+const [statistics, clinics, certificates, testimonials, articles, seo, profile, services] = await Promise.all([
   getActiveStatistics(),
   getActiveClinicsWithHours(),
   getActiveCertificates(),
   getPublishedTestimonials(),
   getLatestArticles(3),
   getSeoSetting("global"),
+  getProfile(),
+  getActiveServices(),
 ]);
 // Empty SEO fields fall back to the config defaults (the layout's defaults).
-const jsonLd = serializeJsonLd(buildJsonLd(doctorConfig, clinics));
+const jsonLd = serializeJsonLd(buildJsonLd(doctorConfig, profile, clinics));
 ---
 <PublicLayout title={seo?.seo_title || undefined} description={seo?.seo_description || undefined} ogImage={seo?.og_image || undefined}>
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd}></script>
-  <HeroSection clinics={clinics} statistics={statistics} />
-  <StatementSection statistics={statistics} />
-  <ServicesSection />
+  <HeroSection clinics={clinics} statistics={statistics} profile={profile} />
+  <StatementSection statistics={statistics} profile={profile} />
+  <ServicesSection services={services} profile={profile} />
   <HowToBookSection clinicCount={clinics.length} />
-  <BandSection />
-  <AboutSection clinicCount={clinics.length} />
+  <BandSection services={services} profile={profile} />
+  <AboutSection clinicCount={clinics.length} profile={profile} />
   <CertificatesSection certificates={certificates} />
-  <ClinicsSection clinics={clinics} />
+  <ClinicsSection clinics={clinics} profile={profile} />
   <TestimonialsSection testimonials={testimonials} />
   <ArticlesSection articles={articles} />
-  <ContactSection clinics={clinics} />
+  <ContactSection />
 </PublicLayout>

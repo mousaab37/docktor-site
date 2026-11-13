@@ -1,0 +1,90 @@
+---
+import BookingNotice from "@/components/public/BookingNotice.astro";
+import ClinicMiniMap from "@/components/public/ClinicMiniMap.astro";
+import ContactCtaCard from "@/components/public/ContactCtaCard.astro";
+import HoursTable from "@/components/public/HoursTable.astro";
+import WhatsAppButton from "@/components/public/WhatsAppButton.astro";
+import { doctorConfig } from "@/config";
+import PublicLayout from "@/layouts/PublicLayout.astro";
+import { getActiveClinicsWithHours, getProfile, getSeoSetting } from "@/lib/data";
+import { clinicMessage, waLink } from "@/lib/whatsapp";
+
+const [profile, clinics, seo] = await Promise.all([getProfile(), getActiveClinicsWithHours(), getSeoSetting("contact")]);
+const name = `${profile.honorific} ${profile.full_name}`;
+const title = seo?.seo_title || `تواصل | ${name}`;
+const description = seo?.seo_description || doctorConfig.site.defaultDescription;
+const ogImage = seo?.og_image || undefined;
+const socialNames: Record<string, string> = {
+  instagram: "إنستغرام", x: "إكس", facebook: "فيسبوك", tiktok: "تيك توك",
+  youtube: "يوتيوب", linkedin: "لينكدإن", snapchat: "سناب شات", telegram: "تيليجرام",
+};
+---
+<PublicLayout title={title} description={description} ogImage={ogImage}>
+  <section class="sec" style="padding-top:clamp(120px,14vw,170px)" aria-labelledby="contact-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">تواصل</span>
+          <h1 class="h2" id="contact-h" data-split>تواصل <em>معنا</em></h1>
+        </div>
+        <p class="lead rv">أسرع طريقة للحجز أو الاستفسار هي رسالة واتساب. اختر ما يناسبك من الطرق أدناه.</p>
+      </div>
+
+      <div class="book-grid" style="padding:0">
+        <div class="book-l">
+          <dl class="info">
+            {profile.phone && (
+              <div><dt>الهاتف</dt><dd><a href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}><bdi dir="ltr">{profile.phone}</bdi></a></dd></div>
+            )}
+            <div><dt>واتساب</dt><dd><a href={waLink(profile.whatsapp, profile.whatsapp_default_message)} target="_blank" rel="noopener"><bdi dir="ltr">+{profile.whatsapp}</bdi></a></dd></div>
+            {profile.email && (
+              <div><dt>البريد</dt><dd><a href={`mailto:${profile.email}`}><bdi dir="ltr">{profile.email}</bdi></a></dd></div>
+            )}
+            {profile.socials.length > 0 && (
+              <div>
+                <dt>حساباتنا</dt>
+                <dd>
+                  {profile.socials.map((s, i) => (
+                    <>{i > 0 && " · "}<a href={s.url} target="_blank" rel="noopener">{socialNames[s.platform] ?? s.platform}</a></>
+                  ))}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+        <ContactCtaCard profile={profile} />
+      </div>
+
+      {clinics.map((c) => {
+        const hasPoint = c.latitude !== null && c.longitude !== null;
+        return (
+          <article class="card clinic-card rv" style="margin-top:28px" aria-label={c.name}>
+            <div class="clinic-card-b">
+              <h2 class="h3">{c.name}</h2>
+              <p class="addr">{c.address}</p>
+              {c.phone && <p><a class="plain" href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}><bdi dir="ltr">{c.phone}</bdi></a></p>}
+              <HoursTable hours={c.working_hours} caption={`ساعات عمل ${c.name}`} />
+              <div class="cta-row">
+                <WhatsAppButton
+                  number={c.whatsapp ?? profile.whatsapp}
+                  message={clinicMessage(doctorConfig.site.clinicMessage, c.name)}
+                  label="احجز عبر واتساب"
+                  size="sm"
+                />
+                {hasPoint && (
+                  <a class="btn btn-ghost btn-sm" href={`https://www.google.com/maps/dir/?api=1&destination=${c.latitude},${c.longitude}`} target="_blank" rel="noopener">
+                    <span class="roll"><span data-t="الاتجاهات">الاتجاهات</span></span>
+                  </a>
+                )}
+              </div>
+              <BookingNotice compact />
+            </div>
+            {hasPoint && c.latitude !== null && c.longitude !== null && (
+              <ClinicMiniMap name={c.name} latitude={c.latitude} longitude={c.longitude} />
+            )}
+          </article>
+        );
+      })}
+    </div>
+  </section>
+</PublicLayout>

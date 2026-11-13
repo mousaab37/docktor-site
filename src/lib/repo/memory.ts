@@ -1,4 +1,5 @@
 // DEV ONLY — data lives in memory and resets when the dev server restarts. Replaced by Supabase in task 17.
+import { doctorConfig } from "../../config";
 import {
   sampleArticles,
   sampleCertificates,
@@ -10,8 +11,10 @@ import type {
   Article,
   Certificate,
   Clinic,
+  Profile,
   SeoScope,
   SeoSetting,
+  Service,
   Statistic,
   Testimonial,
   WorkingHour,
@@ -26,6 +29,8 @@ interface Store {
   articles: Article[];
   testimonials: Testimonial[];
   seo: SeoSetting[];
+  profile: Profile;
+  services: Service[];
 }
 
 declare global {
@@ -44,7 +49,9 @@ function seed(): Store {
     workingHours.push(...working_hours);
   }
   const t = now();
-  const scopes: SeoScope[] = ["global", "blog", "privacy"];
+  const scopes: SeoScope[] = ["global", "blog", "privacy", "contact"];
+  // doctor.config.ts is the initial onboarding data: the profile and the services start from it.
+  const { doctor, contact, whatsapp } = doctorConfig;
   return {
     statistics: structuredClone(sampleStatistics),
     certificates: structuredClone(sampleCertificates),
@@ -52,6 +59,35 @@ function seed(): Store {
     workingHours,
     articles: structuredClone(sampleArticles),
     testimonials: structuredClone(sampleTestimonials),
+    profile: {
+      honorific: doctor.honorific,
+      full_name: doctor.fullName,
+      specialty: doctor.specialty,
+      short_intro: doctor.shortIntro,
+      bio: [...doctor.bio],
+      statement_line1: "رعاية تُصغي إليك.",
+      statement_line2: "ولعائلتك كلها.",
+      photo_path: doctor.photo.src,
+      education: doctor.education.map((e) => ({ degree: e.degree, institution: e.institution, year: e.year ?? null })),
+      experience: doctor.experience.map((x) => ({ ...x })),
+      languages: [...doctor.languages],
+      phone: contact.phone,
+      whatsapp: contact.whatsapp,
+      email: contact.email ?? null,
+      socials: contact.socials.map((s) => ({ ...s })),
+      whatsapp_default_message: whatsapp.defaultMessage,
+      updated_at: t,
+    },
+    services: doctorConfig.services.map((s, i) => ({
+      id: crypto.randomUUID(),
+      title: s.title,
+      description: s.description,
+      image_path: s.image?.src ?? null,
+      display_order: i + 1,
+      is_active: true,
+      created_at: t,
+      updated_at: t,
+    })),
     seo: scopes.map((scope) => ({
       id: crypto.randomUUID(),
       scope,
@@ -174,6 +210,30 @@ export const memoryRepo: ContentRepo = {
       issuing_organization: input.issuing_organization ?? null,
       issue_date: input.issue_date ?? null,
       description: null, // the dashboard no longer edits it; the column stays in the database
+      image_path: input.image_path ?? null,
+      display_order: order,
+      is_active: input.is_active,
+      created_at: now(),
+      updated_at: now(),
+    }),
+  ),
+
+  profile: {
+    async get() {
+      return copy(db().profile);
+    },
+    async update(input) {
+      db().profile = { ...patch(db().profile, input), updated_at: now() };
+      return copy(db().profile);
+    },
+  },
+
+  services: orderableTable<Service, Parameters<ContentRepo["services"]["create"]>[0]>(
+    () => db().services,
+    (input, order) => ({
+      id: crypto.randomUUID(),
+      title: input.title,
+      description: input.description,
       image_path: input.image_path ?? null,
       display_order: order,
       is_active: input.is_active,

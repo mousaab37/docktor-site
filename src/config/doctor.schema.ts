@@ -13,6 +13,12 @@ export const doctorConfigSchema = z.object({
     defaultTitle: text,
     defaultDescription: z.string().min(1).max(160),
     ogImage: text,
+    /** The country pre-selected in the dashboard phone pickers (not editable by the doctor). */
+    defaultCountry: z.enum(COUNTRY_CODES).default("SY"),
+    /** Template of the WhatsApp message of a clinic. It must contain {clinic}. */
+    clinicMessage: text.refine((v) => v.includes("{clinic}"), {
+      message: "clinicMessage must contain the {clinic} placeholder",
+    }),
   }),
   doctor: z.object({
     honorific: text,
@@ -36,8 +42,6 @@ export const doctorConfigSchema = z.object({
   contact: z.object({
     phone: text,
     whatsapp: z.string().regex(/^\d{8,15}$/, "digits only, 8-15"),
-    /** The country pre-selected in the dashboard phone pickers. */
-    defaultCountry: z.enum(COUNTRY_CODES).default("SY"),
     email: z.email().optional(),
     socials: z.array(
       z.object({
@@ -58,9 +62,6 @@ export const doctorConfigSchema = z.object({
     .min(1),
   whatsapp: z.object({
     defaultMessage: text,
-    clinicMessage: text.refine((v) => v.includes("{clinic}"), {
-      message: "clinicMessage must contain the {clinic} placeholder",
-    }),
   }),
   privacy: z.object({
     lastUpdated: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD"),

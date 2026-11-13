@@ -12,6 +12,7 @@ export const GET: APIRoute = async () => {
   const urls = [
     `<url><loc>${esc(abs("/"))}</loc></url>`,
     `<url><loc>${esc(abs("/blog"))}</loc></url>`,
+    `<url><loc>${esc(abs("/contact"))}</loc></url>`,
     `<url><loc>${esc(abs("/privacy"))}</loc></url>`,
     ...articles.map(
       (a) => `<url><loc>${esc(abs(`/blog/${a.slug}`))}</loc><lastmod>${esc(a.updated_at)}</lastmod></url>`,

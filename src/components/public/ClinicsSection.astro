@@ -1,19 +1,15 @@
 ---
-import { doctorConfig } from "@/config";
 import { clinicsWord } from "@/lib/arabic";
-import { clinicMessage } from "@/lib/whatsapp";
-import type { ClinicWithHours } from "@/lib/types";
+import type { ClinicWithHours, Profile } from "@/lib/types";
 import BookingNotice from "./BookingNotice.astro";
-import ClinicMiniMap from "./ClinicMiniMap.astro";
-import HoursTable from "./HoursTable.astro";
-import WhatsAppButton from "./WhatsAppButton.astro";
+import ClinicCard from "./ClinicCard.astro";
 
 interface Props {
   clinics: ClinicWithHours[];
+  profile: Profile;
 }
 
-const { clinics } = Astro.props;
-const { contact, whatsapp } = doctorConfig;
+const { clinics, profile } = Astro.props;
 ---
 {clinics.length > 0 && (
   <section class="sec" id="clinics" aria-labelledby="clinics-h">
@@ -27,36 +23,7 @@ const { contact, whatsapp } = doctorConfig;
       </div>
 
       <div class="clinics-grid">
-        {clinics.map((c, i) => (
-          <article class:list={["card", "clinic-card", "rv", c.latitude !== null && c.longitude !== null && "has-map"]} style={i > 0 ? `--d:${i}` : undefined}>
-            <div class="clinic-card-b">
-              <h3>{c.name}</h3>
-              <p class="addr">{c.address}</p>
-              {c.phone && <p><a class="plain" href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}><bdi dir="ltr">{c.phone}</bdi></a></p>}
-              {c.description && <p>{c.description}</p>}
-              <HoursTable hours={c.working_hours} caption={`ساعات عمل ${c.name}`} />
-              <div class="cta-row">
-                <WhatsAppButton
-                  number={c.whatsapp ?? contact.whatsapp}
-                  message={clinicMessage(whatsapp.clinicMessage, c.name)}
-                  label="احجز عبر واتساب"
-                  size="sm"
-                />
-                {c.latitude !== null && c.longitude !== null && (
-                  <a
-                    class="btn btn-ghost btn-sm"
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${c.latitude},${c.longitude}`}
-                    target="_blank"
-                    rel="noopener"
-                  ><span class="roll"><span data-t="الاتجاهات">الاتجاهات</span></span></a>
-                )}
-              </div>
-            </div>
-            {c.latitude !== null && c.longitude !== null && (
-              <ClinicMiniMap name={c.name} latitude={c.latitude} longitude={c.longitude} />
-            )}
-          </article>
-        ))}
+        {clinics.map((c, i) => <ClinicCard clinic={c} fallbackNumber={profile.whatsapp} index={i} />)}
       </div>
 
       <div style="margin-top:20px"><BookingNotice /></div>

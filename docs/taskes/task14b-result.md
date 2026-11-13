@@ -1,0 +1,17 @@
+# Task 14b — Result
+- Branch / PR: `task/14b-profile-services-contact` (PR link in the final message)
+- Commit: `task14b: profile, services, contact page, blog archive link`
+- Status: done
+- Files changed:
+  - Data: `src/lib/types.ts`, `src/lib/repo/types.ts`, `src/lib/repo/memory.ts`, `src/lib/data.ts`, `src/lib/profile-view.ts` (new), `src/lib/nav.ts`, `src/lib/jsonld.ts`, `src/lib/validation/{profile,service,rows}.ts` (new), `src/config/doctor.config.ts`, `src/config/doctor.schema.ts`
+  - Public: Hero, Statement, About, Services, Band, Clinics, `ClinicCard` (new), Contact (now a short CTA), `ContactCtaCard` (new), Header, Footer, WhatsAppButton, `PublicLayout`, `src/pages/index.astro`, `src/pages/contact.astro` (new), `blog/index.astro`, `privacy.astro`, `sitemap.xml.ts`
+  - Dashboard: `dashboard-nav.ts` (9 items), `profile.astro` (new), `services.astro` + `services/new.astro` + `services/[id].astro` + `ServiceForm.astro` (new), `index.astro` (services count + checklist), `seo.astro` (contact card), clinic pages/form (default country), `src/scripts/{repeat-rows,tags-input}.ts` (new), `src/styles/dashboard.css`
+  - Docs: `AGENTS.md` §4 (9 sections, profile and services editable, `/contact` route)
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅. `grep -rn "doctorConfig\.\(doctor\|contact\|services\|whatsapp\)" src` only hits `memory.ts` (it destructures them there to seed).
+- How to verify: `npm run dev`. `/contact` (also at 375px), header/footer links المقالات and تواصل with `aria-current`. `/dashboard/profile`: change the WhatsApp number and every WhatsApp button, the footer and the JSON-LD change; a wrong number or a non-https social link shows an Arabic error on that card only. `/dashboard/services`: add, hide, reorder, delete. Overview shows the real checklist.
+- Notes for planner:
+  - I moved `defaultCountry` and the clinic message template into `site` in `doctor.config.ts` (`site.defaultCountry`, `site.clinicMessage`), so no public/dashboard code reads the profile keys from config.
+  - Photo and service images use the `certificates` bucket (marked `// task 17: own bucket`).
+  - DB tables for `profile` and `services` are not in `db/` yet (as agreed); data lives in the in-memory repo until tasks 15–18.
+  - Tested through curl (saves, validation errors, services CRUD, sitemap, SEO card) and the browser pane (profile page at 375px has no horizontal scroll, add/remove rows, tag input, live wa.me preview; `/contact` at 375px has no overflow). I did not test a real image upload or the Cloudflare preview.
+  - `privacy.astro` still has an unused `site` variable (hint only).

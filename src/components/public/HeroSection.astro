@@ -1,6 +1,6 @@
 ---
-import { doctorConfig } from "@/config";
-import type { ClinicWithHours, Statistic } from "@/lib/types";
+import { profileView } from "@/lib/profile-view";
+import type { ClinicWithHours, Profile, Statistic } from "@/lib/types";
 import { clinicsPhrase, clinicsWord } from "@/lib/arabic";
 import BookingNotice from "./BookingNotice.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
@@ -8,17 +8,18 @@ import WhatsAppButton from "./WhatsAppButton.astro";
 interface Props {
   clinics: ClinicWithHours[];
   statistics: Statistic[];
+  profile: Profile;
 }
 
-const { clinics, statistics } = Astro.props;
-const { doctor } = doctorConfig;
+const { clinics, statistics, profile } = Astro.props;
+const doctor = profileView(profile);
 const facts = statistics.slice(0, 3);
 ---
 <section class="hero" aria-labelledby="hero-h">
   <div class="wrap hero-grid">
     <div class="hero-media ph" data-hero>
       <div class="zoom">
-        <img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" fetchpriority="high" data-par="0.08" />
+        {doctor.photo && <img src={doctor.photo.src} alt={doctor.photo.alt} width="1024" height="1536" fetchpriority="high" data-par="0.08" />}
       </div>
       {clinics.length > 0 && (
         <span class="badge"><span class="pulse" aria-hidden="true"></span>يستقبل المرضى {clinicsPhrase(clinics.length)}</span>

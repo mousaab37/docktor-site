@@ -9,7 +9,7 @@ import type { FormValues } from "@/lib/validation/form";
 import { parseWeekForm, type DayScheduleInput } from "@/lib/validation/working-hours";
 
 const repo = getRepo();
-let values: FormValues = clinicFormValues(null, doctorConfig.contact.defaultCountry);
+let values: FormValues = clinicFormValues(null, doctorConfig.site.defaultCountry);
 // A new clinic starts with Saturday-Thursday 09:00-17:00 and Friday closed.
 let week: DayScheduleInput[] = defaultWeek();
 let errors: Record<string, string> = {};

@@ -20,7 +20,7 @@ interface Props {
 }
 
 const { values, errors = {}, cancelHref, week } = Astro.props;
-const fallback = doctorConfig.contact.defaultCountry;
+const fallback = doctorConfig.site.defaultCountry;
 const country = (v: string | boolean | undefined): PhoneCountry => (typeof v === "string" && v ? (v as PhoneCountry) : fallback);
 const num = (v: string | boolean | undefined) => {
   const n = typeof v === "string" && v.trim() !== "" ? Number(v) : NaN;
