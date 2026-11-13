@@ -38,8 +38,8 @@ const raw = {
     accent: "#C8F23A",
   },
   contact: {
-    phone: "+966 50 000 0000",
-    whatsapp: "966500000000",
+    phone: "+963 944 000 000",
+    whatsapp: "963944000000",
     email: "clinic@example.com",
     socials: [{ platform: "instagram", url: "https://instagram.com/example" }],
   },

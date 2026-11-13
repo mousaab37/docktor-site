@@ -1,0 +1,11 @@
+# Task 14g — Result
+- Branch / PR: `task/14g-featured-syria` (PR link in the final message)
+- Commit: `task14g: featured only when visible, Syrian sample numbers`
+- Status: done
+- Files changed: `src/lib/validation/service.ts` (`superRefine`), `src/lib/repo/memory.ts` (hidden service is never featured), `src/pages/dashboard/services.astro` (no ⭐ or "اجعلها مميزة" on hidden rows; `feature` ignores hidden), `src/components/dashboard/Toggle.astro` (`disabled`), `src/components/dashboard/ServiceForm.astro` (toggle disabled while hidden, hint, tiny script), `src/config/doctor.config.ts`, `src/lib/sample-data.ts`, `src/pages/dev/styleguide.astro` (sample numbers → Syrian `+963 944 000 00N`), `docs/taskes/task14g.md` (planner file, came along untracked)
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅. `grep -rn "966" src` returns nothing.
+- How to verify: `/dashboard/services`: hide the ⭐ service and the badge disappears (nobody is featured), `/` then uses the first active service as the dark card. In the edit form, the "خدمة مميزة" toggle is disabled while "ظاهر في الموقع" is off. Phone fields (clinic phone/WhatsApp, profile phone/WhatsApp, new clinic) all open with SY. Public WhatsApp buttons use `wa.me/963944000000` (clinic buttons `…001`, `…002`).
+- Notes for planner:
+  - Tested by curl: `is_featured=on` with `is_active` off → 422 with "لا يمكن جعل خدمة مخفية مميزة"; hiding the featured one leaves 0 stars and `/` shows "الفحص الدوري" as the featured card; all four `*_country` inputs render `SY`. Did not click the toggle script in a browser.
+  - `PhoneField` already defaulted to `site.defaultCountry` for empty values; the "Syria everywhere" fix was therefore mostly the sample numbers (the sample numbers were Saudi, so the forms opened with 🇸🇦).
+  - The hidden clinic got phone `+963 944 000 003`; its WhatsApp stays empty. Clinic coordinates are unchanged (Riyadh).
