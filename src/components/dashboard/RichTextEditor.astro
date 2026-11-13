@@ -1,0 +1,135 @@
+---
+interface Props {
+  /** Name of the textarea that receives the HTML on submit. */
+  name: string;
+  /** The saved (already sanitized) HTML. */
+  value?: string;
+  label?: string;
+  error?: string;
+}
+
+const { name, value = "", label = "المحتوى", error } = Astro.props;
+
+const buttons = [
+  { cmd: "bold", label: "غامق", html: "<b>B</b>" },
+  { cmd: "italic", label: "مائل", html: "<i>I</i>" },
+  { cmd: "h2", label: "عنوان رئيسي", html: "H2" },
+  { cmd: "h3", label: "عنوان فرعي", html: "H3" },
+  { cmd: "bulletList", label: "قائمة نقطية", html: "• ≡" },
+  { cmd: "orderedList", label: "قائمة مرقمة", html: "1. ≡" },
+  { cmd: "blockquote", label: "اقتباس", html: "❝" },
+  { cmd: "link", label: "رابط", html: "🔗" },
+  { cmd: "undo", label: "تراجع", html: "↶" },
+  { cmd: "redo", label: "إعادة", html: "↷" },
+];
+---
+<div class:list={["field", "rte", error && "has-error"]} data-rte>
+  <label for={`f-${name}`}>{label}</label>
+  <div class="rte-toolbar" role="toolbar" aria-label="أدوات التنسيق" hidden data-rte-toolbar>
+    {buttons.map((b) => (
+      <button class="rte-btn" type="button" data-cmd={b.cmd} aria-label={b.label} title={b.label} aria-pressed="false" set:html={b.html} />
+    ))}
+  </div>
+  <div class="rte-area" data-rte-area hidden></div>
+  <!-- Without JavaScript this textarea stays visible and editable as plain HTML. -->
+  <textarea id={`f-${name}`} name={name} rows="14" dir="ltr" data-rte-source>{value}</textarea>
+  {error && <p class="err">{error}</p>}
+</div>
+
+<script>
+  import { Editor } from "@tiptap/core";
+  import StarterKit from "@tiptap/starter-kit";
+
+  // Tiptap needs no React. Headings are limited to h2 and h3; code blocks are off because the sanitizer does not allow them.
+  document.querySelectorAll<HTMLElement>("[data-rte]").forEach((root) => {
+    const source = root.querySelector<HTMLTextAreaElement>("[data-rte-source]");
+    const area = root.querySelector<HTMLElement>("[data-rte-area]");
+    const toolbar = root.querySelector<HTMLElement>("[data-rte-toolbar]");
+    const form = root.closest("form");
+    if (!source || !area || !toolbar || !form) return;
+
+    const editor = new Editor({
+      element: area,
+      content: source.value,
+      extensions: [
+        StarterKit.configure({
+          heading: { levels: [2, 3] },
+          code: false,
+          codeBlock: false,
+          link: { openOnClick: false, protocols: ["http", "https", "mailto", "tel"] },
+        }),
+      ],
+      editorProps: {
+        attributes: { dir: "rtl", class: "rte-content prose-ar", "aria-label": "محرر المقال" },
+      },
+    });
+
+    // JavaScript works: hide the plain textarea and show the editor and its toolbar.
+    source.hidden = true;
+    area.hidden = false;
+    toolbar.hidden = false;
+
+    const run = (cmd: string) => {
+      const chain = editor.chain().focus();
+      switch (cmd) {
+        case "bold": chain.toggleBold().run(); break;
+        case "italic": chain.toggleItalic().run(); break;
+        case "h2": chain.toggleHeading({ level: 2 }).run(); break;
+        case "h3": chain.toggleHeading({ level: 3 }).run(); break;
+        case "bulletList": chain.toggleBulletList().run(); break;
+        case "orderedList": chain.toggleOrderedList().run(); break;
+        case "blockquote": chain.toggleBlockquote().run(); break;
+        case "undo": chain.undo().run(); break;
+        case "redo": chain.redo().run(); break;
+        case "link": {
+          const current = (editor.getAttributes("link").href as string | undefined) ?? "https://";
+          const url = window.prompt("أدخل الرابط (اتركه فارغًا لإزالة الرابط)", current);
+          if (url === null) break; // cancelled
+          if (url.trim() === "") chain.extendMarkRange("link").unsetLink().run();
+          else chain.extendMarkRange("link").setLink({ href: url.trim() }).run();
+          break;
+        }
+      }
+    };
+    toolbar.addEventListener("click", (e) => {
+      const btn = (e.target as Element).closest<HTMLElement>("[data-cmd]");
+      if (btn?.dataset.cmd) run(btn.dataset.cmd);
+    });
+
+    // Active states for the buttons.
+    const refresh = () => {
+      const active: Record<string, boolean> = {
+        bold: editor.isActive("bold"),
+        italic: editor.isActive("italic"),
+        h2: editor.isActive("heading", { level: 2 }),
+        h3: editor.isActive("heading", { level: 3 }),
+        bulletList: editor.isActive("bulletList"),
+        orderedList: editor.isActive("orderedList"),
+        blockquote: editor.isActive("blockquote"),
+        link: editor.isActive("link"),
+      };
+      toolbar.querySelectorAll<HTMLElement>("[data-cmd]").forEach((b) => {
+        const on = active[b.dataset.cmd ?? ""] ?? false;
+        b.setAttribute("aria-pressed", String(on));
+        b.classList.toggle("on", on);
+      });
+    };
+    editor.on("transaction", refresh);
+    refresh();
+
+    // Unsaved changes: warn before leaving; the submit itself is not "leaving".
+    let dirty = false;
+    editor.on("update", () => (dirty = true));
+    form.addEventListener("input", () => (dirty = true));
+    window.addEventListener("beforeunload", (e) => {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    });
+    form.addEventListener("submit", () => {
+      dirty = false;
+      source.value = editor.getHTML(); // the server sanitizes it again before saving
+      source.hidden = true;
+    });
+  });
+</script>

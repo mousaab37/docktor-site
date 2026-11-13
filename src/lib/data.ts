@@ -1,7 +1,7 @@
 // Data access for the public site. It reads the content repository (in memory today, Supabase in task 17)
 // and applies the public filters (active / published) and the ordering here, in code.
 import { getRepo } from "./repo";
-import type { Article, Certificate, ClinicWithHours, Statistic, Testimonial } from "./types";
+import type { Article, Certificate, ClinicWithHours, SeoScope, SeoSetting, Statistic, Testimonial } from "./types";
 
 const byOrder = <T extends { display_order: number }>(a: T, b: T) => a.display_order - b.display_order;
 
@@ -45,4 +45,24 @@ export async function getLatestArticles(limit: number): Promise<Article[]> {
 export async function getActiveClinicCount(): Promise<number> {
   const rows = await getRepo().clinics.list();
   return rows.filter((c) => c.is_active).length;
+}
+
+/** All published articles, newest first (the public blog list and the sitemap). */
+export async function getPublishedArticles(): Promise<Article[]> {
+  const rows = await getRepo().articles.list();
+  return rows
+    .filter((a) => a.status === "published" && a.published_at !== null)
+    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""));
+}
+
+/** A published article by slug. A missing slug and a draft both give null (the page answers 404). */
+export async function getPublishedArticleBySlug(slug: string): Promise<Article | null> {
+  const rows = await getRepo().articles.list();
+  return rows.find((a) => a.slug === slug && a.status === "published") ?? null;
+}
+
+/** The editable SEO fields of one page, or null when nothing is stored. */
+export async function getSeoSetting(scope: SeoScope): Promise<SeoSetting | null> {
+  const rows = await getRepo().seo.list();
+  return rows.find((r) => r.scope === scope) ?? null;
 }

@@ -2,7 +2,70 @@
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
 import EmptyState from "@/components/dashboard/EmptyState.astro";
+import Flash from "@/components/dashboard/Flash.astro";
+import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import { getRepo } from "@/lib/repo";
+
+const repo = getRepo();
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  if (fd.get("intent") === "delete") {
+    // Deleting an article also removes its featured image.
+    const id = String(fd.get("id") ?? "");
+    const row = await repo.articles.get(id);
+    if (row?.featured_image) await repo.images.remove("articles", row.featured_image);
+    await repo.articles.remove(id);
+    return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
+  }
+}
+
+const filter = Astro.url.searchParams.get("status");
+const status = filter === "published" || filter === "draft" ? filter : "all";
+// All articles (drafts too), newest updated first (the repo sorts them that way).
+const all = await repo.articles.list();
+const rows = status === "all" ? all : all.filter((a) => a.status === status);
+const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
+const tabs = [
+  { key: "all", label: "الكل", href: "/dashboard/blog" },
+  { key: "published", label: "منشور", href: "/dashboard/blog?status=published" },
+  { key: "draft", label: "مسودات", href: "/dashboard/blog?status=draft" },
+];
 ---
-<DashboardLayout title="المدونة">
-  <Card><EmptyState message="قيد البناء — المهمة 13" /></Card>
+<DashboardLayout title="المدونة" description="مقالات تظهر في الصفحة الرئيسية وفي صفحة المقالات.">
+  <Flash />
+  <div class="d-toolbar">
+    <nav class="d-tabs" aria-label="تصفية المقالات">
+      {tabs.map((t) => <a class="d-tab" href={t.href} aria-current={t.key === status ? "page" : undefined}>{t.label}</a>)}
+    </nav>
+    <a class="btn btn-sm" href="/dashboard/blog/new">مقال جديد</a>
+  </div>
+  <Card>
+    {rows.length === 0 ? (
+      <EmptyState message="لا توجد مقالات هنا." addHref="/dashboard/blog/new" addLabel="مقال جديد" />
+    ) : (
+      <ul class="art-list">
+        {rows.map((a) => (
+          <li class="art-row">
+            <div>
+              <strong>{a.title}</strong>
+              <p class="d-note">
+                {a.published_at ? `نُشر في ${dateFmt.format(new Date(a.published_at))}` : "لم يُنشر بعد"}
+              </p>
+            </div>
+            <div class="d-row-actions">
+              <StatusBadge kind={a.status === "published" ? "published" : "draft"} />
+              <a class="d-link-btn" href={`/dashboard/blog/${a.id}`}>تعديل</a>
+              {a.status === "published" && <a class="d-link-btn" href={`/blog/${a.slug}`} target="_blank" rel="noopener">عرض</a>}
+              <form method="post">
+                <input type="hidden" name="intent" value="delete" />
+                <input type="hidden" name="id" value={a.id} />
+                <button class="d-link-btn d-danger" type="submit" data-confirm="هل أنت متأكد من حذف المقال؟">حذف</button>
+              </form>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </Card>
 </DashboardLayout>

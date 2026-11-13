@@ -1,0 +1,43 @@
+---
+import { doctorConfig } from "@/config";
+import PublicLayout from "@/layouts/PublicLayout.astro";
+import { getPublishedArticles, getSeoSetting } from "@/lib/data";
+
+const { doctor, site } = doctorConfig;
+const [articles, seo] = await Promise.all([getPublishedArticles(), getSeoSetting("blog")]);
+const title = seo?.seo_title || `المقالات | ${doctor.honorific} ${doctor.fullName}`;
+const description = seo?.seo_description || site.defaultDescription;
+const ogImage = seo?.og_image || undefined;
+const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });
+---
+<PublicLayout title={title} description={description} ogImage={ogImage}>
+  <section class="sec" style="padding-top:clamp(120px,14vw,170px)" aria-labelledby="blog-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">المدونة</span>
+          <h1 class="h2" id="blog-h" data-split>المقالات</h1>
+        </div>
+        <p class="lead rv">معلومات صحية مبسّطة يكتبها الطبيب لمرضاه.</p>
+      </div>
+      {articles.length === 0 ? (
+        <p class="lead">لا توجد مقالات منشورة بعد. عُد قريبًا.</p>
+      ) : (
+        <div class="art-grid">
+          {articles.map((a, i) => (
+            <a class="card art-card rv" href={`/blog/${a.slug}`} style={i > 0 ? `--d:${i % 3}` : undefined}>
+              <div class="ph">
+                {a.featured_image && <img src={a.featured_image} alt="" width="1600" height="1067" loading="lazy" />}
+              </div>
+              <div class="art-b">
+                {a.published_at && <time datetime={a.published_at}>{dateFmt.format(new Date(a.published_at))}</time>}
+                <h2>{a.title}</h2>
+                {a.excerpt && <p>{a.excerpt}</p>}
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</PublicLayout>

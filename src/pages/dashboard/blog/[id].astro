@@ -1,0 +1,32 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import ArticleForm from "@/components/dashboard/ArticleForm.astro";
+import { saveArticle } from "@/lib/dashboard/article-save";
+import { getRepo } from "@/lib/repo";
+import type { FormValues } from "@/lib/validation/form";
+
+const repo = getRepo();
+const row = await repo.articles.get(Astro.params.id ?? "");
+if (!row) return new Response("Not found", { status: 404 });
+
+let values: FormValues = {
+  title: row.title,
+  slug: row.slug,
+  excerpt: row.excerpt ?? "",
+  content: row.content,
+  seo_title: row.seo_title ?? "",
+  seo_description: row.seo_description ?? "",
+};
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const result = await saveArticle(repo, await Astro.request.formData(), row);
+  if (result.ok) return Astro.redirect("/dashboard/blog?ok=saved", 303);
+  values = result.values;
+  errors = result.errors;
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="تعديل مقال">
+  <ArticleForm values={values} errors={errors} currentImage={row.featured_image} status={row.status} cancelHref="/dashboard/blog" />
+</DashboardLayout>

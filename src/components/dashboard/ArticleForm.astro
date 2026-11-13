@@ -1,0 +1,76 @@
+---
+import Card from "./Card.astro";
+import Field from "./Field.astro";
+import ImageUpload from "./ImageUpload.astro";
+import RichTextEditor from "./RichTextEditor.astro";
+import type { FormValues } from "@/lib/validation/form";
+
+interface Props {
+  values: FormValues;
+  errors?: Record<string, string>;
+  /** The featured image stored for this article (never taken from the form). */
+  currentImage?: string | null;
+  /** The stored status, when editing. */
+  status?: "draft" | "published";
+  cancelHref: string;
+}
+
+const { values, errors = {}, currentImage = null, status = "draft", cancelHref } = Astro.props;
+---
+<form method="post" enctype="multipart/form-data" class="d-form" novalidate data-article-form>
+  <Card>
+    <div class="d-form">
+      <Field name="title" label="عنوان المقال" value={String(values.title ?? "")} error={errors.title} required maxlength={200} />
+      <Field
+        name="slug"
+        label="الرابط (slug)"
+        value={String(values.slug ?? "")}
+        error={errors.slug}
+        required
+        maxlength={120}
+        dir="ltr"
+        hint="حروف إنجليزية صغيرة وأرقام وشرطات فقط، مثل healthy-sleep"
+      />
+      <Field as="textarea" name="excerpt" label="مقتطف (اختياري)" value={String(values.excerpt ?? "")} error={errors.excerpt} maxlength={300} rows={3} />
+      <ImageUpload name="image" label="الصورة الرئيسية (اختياري)" value={currentImage} bucket="articles" error={errors.image} />
+      <RichTextEditor name="content" value={String(values.content ?? "")} error={errors.content} />
+    </div>
+  </Card>
+
+  <Card>
+    <h2 class="d-box-title">تحسين محركات البحث (اختياري)</h2>
+    <div class="d-form">
+      <Field name="seo_title" label="عنوان SEO" value={String(values.seo_title ?? "")} error={errors.seo_title} maxlength={70} hint="إن تُرك فارغًا يُستخدم عنوان المقال." />
+      <Field as="textarea" name="seo_description" label="وصف SEO" value={String(values.seo_description ?? "")} error={errors.seo_description} maxlength={160} rows={2} hint="إن تُرك فارغًا يُستخدم المقتطف." />
+    </div>
+  </Card>
+
+  <Card>
+    <p class="d-notice sm" role="note">راجع المحتوى الطبي بنفسك قبل النشر.</p>
+    <div class="d-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" type="submit" name="intent" value="draft">حفظ كمسودة</button>
+      <button class="btn" type="submit" name="intent" value="publish">{status === "published" ? "حفظ ونشر" : "نشر"}</button>
+      {status === "published" && <button class="btn btn-ghost" type="submit" name="intent" value="unpublish">إلغاء النشر</button>}
+      <a class="d-link-btn" href={cancelHref}>إلغاء</a>
+    </div>
+  </Card>
+</form>
+
+<script>
+  // Suggest a slug while the title is typed, only when the title is Latin letters and the slug was not touched.
+  document.querySelectorAll<HTMLFormElement>("form[data-article-form]").forEach((form) => {
+    const title = form.elements.namedItem("title") as HTMLInputElement | null;
+    const slug = form.elements.namedItem("slug") as HTMLInputElement | null;
+    if (!title || !slug) return;
+    let touched = slug.value.trim() !== "";
+    slug.addEventListener("input", () => (touched = true));
+    title.addEventListener("input", () => {
+      if (touched) return;
+      const v = title.value.trim();
+      if (!/^[A-Za-z0-9\s\-_]+$/.test(v)) return; // only Latin titles are turned into a slug
+      slug.value = v.toLowerCase().replace(/[\s_]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
+      slug.dispatchEvent(new Event("input"));
+      touched = false; // the input event above marks it as touched; a later title edit may still update it
+    });
+  });
+</script>
