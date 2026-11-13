@@ -1,0 +1,28 @@
+# Task 14 — Result
+- Branch / PR: `task/13-14-blog-seo` (one branch and one PR for tasks 13 and 14; the PR link is in the final message)
+- Commit: task14: seo settings, sitemap, robots, privacy, 404, json-ld (hash: see the PR)
+- Status: done
+- Files changed:
+  - New: src/pages/privacy.astro, src/pages/404.astro, src/pages/sitemap.xml.ts, src/pages/robots.txt.ts, src/lib/jsonld.ts
+  - Rewritten: src/pages/dashboard/seo.astro (3 cards; replaces the placeholder)
+  - Edited: src/pages/index.astro (global SEO values and the JSON-LD script in the `head` slot), src/pages/blog/[slug].astro (a missing or draft slug now rewrites to the custom 404 page instead of a plain response), src/components/dashboard/Field.astro (new optional `idPrefix` prop, so the same field name can appear in three forms on one page), src/styles/dashboard.css (Google-style preview), src/styles/global.css (404 page)
+  - docs/taskes/task14-result.md
+- Commands run and outcome: npm run build ✅; npx astro check ✅ (0 errors, 0 warnings, 4 hints in old files)
+- How to verify: `npm run dev`; `/dashboard/seo`, then `/`, `/blog`, `/privacy`, `/sitemap.xml`, `/robots.txt` and any unknown URL.
+- Part A — `/dashboard/seo` (checked in the browser pane):
+  - Three cards: الصفحة الرئيسية (`global`), صفحة المقالات (`blog`), سياسة الخصوصية (`privacy`). Each has SEO title (counter, `maxlength` 70), SEO description (counter, 160), OG image path (`dir="ltr"`, hint "اتركه فارغًا لاستخدام الصورة الافتراضية"), a live Google-style preview (blue title, green URL, grey description; it falls back to the config defaults when the fields are empty; the URL line shows `example.com/`, `/blog`, `/privacy`), and its own "حفظ" (`intent=save&scope=…`). The note "إعدادات SEO لكل مقال موجودة داخل محرر المقال." is under the cards.
+  - Typing updated the preview and the counter (`21 / 70`); a 71-character title posted anyway came back 422 with "الحد الأقصى 70 حرفًا" on that card only; an unknown `scope` is ignored.
+  - Global title set in the dashboard → `<title>` and `og:title` of `/` changed; cleared → the config default came back (the description stays the default). Blog and privacy titles and the privacy OG image are used by `/blog` and `/privacy` and fall back when cleared.
+- Part B — system pages (dev server and the production preview on the Workers runtime):
+  - `/privacy` 200 with "آخر تحديث: 1 يناير 2026" and the three config sections in `.prose-ar`; `/robots.txt` (`User-agent: *`, `Allow: /`, `Disallow: /dashboard`, `/login`, `/dev`, and the sitemap line); `/sitemap.xml` (`application/xml`) lists `/`, `/blog`, `/privacy` and the published articles only, with `lastmod` = `updated_at` and absolute URLs from `doctorConfig.site.url` (6 entries; the draft is not listed).
+  - An unknown URL and a draft slug answer **404** with the custom page (a large "404", "الصفحة غير موجودة", buttons to `/` and `/blog`, `noindex`).
+  - `/dashboard/seo` is still 404 in production.
+- Part C — JSON-LD on `/`: one `<script type="application/ld+json">` in the head with a `Physician` (name, `medicalSpecialty` as text, image as an absolute URL, url, telephone, `sameAs` = the socials) and one `MedicalClinic` per active clinic (name, address text, `geo` when set, telephone, and one `OpeningHoursSpecification` per interval, closed days skipped; 6 entries for the first sample clinic). No ratings or reviews. It is serialized with `JSON.stringify` and every `<` is written as `\u003c`; the script content contains no raw `<`.
+- **schema.org validator**: I could not run https://validator.schema.org. Its page rendered without working controls in the browser pane (icon fonts and the editor did not load), so nothing could be pasted. What I did instead: parsed the JSON from the served page, checked `@context`, the types, the property names and the value formats by hand. Please paste the home page HTML into the validator once.
+- Extra check for task 13 (its result file says the editor was not tried in a browser; the browser pane was back in this run, so I tried it, task 13's files are unchanged): the Tiptap editor mounts with `dir="rtl"`, the site font, 320px minimum height and all 10 Arabic toolbar buttons; typing, H2, bullet list, quote and undo work with the active states; the link button sets a link (with `rel="noopener noreferrer nofollow"`), an empty address removes it, and a `javascript:` address is refused by Tiptap; `beforeunload` is prevented when there are unsaved changes; the slug is suggested from a Latin title; a real submit saved `<h2>…</h2><p>…</p>` and the test article was deleted. The 375px look of the article page and of the editor was not checked.
+- Notes for planner:
+  - The dashboard SEO fields store `seo_title`, `seo_description` and `og_image` only; per-article SEO stays inside the article form.
+  - `og_image` is passed through `new URL(…, site.url)` by the layout, so both `/img/...` paths and full URLs work.
+  - The sample article "كيف تستعد لزيارة الطبيب؟" in the dev server's memory has an extra word in its title that I did not type (someone edited it in the dashboard while I was working); restart the dev server to get the original sample data.
+  - The dev server on port 4321 is a leftover process from an earlier session (not managed by this run); my test data (SEO values, test articles) was removed again.
+  - `gh` is at `C:\Program Files\GitHub CLI\gh.exe` and logged in.

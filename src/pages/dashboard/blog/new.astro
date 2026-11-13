@@ -1,0 +1,21 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import ArticleForm from "@/components/dashboard/ArticleForm.astro";
+import { saveArticle } from "@/lib/dashboard/article-save";
+import { getRepo } from "@/lib/repo";
+import type { FormValues } from "@/lib/validation/form";
+
+let values: FormValues = { title: "", slug: "", excerpt: "", content: "", seo_title: "", seo_description: "" };
+let errors: Record<string, string> = {};
+
+if (Astro.request.method === "POST") {
+  const result = await saveArticle(getRepo(), await Astro.request.formData(), null);
+  if (result.ok) return Astro.redirect("/dashboard/blog?ok=saved", 303);
+  values = result.values;
+  errors = result.errors;
+  Astro.response.status = 422;
+}
+---
+<DashboardLayout title="مقال جديد">
+  <ArticleForm values={values} errors={errors} cancelHref="/dashboard/blog" />
+</DashboardLayout>

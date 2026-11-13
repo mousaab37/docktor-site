@@ -22,6 +22,8 @@ interface Props {
   step?: string;
   min?: string;
   max?: string;
+  /** Prefix for the input id, when the same field name appears in several forms on one page. */
+  idPrefix?: string;
 }
 
 const {
@@ -41,9 +43,10 @@ const {
   step,
   min,
   max,
+  idPrefix,
 } = Astro.props;
 
-const id = `f-${name}`;
+const id = idPrefix ? `${idPrefix}-${name}` : `f-${name}`;
 const current = value === null || value === undefined ? "" : String(value);
 const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-err` : null].filter(Boolean).join(" ") || undefined;
 ---

@@ -1,8 +1,93 @@
 ---
+import { doctorConfig } from "@/config";
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
-import EmptyState from "@/components/dashboard/EmptyState.astro";
+import Field from "@/components/dashboard/Field.astro";
+import Flash from "@/components/dashboard/Flash.astro";
+import { getRepo } from "@/lib/repo";
+import type { SeoScope } from "@/lib/types";
+import { parseForm, type FormValues } from "@/lib/validation/form";
+import { seoInput } from "@/lib/validation/seo";
+
+const repo = getRepo();
+const { site } = doctorConfig;
+
+// One card per scope. `path` is only used for the preview URL line.
+const scopes: { scope: SeoScope; label: string; path: string }[] = [
+  { scope: "global", label: "الصفحة الرئيسية", path: "/" },
+  { scope: "blog", label: "صفحة المقالات", path: "/blog" },
+  { scope: "privacy", label: "سياسة الخصوصية", path: "/privacy" },
+];
+
+// A failed save shows the typed values and the errors in that card only.
+let failed: { scope: SeoScope; values: FormValues; errors: Record<string, string> } | null = null;
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  const scope = scopes.find((s) => s.scope === fd.get("scope"))?.scope;
+  if (fd.get("intent") === "save" && scope) {
+    const result = parseForm(seoInput, fd);
+    if (result.ok) {
+      await repo.seo.update(scope, result.data);
+      return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+    }
+    failed = { scope, values: result.values, errors: result.errors };
+    Astro.response.status = 422;
+  }
+}
+
+const rows = await repo.seo.list();
+const valueOf = (scope: SeoScope): FormValues => {
+  if (failed?.scope === scope) return failed.values;
+  const r = rows.find((x) => x.scope === scope);
+  return { seo_title: r?.seo_title ?? "", seo_description: r?.seo_description ?? "", og_image: r?.og_image ?? "" };
+};
+const url = (path: string) => new URL(path, site.url).href.replace(/^https?:\/\//, "");
 ---
-<DashboardLayout title="إعدادات SEO">
-  <Card><EmptyState message="قيد البناء — المهمة 14" /></Card>
+<DashboardLayout title="إعدادات SEO" description="العنوان والوصف الذي تعرضه محركات البحث ومشاركات الروابط.">
+  <Flash />
+  {scopes.map(({ scope, label, path }) => {
+    const v = valueOf(scope);
+    const errors = failed?.scope === scope ? failed.errors : {};
+    return (
+      <Card>
+        <form method="post" class="d-form" novalidate data-seo-card data-default-title={site.defaultTitle} data-default-description={site.defaultDescription} data-url={url(path)}>
+          <input type="hidden" name="intent" value="save" />
+          <input type="hidden" name="scope" value={scope} />
+          <h2 class="d-box-title">{label}</h2>
+          <Field idPrefix={scope} name="seo_title" label="عنوان SEO" value={String(v.seo_title ?? "")} error={errors.seo_title} maxlength={70} hint="إن تُرك فارغًا يُستخدم العنوان الافتراضي." />
+          <Field idPrefix={scope} as="textarea" name="seo_description" label="وصف SEO" value={String(v.seo_description ?? "")} error={errors.seo_description} maxlength={160} rows={2} hint="إن تُرك فارغًا يُستخدم الوصف الافتراضي." />
+          <Field idPrefix={scope} name="og_image" label="صورة المشاركة (OG)" value={String(v.og_image ?? "")} error={errors.og_image} maxlength={500} dir="ltr" hint="اتركه فارغًا لاستخدام الصورة الافتراضية" />
+          <div class="seo-preview" aria-label="معاينة نتيجة البحث" dir="rtl">
+            <div class="seo-p-title" data-p-title></div>
+            <div class="seo-p-url" dir="ltr" data-p-url></div>
+            <div class="seo-p-desc" data-p-desc></div>
+          </div>
+          <div class="d-actions"><button class="btn" type="submit">حفظ</button></div>
+        </form>
+      </Card>
+    );
+  })}
+  <p class="d-note">إعدادات SEO لكل مقال موجودة داخل محرر المقال.</p>
 </DashboardLayout>
+
+<script>
+  // Live Google-style preview: a blue title, a green URL and a grey description, updated as the doctor types.
+  document.querySelectorAll<HTMLFormElement>("form[data-seo-card]").forEach((form) => {
+    const title = form.elements.namedItem("seo_title") as HTMLInputElement;
+    const desc = form.elements.namedItem("seo_description") as HTMLTextAreaElement;
+    const pTitle = form.querySelector<HTMLElement>("[data-p-title]");
+    const pUrl = form.querySelector<HTMLElement>("[data-p-url]");
+    const pDesc = form.querySelector<HTMLElement>("[data-p-desc]");
+    if (!title || !desc || !pTitle || !pUrl || !pDesc) return;
+    const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+    const update = () => {
+      pTitle.textContent = cut(title.value.trim() || form.dataset.defaultTitle || "", 60);
+      pDesc.textContent = cut(desc.value.trim() || form.dataset.defaultDescription || "", 160);
+      pUrl.textContent = form.dataset.url ?? "";
+    };
+    title.addEventListener("input", update);
+    desc.addEventListener("input", update);
+    update();
+  });
+</script>
