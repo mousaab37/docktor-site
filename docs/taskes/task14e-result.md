@@ -1,0 +1,12 @@
+# Task 14e — Result
+- Branch / PR: `task/14e-14f-faq-seo` (one PR for 14e + 14f; link in the final message)
+- Commit: `task14e: faq dashboard and public section`
+- Status: done
+- Files changed: `src/lib/types.ts` (`Faq`), `src/lib/validation/faq.ts`, `src/lib/repo/{types,memory}.ts` (`faqs`, 6 SAMPLE questions), `src/lib/data.ts` (`getPublishedFaqs`), `src/pages/dashboard/faq.astro` + `faq/new.astro` + `faq/[id].astro`, `src/components/dashboard/FaqForm.astro`, `src/lib/dashboard-nav.ts` (10 items), `src/pages/dashboard/index.astro` (count card + checklist item), `src/components/public/FaqSection.astro`, `src/pages/index.astro`, `src/lib/nav.ts`, `src/components/dev/CompareButton.astro`, `src/lib/jsonld.ts` (`FAQPage`), `src/styles/global.css` (`.qa` accordion), `AGENTS.md` (§3/§4)
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅
+- How to verify: `/dashboard/faq` (add/edit in the popup, hide, ↑↓, delete) and `/#faq`. View source of `/`: the `FAQPage` JSON-LD lists exactly the published questions.
+- Notes for planner:
+  - **Bug fixed on the way:** `serializeJsonLd` was meant to escape `<` but its replacement string was the literal `<` (a no-op). It now emits a real `\u003c`; an answer with `<script>` is plain text on the page and escaped in the JSON-LD.
+  - DB needs a `faqs` table (`id`, `question`, `answer`, `display_order`, `is_published`, timestamps; public read of published only; `is_dashboard_user()` writes; length checks 5–200 and 20–1500).
+  - The header/footer link "الأسئلة الشائعة" always shows, even when no FAQ is published (the anchor then goes nowhere).
+  - Not compared side by side with `/dev/reference#faq`; I checked the section and the open/close behaviour in the browser pane (desktop and 375px, no horizontal scroll).

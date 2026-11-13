@@ -3,24 +3,48 @@ import BaseLayout from "./BaseLayout.astro";
 import Header from "@/components/public/Header.astro";
 import Footer from "@/components/public/Footer.astro";
 import CompareButton from "@/components/dev/CompareButton.astro";
-import { getActiveClinicCount, getActiveServices, getProfile } from "@/lib/data";
+import { doctorConfig } from "@/config";
+import { getActiveCertificates, getActiveClinicsWithHours, getActiveServices, getProfile } from "@/lib/data";
+import { buildBaseGraph, graphOf, serializeJsonLd, type JsonLdNode } from "@/lib/jsonld";
+import { buildMeta, cityFromAddress } from "@/lib/seo";
 
 interface Props {
+  /** The page name (or the full title when `fullTitle` is set, for a custom SEO title). */
   title?: string;
-  description?: string;
-  ogImage?: string;
+  fullTitle?: boolean;
+  description?: string | null;
+  ogImage?: string | null;
+  ogType?: "website" | "article";
+  publishedTime?: string | null;
+  modifiedTime?: string | null;
   noindex?: boolean;
+  /** Extra JSON-LD nodes of this page (FAQPage, BlogPosting, BreadcrumbList). */
+  graph?: JsonLdNode[];
 }
 
-const { title, description, ogImage, noindex } = Astro.props;
+const { title, fullTitle, description, ogImage, ogType, publishedTime, modifiedTime, noindex = false, graph = [] } = Astro.props;
+const { site } = doctorConfig;
 // Loaded once per page and passed down.
-const [clinicCount, profile, services] = await Promise.all([getActiveClinicCount(), getProfile(), getActiveServices()]);
+const [clinics, profile, services, certificates] = await Promise.all([
+  getActiveClinicsWithHours(),
+  getProfile(),
+  getActiveServices(),
+  getActiveCertificates(),
+]);
+const city = cityFromAddress(clinics[0]?.address) || site.city;
+const path = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const meta = buildMeta(
+  { title, fullTitle, description, path, image: ogImage, type: ogType, publishedTime, modifiedTime, noindex },
+  { siteUrl: site.url, siteName: site.name, defaultDescription: site.defaultDescription, defaultImage: site.ogImage, profile, city },
+);
+const nodes = [...buildBaseGraph({ siteUrl: site.url, siteName: site.name, city, profile, clinics, services, certificates }), ...graph];
+const jsonLd = serializeJsonLd(graphOf(nodes));
 ---
-<BaseLayout title={title} description={description} ogImage={ogImage} noindex={noindex}>
-  <slot name="head" slot="head" />
-  <Header clinicCount={clinicCount} profile={profile} services={services} />
+<BaseLayout meta={meta} preloadImage={path === "/" ? profile.photo_path : null}>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd}></script>
+  <Header clinicCount={clinics.length} profile={profile} services={services} />
   <main id="main"><slot /></main>
-  <Footer clinicCount={clinicCount} profile={profile} />
+  <Footer clinicCount={clinics.length} profile={profile} />
   <CompareButton to="old" />
   <script>
     import "@/scripts/motion";

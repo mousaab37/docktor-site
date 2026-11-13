@@ -1,0 +1,34 @@
+---
+import type { Faq } from "@/lib/types";
+import WhatsAppButton from "./WhatsAppButton.astro";
+
+interface Props {
+  faqs: Faq[];
+}
+
+const { faqs } = Astro.props;
+---
+{faqs.length > 0 && (
+  <section class="sec" id="faq" aria-labelledby="faq-h">
+    <div class="wrap faq-grid">
+      <div class="faq-l">
+        <span class="eyebrow">أسئلة شائعة</span>
+        <h2 class="h2" id="faq-h" data-split>قبل <em>زيارتك الأولى.</em></h2>
+        <p class="lead">أجوبة سريعة عن أكثر ما يسأل عنه مرضانا. لم تجد سؤالك؟ راسلنا على واتساب.</p>
+        <div class="cta-row">
+          <WhatsAppButton label="اسألنا على واتساب" />
+          <a class="btn btn-ghost" href="/contact"><span class="roll"><span data-t="طرق التواصل">طرق التواصل</span></span></a>
+        </div>
+      </div>
+      <div class="faq-list">
+        {faqs.map((f, i) => (
+          <details class="qa" open={i === 0}>
+            <summary>{f.question}<i aria-hidden="true"></i></summary>
+            {/* Plain text only: Astro escapes it, and line breaks become <br>. */}
+            <p>{f.answer.split(/\r?\n/).map((line, j) => (<>{j > 0 && <br />}{line}</>))}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

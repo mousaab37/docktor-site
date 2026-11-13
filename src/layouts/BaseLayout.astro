@@ -1,24 +1,24 @@
 ---
 import "@/styles/global.css";
 import { doctorConfig } from "@/config";
+import arabicFont400 from "@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2?url";
+import type { Meta } from "@/lib/seo";
 
 interface Props {
+  /** Everything the public pages print (title, description, canonical, Open Graph, robots). Built by `buildMeta`. */
+  meta?: Meta;
+  /** Private pages (dashboard, login) only give a title; they are always noindex. */
   title?: string;
-  description?: string;
-  ogImage?: string;
   noindex?: boolean;
+  /** An image to preload (the hero photo of the home page). */
+  preloadImage?: string | null;
 }
 
 const { site, brand } = doctorConfig;
-const {
-  title = site.defaultTitle,
-  description = site.defaultDescription,
-  ogImage = site.ogImage,
-  noindex = false,
-} = Astro.props;
-
-const canonical = new URL(Astro.url.pathname, site.url).href;
-const ogImageUrl = new URL(ogImage, site.url).href;
+const { meta, title = site.defaultTitle, noindex = false, preloadImage = null } = Astro.props;
+const pageTitle = meta?.title ?? title;
+const robots = meta?.robots ?? (noindex ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1");
+const preload = preloadImage && !preloadImage.startsWith("data:") ? preloadImage : null;
 const brandVars = `:root{--brand-primary:${brand.primary};--brand-accent:${brand.accent};}`;
 const enc = (hex: string) => hex.replace("#", "%23");
 const favicon =
@@ -30,16 +30,18 @@ const favicon =
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{title}</title>
-  <meta name="description" content={description} />
-  <link rel="canonical" href={canonical} />
-  {noindex && <meta name="robots" content="noindex" />}
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={description} />
-  <meta property="og:image" content={ogImageUrl} />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="ar_AR" />
-  <meta name="twitter:card" content="summary_large_image" />
+  <title>{pageTitle}</title>
+  <meta name="robots" content={robots} />
+  {meta && <meta name="description" content={meta.description} />}
+  {meta && <link rel="canonical" href={meta.canonical} />}
+  {meta && <link rel="alternate" hreflang="ar" href={meta.canonical} />}
+  {meta && <link rel="alternate" hreflang="x-default" href={meta.canonical} />}
+  {meta && Object.entries(meta.og).map(([k, v]) => <meta property={k} content={v} />)}
+  {meta && Object.entries(meta.twitter).map(([k, v]) => <meta name={k} content={v} />)}
+  {meta && Object.entries(meta.article).map(([k, v]) => <meta property={k} content={v} />)}
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+  <link rel="preload" as="font" type="font/woff2" href={arabicFont400} crossorigin />
+  {preload && <link rel="preload" as="image" href={preload} fetchpriority="high" />}
   <link rel="icon" href={favicon} />
   <style is:inline set:html={brandVars}></style>
   <script is:inline>document.documentElement.classList.add("js");</script>

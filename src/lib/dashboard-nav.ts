@@ -1,4 +1,4 @@
-// The dashboard has exactly these 9 sections (AGENTS.md §4). Do not add more.
+// The dashboard has exactly these 10 sections (AGENTS.md §4). Do not add more.
 // `icon` is the inner markup of a 24x24 stroke SVG.
 export interface DashboardNavItem {
   label: string;
@@ -21,6 +21,11 @@ export const dashboardNav: DashboardNavItem[] = [
     label: "خدماتي",
     path: "/dashboard/services",
     icon: '<path d="M12 21s-8-4.9-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.1-8 11-8 11z"/>',
+  },
+  {
+    label: "الأسئلة الشائعة",
+    path: "/dashboard/faq",
+    icon: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.700M12 17h.01"/>',
   },
   {
     label: "الإحصائيات",

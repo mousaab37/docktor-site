@@ -8,6 +8,7 @@ import type {
   Service,
   Statistic,
   Testimonial,
+  Faq,
   WorkingHour,
 } from "../types";
 import type { ArticleInput } from "../validation/article";
@@ -18,6 +19,7 @@ import type { SeoInput } from "../validation/seo";
 import type { ServiceInput } from "../validation/service";
 import type { StatisticInput } from "../validation/statistic";
 import type { TestimonialInput } from "../validation/testimonial";
+import type { FaqInput } from "../validation/faq";
 import type { DayScheduleInput } from "../validation/working-hours";
 
 export interface CrudTable<T, I> {
@@ -59,6 +61,7 @@ export interface ContentRepo {
     slugExists(slug: string, exceptId?: string): Promise<boolean>;
   };
   testimonials: CrudTable<Testimonial, TestimonialInput> & Orderable;
+  faqs: CrudTable<Faq, FaqInput> & Orderable;
   seo: {
     list(): Promise<SeoSetting[]>;
     update(scope: SeoScope, input: SeoInput): Promise<SeoSetting>;

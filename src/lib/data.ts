@@ -1,7 +1,7 @@
 // Data access for the public site. It reads the content repository (in memory today, Supabase in task 17)
 // and applies the public filters (active / published) and the ordering here, in code.
 import { getRepo } from "./repo";
-import type { Article, Certificate, ClinicWithHours, Profile, SeoScope, SeoSetting, Service, Statistic, Testimonial } from "./types";
+import type { Article, Certificate, ClinicWithHours, Faq, Profile, SeoScope, SeoSetting, Service, Statistic, Testimonial } from "./types";
 
 const byOrder = <T extends { display_order: number }>(a: T, b: T) => a.display_order - b.display_order;
 
@@ -31,6 +31,11 @@ export async function getActiveCertificates(): Promise<Certificate[]> {
 export async function getPublishedTestimonials(): Promise<Testimonial[]> {
   const rows = await getRepo().testimonials.list();
   return rows.filter((t) => t.is_published).sort(byOrder);
+}
+
+export async function getPublishedFaqs(): Promise<Faq[]> {
+  const rows = await getRepo().faqs.list();
+  return rows.filter((f) => f.is_published).sort(byOrder);
 }
 
 export async function getLatestArticles(limit: number): Promise<Article[]> {

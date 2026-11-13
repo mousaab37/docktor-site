@@ -51,7 +51,7 @@ const steps = [
       <div class="steps-media">
         {steps.map((s, k) => (
           <div class={k === 0 ? "ph on" : "ph"} data-shot={k}>
-            <img src={s.shot} alt="" width="1600" height="1067" loading="lazy" />
+            <img src={s.shot} alt="" aria-hidden="true" width="1600" height="1067" loading="lazy" />
           </div>
         ))}
         <div class="steps-count" aria-hidden="true"><span data-vnum>01</span><small>/ 04</small></div>
@@ -64,7 +64,7 @@ const steps = [
               <h3>{s.title}</h3>
               <p>{s.text}</p>
               <ul class="tags">{s.tags.map((t) => <li>{t}</li>)}</ul>
-              <div class="ph"><img src={s.shot} alt="" width="1600" height="1067" loading="lazy" /></div>
+              <div class="ph"><img src={s.shot} alt="" aria-hidden="true" width="1600" height="1067" loading="lazy" /></div>
             </article>
           ))}
         </div>

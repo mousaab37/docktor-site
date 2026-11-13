@@ -31,7 +31,7 @@ const { values, errors = {}, currentImage = null, status = "draft", cancelHref }
         dir="ltr"
         hint="حروف إنجليزية صغيرة وأرقام وشرطات فقط، مثل healthy-sleep"
       />
-      <Field as="textarea" name="excerpt" label="مقتطف (اختياري)" value={String(values.excerpt ?? "")} error={errors.excerpt} maxlength={300} rows={3} />
+      <Field as="textarea" name="excerpt" label="الخلاصة (اختياري)" value={String(values.excerpt ?? "")} error={errors.excerpt} maxlength={300} rows={3} hint="إجابة مباشرة يظهرها جوجل والذكاء الاصطناعي (جملة إلى ثلاث جمل قصيرة)" />
       <ImageUpload name="image" label="الصورة الرئيسية (اختياري)" value={currentImage} bucket="articles" error={errors.image} />
       <RichTextEditor name="content" value={String(values.content ?? "")} error={errors.content} />
     </div>

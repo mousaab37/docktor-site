@@ -24,7 +24,7 @@ If they conflict: task > AGENTS.md > system-design > PRD, **except** the hard ru
 
 A **simple landing page** for a single Arabic-speaking doctor, with its content controlled from a private **inner dashboard**. Arabic, right-to-left. Built as a reusable **Astro** codebase: each doctor gets their own deployment on **Cloudflare Workers** and their own **Supabase** project (Postgres, Auth, Storage).
 
-The public site is **one landing page** (`/`) made of sections (hero, about, statistics, services, clinics and hours with map, certificates, testimonials, latest articles, contact). The header links scroll to those sections. The only other public routes are:
+The public site is **one landing page** (`/`) made of sections (hero, about, statistics, services, FAQ, clinics and hours with map, certificates, testimonials, latest articles, contact). The header links scroll to those sections. The only other public routes are:
 - `/blog` and `/blog/[slug]`, because articles need their own crawlable URLs for SEO
 - `/contact` (all contact details, each clinic with hours and map), `/privacy` and the 404 page
 - `/login` and `/dashboard/*`, which are private
@@ -34,11 +34,11 @@ Do **not** create separate About, Services, Clinics or Booking pages. Those are 
 ## 4. Hard rules (never break)
 
 **Scope**
-- The dashboard has **exactly 9 sections**, in this order: Overview (لوحة التحكم), My profile (ملفي), My services (خدماتي), Statistics, Certificates, Clinics, Blog, Testimonials, SEO Settings. **Working hours are edited inside each clinic's page**, not in their own tab (owner decision 2026-11-11; overrides PRD §5). Profile and services were added by owner decision (task 14b).
-- **Never add** dashboard sections for Website Settings (logo, colors, branding), Media Library, or anything else beyond the 9 above.
+- The dashboard has **exactly 10 sections**, in this order: Overview (لوحة التحكم), My profile (ملفي), My services (خدماتي), FAQ (الأسئلة الشائعة), Statistics, Certificates, Clinics, Blog, Testimonials, SEO Settings. **Working hours are edited inside each clinic's page**, not in their own tab (owner decision 2026-11-11; overrides PRD §5). Profile and services were added by owner decision (task 14b), the FAQ by owner decision on 2026-11-13 (task 14e; SEO and AI-answer-engine visibility are the main selling point).
+- **Never add** dashboard sections for Website Settings (logo, colors, branding), Media Library, or anything else beyond the 10 above.
 - The **profile** (photo, name, intro, bio, education, experience, languages, WhatsApp, phone, email, social accounts) and the **services** are stored in the database and edited in the dashboard. They are seeded from `src/config/doctor.config.ts`, which only the in-memory repo reads.
 - Branding (logo, colors, fonts), `site.url`, default country, default SEO text and the privacy-policy text stay in `src/config/doctor.config.ts`. They are not editable in the dashboard.
-- No booking engine, no payments, no patient accounts, no FAQ, no prices section, no public review form.
+- No booking engine, no payments, no patient accounts, no prices section, no public review form.
 - Contact happens through WhatsApp `wa.me` links. The site must say a WhatsApp message **does not confirm an appointment**.
 
 **Security**

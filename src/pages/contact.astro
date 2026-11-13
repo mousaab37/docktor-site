@@ -4,17 +4,16 @@ import ContactCtaCard from "@/components/public/ContactCtaCard.astro";
 import { doctorConfig } from "@/config";
 import PublicLayout from "@/layouts/PublicLayout.astro";
 import { getProfile, getSeoSetting } from "@/lib/data";
+import { breadcrumbNode } from "@/lib/jsonld";
 import { waLink } from "@/lib/whatsapp";
 import SocialIcon from "@/components/public/SocialIcon.astro";
 import { SOCIAL_NAMES } from "@/lib/services";
 
 const [profile, seo] = await Promise.all([getProfile(), getSeoSetting("contact")]);
 const name = `${profile.honorific} ${profile.full_name}`;
-const title = seo?.seo_title || `تواصل | ${name}`;
-const description = seo?.seo_description || doctorConfig.site.defaultDescription;
-const ogImage = seo?.og_image || undefined;
+const description = seo?.seo_description || `طرق التواصل مع ${name}: واتساب والهاتف والبريد، وروابط مواعيد العيادات وأماكنها.`;
 ---
-<PublicLayout title={title} description={description} ogImage={ogImage}>
+<PublicLayout title={seo?.seo_title || "تواصل"} fullTitle={!!seo?.seo_title} description={description} ogImage={seo?.og_image} graph={breadcrumbNode(doctorConfig.site.url, [{ name: "الرئيسية", path: "/" }, { name: "تواصل", path: "/contact" }])}>
   <section class="sec" style="padding-top:clamp(120px,14vw,170px)" aria-labelledby="contact-h">
     <div class="wrap">
       <div class="sec-head">

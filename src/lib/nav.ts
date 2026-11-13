@@ -9,6 +9,7 @@ export function getSectionLinks(clinicCount: number) {
     { href: "/#services", label: "الخدمات" },
     { href: "/#how", label: "كيف تحجز" },
     { href: "/#clinics", label: clinicsWord(clinicCount) },
+    { href: "/#faq", label: "الأسئلة الشائعة" },
     { href: "/blog", label: "المقالات" },
     { href: "/contact", label: "تواصل" },
   ] as const;
