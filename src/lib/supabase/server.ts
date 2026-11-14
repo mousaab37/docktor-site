@@ -6,9 +6,9 @@ import type { AstroCookies } from "astro";
 import { getSecret, SUPABASE_URL } from "astro:env/server";
 
 export function createSupabaseServerClient(ctx: { request: Request; cookies: AstroCookies }): SupabaseClient {
-  // Read at request time (not at import), so a missing secret can only break the private pages.
+  // Read at request time, so a missing variable can only break the private pages.
   const key = getSecret("SUPABASE_KEY");
-  if (!key) throw new Error("SUPABASE_KEY is not set");
+  if (!SUPABASE_URL || !key) throw new Error("SUPABASE_URL and SUPABASE_KEY must be set to use the dashboard");
   return createServerClient(SUPABASE_URL, key, {
     cookies: {
       getAll() {

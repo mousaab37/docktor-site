@@ -1,21 +1,25 @@
 ---
+import { publicImageUrl } from "@/lib/storage";
+
 interface Props {
   /** Base name of the fields: `<name>_file` (the file) and `<name>_remove` (the checkbox). */
   name: string;
   /** The current image (path or URL), or null. Shown as a preview. */
   value?: string | null;
-  bucket: "certificates" | "articles";
+  bucket: "certificates" | "articles" | "profile" | "services";
   label: string;
   error?: string;
 }
 
 const { name, value = null, bucket, label, error } = Astro.props;
+// `value` is the stored path (what the form keeps); the preview needs a URL.
+const previewSrc = publicImageUrl(value, bucket);
 const id = `f-${name}-file`;
 ---
 <div class:list={["field", "img-upload", error && "has-error"]} data-image-upload data-bucket={bucket}>
   <label for={id}>{label}</label>
   <div class="img-preview ph" data-image-preview>
-    {value && <img src={value} alt="" data-image-current />}
+    {previewSrc && <img src={previewSrc} alt="" data-image-current />}
   </div>
   <input id={id} type="file" name={`${name}_file`} accept="image/jpeg,image/png,image/webp" data-image-input />
   <p class="hint">JPG أو PNG أو WebP، وبحجم أقل من 2 ميغابايت.</p>

@@ -1,7 +1,7 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import StatisticForm from "@/components/dashboard/StatisticForm.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { statisticInput } from "@/lib/validation/statistic";
 
@@ -11,7 +11,7 @@ let errors: Record<string, string> = {};
 if (Astro.request.method === "POST") {
   const result = parseForm(statisticInput, await Astro.request.formData());
   if (result.ok) {
-    await getRepo().statistics.create(result.data);
+    await getDashboardRepo(Astro.locals).statistics.create(result.data);
     return Astro.redirect("/dashboard/statistics?ok=saved", 303);
   }
   values = result.values;

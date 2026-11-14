@@ -1,0 +1,23 @@
+# Task 17 — Result
+- Branch / PR: `task/17-18-supabase-security` (one PR for 17 + 18; link in the final message)
+- Commit: `task17: supabase repo for public pages, dashboard and storage`
+- Status: done for the public side; the **logged-in dashboard flows were not tested by me** (see below)
+- Files changed:
+  - New: `src/lib/supabase/public.ts`, `src/lib/repo/supabase.ts` (`createSupabaseRepo`, `RepoError`), `src/lib/repo/profile-defaults.ts`, `src/lib/storage.ts` (`publicImageUrl`)
+  - Rewritten: `src/lib/repo/index.ts` (`getPublicRepo`, `getDashboardRepo(locals)`; `getRepo` removed), `src/lib/data.ts` (public repo, try/catch with logging, image paths turned into URLs), `src/middleware.ts` (RepoError handling, edge cache headers)
+  - Updated: `astro.config.mjs` (Supabase variables optional), `src/lib/supabase/server.ts`, `src/lib/repo/types.ts` (4 buckets), `src/lib/repo/memory.ts` (header), every `src/pages/dashboard/**` page (`getDashboardRepo(Astro.locals)`), buckets in `profile.astro`, `services*.astro`, `ServiceForm.astro`, `ImageUpload.astro` (preview URL), `certificates.astro`, `Flash.astro` (shows "تعذّر الحفظ" for `?err=1`)
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅
+- How to verify: log in and change something in each section; the row changes in the Supabase Table Editor and on `/` after a reload. Upload, replace and delete a certificate/service/profile image and watch Storage.
+- Tested (dev server against the owner's Supabase project, anon client):
+  - `/`, `/blog`, `/contact`, `/llms.txt`, `/sitemap.xml` answer 200 with the seeded data (5 services, 6 FAQs, 2 clinics, hours `9:00 ص`)
+  - wrong anon key (`SUPABASE_KEY=sb_publishable_wrongkey npm run dev`): `/` still answers 200, the database sections are hidden and each failure is logged as `[data] … failed`
+  - no variables (`SUPABASE_URL= SUPABASE_KEY=`): DEV falls back to the sample data (5 services, 6 FAQs)
+- **Not tested** (no doctor password here): every dashboard read and write against Supabase, image upload/replace/delete in Storage, and the `?err=1` message. The code paths follow the same interface as the memory repo, which the pages already used.
+- Notes for planner:
+  - The Supabase variables are now `optional: true` in `astro.config.mjs`, so a missing variable no longer crashes every page at start-up (the earlier note in task 16 about 500 on all pages no longer applies); the private pages throw a clear error instead.
+  - Profile fallbacks: only for the fields the doctor cannot leave empty (names, specialty, intro, statement lines, bio, languages, WhatsApp, default message). Education, experience, phone, email, photo and social accounts are NOT replaced when empty, because the dashboard lets the doctor clear them on purpose. The task text said "every empty column"; tell me if you want the others to fall back too.
+  - Each public page makes several repeated queries (the layout and the page both load the profile, services, clinics and certificates; clinic hours cost one query per clinic). The edge cache headers soften this; a per-request cache could be a later task.
+  - `workingHours.replaceDay/replaceWeek` are a delete followed by an insert (two calls, not one transaction), as the task describes.
+  - A failed dashboard write redirects back with `?err=1` (a message in `Flash`); a failed read answers a plain 500 text. This is done once in the middleware instead of in every page.
+  - Images in the sample data (`/img/...`) stay local paths; `publicImageUrl` leaves them unchanged. `db/` was not touched. No `.env` is committed.
+  - `git status` had untracked skill folders and a changed `skills-lock.json` from the start; they are not in the commits.
