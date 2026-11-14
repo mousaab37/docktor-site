@@ -457,3 +457,14 @@
 .p-row-fields.social { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 2fr); align-items: center; }
 .p-empty { color: var(--color-ink-2); font-size: 15px; }
 @media (max-width: 640px) { .p-row-fields.social { grid-template-columns: 44px minmax(0, 1fr); } .p-row-fields.social input { grid-column: 1 / -1; } }
+
+/* Login page and the user box in the sidebar (task 16) */
+.login-wrap { min-height: 100svh; display: grid; place-items: center; padding: 24px 16px; background: var(--color-bg, #fbfcf8); }
+.login-card { width: min(440px, 100%); padding: clamp(24px, 5vw, 36px); display: grid; gap: 18px; }
+.login-logo { display: flex; justify-content: center; }
+.login-h { font-size: 24px; font-weight: 700; text-align: center; margin: 0; }
+.pw-box { display: flex; gap: 8px; align-items: stretch; }
+.pw-box input { flex: 1; min-width: 0; }
+.pw-toggle { min-width: 64px; min-height: 44px; padding: 0 14px; border: 1px solid var(--color-line, #d0d5dd); border-radius: 12px; background: #fff; font: inherit; cursor: pointer; }
+.dash-user { margin-top: 12px; display: grid; gap: 8px; }
+.dash-user-email { margin: 0; font-size: 13px; opacity: .85; overflow-wrap: anywhere; }

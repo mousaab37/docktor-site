@@ -1,0 +1,74 @@
+---
+import "@/styles/dashboard.css";
+import { z } from "zod";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Logo from "@/components/public/Logo.astro";
+
+// The page of the doctor only: no sign-up link, no reset link (the owner resets passwords in Supabase).
+const GENERIC_ERROR = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+const loginInput = z.object({ email: z.email().max(200), password: z.string().min(8).max(200) });
+
+/** Only a path inside the dashboard is allowed as a destination; anything else goes to /dashboard. */
+const safeNext = (value: string | null | undefined): string =>
+  value && /^\/dashboard(?:[/?#].*)?$/.test(value) ? value : "/dashboard";
+
+const next = safeNext(Astro.url.searchParams.get("next"));
+let email = "";
+let error = "";
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  email = String(fd.get("email") ?? "").trim();
+  const parsed = loginInput.safeParse({ email, password: String(fd.get("password") ?? "") });
+  const supabase = Astro.locals.supabase;
+  if (parsed.success && supabase) {
+    const { error: signInError } = await supabase.auth.signInWithPassword(parsed.data);
+    if (!signInError) {
+      // Logged in is not enough: the user must also be in dashboard_users.
+      const { data: allowed } = await supabase.rpc("is_dashboard_user");
+      if (allowed === true) return Astro.redirect(safeNext(String(fd.get("next") ?? "")), 303);
+      await supabase.auth.signOut();
+    }
+  }
+  // One message for every failure, and the password is never put back in the form.
+  error = GENERIC_ERROR;
+  Astro.response.status = 401;
+}
+---
+<BaseLayout title="تسجيل الدخول" noindex>
+  <main class="login-wrap" id="main">
+    <div class="d-card login-card">
+      <div class="login-logo"><Logo href="/" /></div>
+      <h1 class="login-h">تسجيل الدخول</h1>
+      <form method="post" class="d-form" novalidate>
+        <input type="hidden" name="next" value={next} />
+        {error && <div class="d-errors" role="alert">{error}</div>}
+        <div class="field">
+          <label for="f-email">البريد الإلكتروني</label>
+          <input id="f-email" name="email" type="email" value={email} dir="ltr" autocomplete="username" required autofocus={!email} />
+        </div>
+        <div class="field">
+          <label for="f-password">كلمة المرور</label>
+          <div class="pw-box" dir="ltr">
+            <input id="f-password" name="password" type="password" autocomplete="current-password" required autofocus={!!email} />
+            <button type="button" class="pw-toggle" data-pw-toggle aria-controls="f-password" aria-pressed="false">إظهار</button>
+          </div>
+        </div>
+        <div class="d-actions"><button class="btn" type="submit">دخول</button></div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Show / hide the password.
+    const btn = document.querySelector<HTMLButtonElement>("[data-pw-toggle]");
+    const input = document.querySelector<HTMLInputElement>("#f-password");
+    btn?.addEventListener("click", () => {
+      if (!input) return;
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.textContent = show ? "إخفاء" : "إظهار";
+      btn.setAttribute("aria-pressed", String(show));
+    });
+  </script>
+</BaseLayout>

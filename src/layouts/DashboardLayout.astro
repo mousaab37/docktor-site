@@ -29,7 +29,7 @@ const isCurrent = (path: string) => (path === "/dashboard" ? current === path : 
 ---
 <BaseLayout title={title === "لوحة التحكم" ? title : `${title} | لوحة التحكم`} noindex>
   <div class="dash-banner" role="note">
-    وضع التطوير: لا يوجد تسجيل دخول بعد، والبيانات مؤقتة وتُمسح عند إعادة تشغيل الخادم.
+    البيانات مؤقتة حتى ربط قاعدة البيانات (المهمة 17).
   </div>
 
   <div class="dash-wrap">
@@ -56,6 +56,10 @@ const isCurrent = (path: string) => (path === "/dashboard" ? current === path : 
         </ul>
       </nav>
       <a class="dash-view" href="/" target="_blank" rel="noopener">عرض الموقع ↗</a>
+      <div class="dash-user">
+        {Astro.locals.user?.email && <p class="dash-user-email" dir="ltr">{Astro.locals.user.email}</p>}
+        <form method="post" action="/logout"><button class="btn btn-ghost btn-sm" type="submit">تسجيل الخروج</button></form>
+      </div>
     </aside>
 
     <main class="dash-main" id="main">
