@@ -1,0 +1,13 @@
+# Task 15 — Result
+- Branch / PR: `task/15-16-seed-auth` (one PR for 15 + 16; link in the final message)
+- Commit: `task15: dev sample data sql`
+- Status: done
+- Files changed: `db/90-sample-data.sql` (new), `src/lib/sample-data.ts` (added `sampleServices`, `sampleFaqs`, `sampleSeo` with fixed ids), `src/lib/repo/memory.ts` (the memory store now seeds services, FAQs and SEO texts from `sample-data.ts`, so both sources agree)
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅. SQL tested with PGlite (installed outside the repo, not committed): `01-setup.sql` then `90-sample-data.sql` run **twice** with no error and the same row counts; one featured and visible service; 4 SEO rows filled; profile updated; 3 published articles + 1 draft.
+- How to verify: run `db/90-sample-data.sql` in the Supabase SQL Editor with the role `postgres`, then run `db/03-check.sql` (still all true). Table Editor shows 4 statistics, 5 certificates, 3 clinics, 24 working hours, 4 articles, 7 testimonials, 6 services, 7 FAQs.
+- Notes for planner:
+  - I generated the SQL from `sample-data.ts` with a temporary script (not committed), so ids and values match exactly. The profile `update` was written by hand from `doctor.config.ts`/`memory.ts` (statement lines "رعاية تُصغي إليك." / "ولعائلتك كلها.").
+  - Added a hidden sample service and an unpublished sample FAQ (marked as samples) so the filtering is tested; the featured one is the first visible service.
+  - The sample SEO titles/descriptions are now also in the in-memory seed, so the dev site shows these custom titles on `/`, `/blog`, `/contact`, `/privacy`.
+  - The profile `update` in the file overwrites the profile row on every re-run (the other inserts use `on conflict do nothing`). That is fine for a dev seed but would overwrite edits made in the dashboard.
+  - `git status` was not clean at the start: untracked `.agents/skills/supabase*`, `.claude/skills/supabase*` and a changed `skills-lock.json` (skill installs). I left them out of the commits.

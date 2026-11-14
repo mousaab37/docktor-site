@@ -6,6 +6,8 @@ import type {
   Certificate,
   Clinic,
   ClinicWithHours,
+  Faq,
+  Service,
   Statistic,
   Testimonial,
   Weekday,
@@ -127,3 +129,43 @@ export const sampleArticles: Article[] = [
   // Draft: must never be shown.
   { id: uid(44), title: "مسودة غير منشورة", slug: "unpublished-draft", excerpt: null, content: "<p>مسودة. (نص تجريبي)</p>", featured_image: null, seo_title: null, seo_description: null, status: "draft", published_at: null, created_at: TS, updated_at: TS },
 ];
+
+export const sampleServices: Service[] = [
+  { id: uid(51), title: "الكشف العام", description: "فحص وتشخيص الحالات الشائعة ووضع خطة علاج مناسبة.", image_path: "/img/gp.webp", display_order: 1, is_active: true, is_featured: true, created_at: TS, updated_at: TS },
+  { id: uid(52), title: "الفحص الدوري", description: "فحوصات شاملة للاطمئنان على صحتك والكشف المبكر عن المشكلات.", image_path: "/img/checkup.webp", display_order: 2, is_active: true, is_featured: false, created_at: TS, updated_at: TS },
+  { id: uid(53), title: "التحاليل المخبرية", description: "طلب التحاليل الأساسية وشرح نتائجها بوضوح.", image_path: "/img/lab.webp", display_order: 3, is_active: true, is_featured: false, created_at: TS, updated_at: TS },
+  { id: uid(54), title: "الاستشارة عن بُعد", description: "استشارة طبية عن بُعد للحالات التي لا تتطلب فحصًا مباشرًا.", image_path: "/img/telehealth.webp", display_order: 4, is_active: true, is_featured: false, created_at: TS, updated_at: TS },
+  { id: uid(55), title: "التحويل للتخصصات", description: "تحويل الحالات التي تحتاج إلى رعاية تخصصية ومتابعتها.", image_path: "/img/specialist.webp", display_order: 5, is_active: true, is_featured: false, created_at: TS, updated_at: TS },
+  // Hidden: must never be shown, and never featured.
+  { id: uid(56), title: "خدمة مخفية (مثال)", description: "خدمة تجريبية مخفية للتأكد من الفلترة. (نص تجريبي)", image_path: null, display_order: 6, is_active: false, is_featured: false, created_at: TS, updated_at: TS },
+];
+
+/** Fictional family-doctor questions, answer first. */
+const faqRows: [string, string][] = [
+  ["هل أحتاج موعدًا مسبقًا؟", "نعم، يُفضَّل الحجز المسبق لتقليل وقت الانتظار. يمكنك مراسلتنا على واتساب لاختيار الوقت المناسب، وستتواصل معك العيادة لتأكيد الموعد."],
+  ["كيف أحجز عبر واتساب؟", "اضغط زر واتساب في الموقع وستفتح رسالة جاهزة باسم العيادة التي اخترتها. أرسلها، وسنرد عليك لتأكيد الموعد. إرسال الرسالة وحده لا يعني تأكيد الموعد."],
+  ["ما مدة الكشف؟", "تستغرق الزيارة العادية بين 20 و30 دقيقة تقريبًا. قد تطول قليلًا في الزيارة الأولى لأننا نراجع تاريخك الصحي بالتفصيل."],
+  ["هل تستقبلون الأطفال؟", "نعم، نستقبل الأطفال والكبار وكبار السن، وطبيب الأسرة يتابع صحة العائلة كلها في مكان واحد. أخبرنا بعمر الطفل عند الحجز ليكون الموعد مناسبًا."],
+  ["هل يمكن الاستشارة عن بُعد؟", "نعم، تتوفر الاستشارة عن بُعد للحالات التي لا تحتاج فحصًا مباشرًا، مثل المتابعة وقراءة التحاليل. اطلبها عبر واتساب وسنحدد معك الموعد."],
+  ["ماذا أحضر معي في الزيارة الأولى؟", "أحضر هويتك وتقاريرك وتحاليلك السابقة وقائمة بالأدوية التي تستخدمها. هذه الأوراق تساعد الطبيب على فهم حالتك بسرعة ووضع خطة مناسبة."],
+  // Unpublished: must never be shown.
+  ["سؤال غير منشور؟", "هذا سؤال تجريبي غير منشور للتأكد من أن الفلترة تعمل بشكل صحيح. (نص تجريبي)"],
+];
+
+export const sampleFaqs: Faq[] = faqRows.map(([question, answer], i) => ({
+  id: uid(61 + i),
+  question,
+  answer,
+  display_order: i + 1,
+  is_published: i < 6,
+  created_at: TS,
+  updated_at: TS,
+}));
+
+/** The sample SEO texts (fictional). `og_image` stays empty. */
+export const sampleSeo: Record<"global" | "blog" | "privacy" | "contact", { seo_title: string; seo_description: string }> = {
+  global: { seo_title: "د. سارة الأمين | طب الأسرة في الرياض", seo_description: "عيادة طب الأسرة للدكتورة سارة الأمين: رعاية صحية شاملة لك ولعائلتك. بيانات تجريبية." },
+  blog: { seo_title: "المقالات الصحية | د. سارة الأمين", seo_description: "مقالات صحية مبسّطة يكتبها الطبيب لمرضاه. بيانات تجريبية." },
+  privacy: { seo_title: "سياسة الخصوصية | د. سارة الأمين", seo_description: "كيف نتعامل مع بياناتك عند التواصل معنا. بيانات تجريبية." },
+  contact: { seo_title: "تواصل مع د. سارة الأمين", seo_description: "واتساب وهاتف وبريد ومواعيد العيادات. بيانات تجريبية." },
+};

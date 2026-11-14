@@ -4,6 +4,9 @@ import {
   sampleArticles,
   sampleCertificates,
   sampleClinics,
+  sampleFaqs,
+  sampleSeo,
+  sampleServices,
   sampleStatistics,
   sampleTestimonials,
 } from "../sample-data";
@@ -61,7 +64,7 @@ function seed(): Store {
     workingHours,
     articles: structuredClone(sampleArticles),
     testimonials: structuredClone(sampleTestimonials),
-    faqs: sampleFaqs(t),
+    faqs: structuredClone(sampleFaqs),
     profile: {
       honorific: doctor.honorific,
       full_name: doctor.fullName,
@@ -81,22 +84,12 @@ function seed(): Store {
       whatsapp_default_message: whatsapp.defaultMessage,
       updated_at: t,
     },
-    services: doctorConfig.services.map((s, i) => ({
-      id: crypto.randomUUID(),
-      title: s.title,
-      description: s.description,
-      image_path: s.image?.src ?? null,
-      display_order: i + 1,
-      is_active: true,
-      is_featured: i === 0, // SAMPLE: the first service starts as the featured one
-      created_at: t,
-      updated_at: t,
-    })),
+    services: structuredClone(sampleServices),
     seo: scopes.map((scope) => ({
       id: crypto.randomUUID(),
       scope,
-      seo_title: null,
-      seo_description: null,
+      seo_title: sampleSeo[scope].seo_title,
+      seo_description: sampleSeo[scope].seo_description,
       og_image: null,
       updated_at: t,
     })),
@@ -106,27 +99,6 @@ function seed(): Store {
 // Kept on globalThis so the data survives Vite hot reloads.
 // Created lazily: Cloudflare Workers do not allow random values (crypto.randomUUID) in the global scope.
 const db = (): Store => (globalThis.__doctorSiteStore ??= seed());
-
-/** SAMPLE: fictional family-doctor questions, answer first. Replaced by the doctor's own in the dashboard. */
-function sampleFaqs(t: string): Faq[] {
-  const rows: [string, string][] = [
-    ["هل أحتاج موعدًا مسبقًا؟", "نعم، يُفضَّل الحجز المسبق لتقليل وقت الانتظار. يمكنك مراسلتنا على واتساب لاختيار الوقت المناسب، وستتواصل معك العيادة لتأكيد الموعد."],
-    ["كيف أحجز عبر واتساب؟", "اضغط زر واتساب في الموقع وستفتح رسالة جاهزة باسم العيادة التي اخترتها. أرسلها، وسنرد عليك لتأكيد الموعد. إرسال الرسالة وحده لا يعني تأكيد الموعد."],
-    ["ما مدة الكشف؟", "تستغرق الزيارة العادية بين 20 و30 دقيقة تقريبًا. قد تطول قليلًا في الزيارة الأولى لأننا نراجع تاريخك الصحي بالتفصيل."],
-    ["هل تستقبلون الأطفال؟", "نعم، نستقبل الأطفال والكبار وكبار السن، وطبيب الأسرة يتابع صحة العائلة كلها في مكان واحد. أخبرنا بعمر الطفل عند الحجز ليكون الموعد مناسبًا."],
-    ["هل يمكن الاستشارة عن بُعد؟", "نعم، تتوفر الاستشارة عن بُعد للحالات التي لا تحتاج فحصًا مباشرًا، مثل المتابعة وقراءة التحاليل. اطلبها عبر واتساب وسنحدد معك الموعد."],
-    ["ماذا أحضر معي في الزيارة الأولى؟", "أحضر هويتك وتقاريرك وتحاليلك السابقة وقائمة بالأدوية التي تستخدمها. هذه الأوراق تساعد الطبيب على فهم حالتك بسرعة ووضع خطة مناسبة."],
-  ];
-  return rows.map(([question, answer], i) => ({
-    id: crypto.randomUUID(), // SAMPLE
-    question,
-    answer,
-    display_order: i + 1,
-    is_published: true,
-    created_at: t,
-    updated_at: t,
-  }));
-}
 
 /** Copies a row so callers can never change the store by accident. */
 const copy = <T>(row: T): T => structuredClone(row);

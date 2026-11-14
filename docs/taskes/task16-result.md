@@ -1,0 +1,20 @@
+# Task 16 — Result
+- Branch / PR: `task/15-16-seed-auth` (one PR for 15 + 16; link in the final message)
+- Commit: `task16: login, logout, server-side dashboard protection`
+- Status: done, but the logged-in paths were **not tested by me** (see the notes)
+- Files changed: `src/lib/supabase/server.ts` (new), `src/middleware.ts` (auth step replaces the dev gate), `src/env.d.ts` (`App.Locals`), `astro.config.mjs` (`env.schema` with `SUPABASE_URL` and `SUPABASE_KEY`), `src/pages/login.astro` (new), `src/pages/logout.ts` (new), `src/layouts/DashboardLayout.astro` (new banner text, user email and logout button), `src/styles/dashboard.css`
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅
+- How to verify: logged out, `/dashboard/blog` → 302 to `/login?next=%2Fdashboard%2Fblog`. Log in as the doctor and every dashboard section opens as before. `next=https://evil.example` or `next=//evil.example` lands on `/dashboard`. Logout button returns to `/login`.
+- Tested (curl + browser pane, dev server and `astro preview` of the production build):
+  - logged out `/dashboard`, `/dashboard/blog`, `/dashboard/clinics?x=1` → 302 to `/login?next=…` (the query string is kept); in production preview too (no more 404)
+  - `/login` and `/dashboard` responses carry `Cache-Control: private, no-store`; `/login` is `noindex`
+  - wrong credentials → 401 with the generic Arabic error, the email is kept, the password is never in the HTML
+  - `GET /logout` → 405; `POST /logout` → 303
+  - public pages set no cookie and return 200; the login page has no horizontal scroll at 375px and the show/hide button works
+- **Not tested** (I do not have the doctor's password and no secret key to create a second user): the successful login, the `next` redirects after login, logout from inside the dashboard, and a user who is **not** in `dashboard_users` being refused. Please test these in the browser; the not-listed case needs a temporary user created in Supabase, then deleted.
+- Notes for planner:
+  - `astro:env` bundles the secret read at start-up: in the built worker a missing `SUPABASE_KEY` makes **every** page (public ones too) answer 500. Production needs the Worker secret set. For `astro preview` the variables must be in `dist/server/.dev.vars` (a copy of the root `.dev.vars`, which is git-ignored; I created both locally); `.env` alone is not read by the preview.
+  - Only a path matching `^/dashboard([/?#]…)?$` is accepted as `next`.
+  - A failed `is_dashboard_user` RPC (an error, not `false`) treats the visitor as logged out without signing them out; a real `false` signs them out.
+  - The dashboard banner now says the data is temporary until task 17.
+  - `git status` was not clean at the start: untracked skill folders (`.agents/skills/supabase*`, `.claude/skills/supabase*`) and a changed `skills-lock.json`. They are not in the commits.
