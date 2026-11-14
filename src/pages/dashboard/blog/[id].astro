@@ -2,10 +2,10 @@
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import ArticleForm from "@/components/dashboard/ArticleForm.astro";
 import { saveArticle } from "@/lib/dashboard/article-save";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import type { FormValues } from "@/lib/validation/form";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const row = await repo.articles.get(Astro.params.id ?? "");
 if (!row) return new Response("Not found", { status: 404 });
 

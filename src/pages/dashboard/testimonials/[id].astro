@@ -1,11 +1,11 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import TestimonialForm from "@/components/dashboard/TestimonialForm.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { testimonialInput } from "@/lib/validation/testimonial";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const row = await repo.testimonials.get(Astro.params.id ?? "");
 if (!row) return new Response("Not found", { status: 404 });
 

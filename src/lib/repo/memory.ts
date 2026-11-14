@@ -1,4 +1,5 @@
-// DEV ONLY — data lives in memory and resets when the dev server restarts. Replaced by Supabase in task 17.
+// DEV ONLY, and only when the Supabase variables are missing: the sample data lives in memory and resets when the dev server restarts.
+// With the variables set, getPublicRepo() / getDashboardRepo() use the Supabase repo (src/lib/repo/supabase.ts).
 import { doctorConfig } from "../../config";
 import {
   sampleArticles,
@@ -417,7 +418,7 @@ export const memoryRepo: ContentRepo = {
   },
 
   images: {
-    // Supabase Storage replaces this in task 17. Here the image becomes a data URL.
+    // Without Supabase the image becomes a data URL.
     async upload(_bucket: ImageBucket, file: File) {
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) throw new Error("نوع الصورة غير مسموح (JPEG أو PNG أو WebP فقط)");
       if (file.size > MAX_IMAGE_BYTES) throw new Error("حجم الصورة أكبر من 2 ميغابايت");

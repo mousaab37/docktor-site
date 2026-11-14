@@ -3,12 +3,12 @@ import { doctorConfig } from "@/config";
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import ClinicForm from "@/components/dashboard/ClinicForm.astro";
 import { weekFromHours } from "@/lib/hours";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { clinicFormValues, parseClinicForm } from "@/lib/validation/clinic";
 import type { FormValues } from "@/lib/validation/form";
 import { parseWeekForm, type DayScheduleInput } from "@/lib/validation/working-hours";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const row = await repo.clinics.get(Astro.params.id ?? "");
 if (!row) return new Response("Not found", { status: 404 });
 

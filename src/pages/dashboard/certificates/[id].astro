@@ -1,12 +1,12 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import CertificateForm from "@/components/dashboard/CertificateForm.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { applyImageChange } from "@/lib/dashboard/images";
 import { certificateInput } from "@/lib/validation/certificate";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const row = await repo.certificates.get(Astro.params.id ?? "");
 if (!row) return new Response("Not found", { status: 404 });
 

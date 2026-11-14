@@ -7,11 +7,11 @@ import FormDialog from "@/components/dashboard/FormDialog.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
 import TestimonialForm from "@/components/dashboard/TestimonialForm.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { testimonialInput } from "@/lib/validation/testimonial";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 
 // Dialog state: closed by default, opened again by the server after a validation error.
 let dialogOpen = false;

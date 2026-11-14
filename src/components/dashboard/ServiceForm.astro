@@ -21,7 +21,7 @@ const { values, errors = {}, currentImage = null, cancelHref } = Astro.props;
     <input type="hidden" name="intent" value="save" />
     <Field name="title" label="اسم الخدمة" value={String(values.title ?? "")} error={errors.title} required maxlength={80} />
     <Field as="textarea" name="description" label="وصف مختصر" value={String(values.description ?? "")} error={errors.description} required maxlength={300} rows={4} />
-    <ImageUpload name="image" label="صورة الخدمة (اختياري)" value={currentImage} bucket="certificates" error={errors.image} />
+    <ImageUpload name="image" label="صورة الخدمة (اختياري)" value={currentImage} bucket="services" error={errors.image} />
     <Toggle name="is_active" label="ظاهر في الموقع" checked={values.is_active === true} />
     <Toggle name="is_featured" label="خدمة مميزة (تظهر بشكل بارز في الصفحة الرئيسية)" checked={values.is_featured === true && values.is_active === true} disabled={values.is_active !== true} />
     <p class="hint" data-feature-hint hidden={values.is_active === true}>أظهر الخدمة أولًا</p>
