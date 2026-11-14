@@ -1,7 +1,7 @@
 # Task 17 — Result
 - Branch / PR: `task/17-18-supabase-security` (one PR for 17 + 18; link in the final message)
 - Commit: `task17: supabase repo for public pages, dashboard and storage`
-- Status: done for the public side; the **logged-in dashboard flows were not tested by me** (see below)
+- Status: done (the logged-in dashboard flows were tested afterwards, see "Tested later")
 - Files changed:
   - New: `src/lib/supabase/public.ts`, `src/lib/repo/supabase.ts` (`createSupabaseRepo`, `RepoError`), `src/lib/repo/profile-defaults.ts`, `src/lib/storage.ts` (`publicImageUrl`)
   - Rewritten: `src/lib/repo/index.ts` (`getPublicRepo`, `getDashboardRepo(locals)`; `getRepo` removed), `src/lib/data.ts` (public repo, try/catch with logging, image paths turned into URLs), `src/middleware.ts` (RepoError handling, edge cache headers)
@@ -12,7 +12,8 @@
   - `/`, `/blog`, `/contact`, `/llms.txt`, `/sitemap.xml` answer 200 with the seeded data (5 services, 6 FAQs, 2 clinics, hours `9:00 ص`)
   - wrong anon key (`SUPABASE_KEY=sb_publishable_wrongkey npm run dev`): `/` still answers 200, the database sections are hidden and each failure is logged as `[data] … failed`
   - no variables (`SUPABASE_URL= SUPABASE_KEY=`): DEV falls back to the sample data (5 services, 6 FAQs)
-- **Not tested** (no doctor password here): every dashboard read and write against Supabase, image upload/replace/delete in Storage, and the `?err=1` message. The code paths follow the same interface as the memory repo, which the pages already used.
+- **Tested later, in the browser pane, logged in as the doctor** (added in the task 18 commit): login works and `next=/dashboard/clinics` is honoured (`//evil.example` and `https://evil.example` land on `/dashboard`); all 10 dashboard sections answer 200; adding a FAQ writes to Supabase and it shows on `/`, then move and delete work; a certificate with an image uploads to Storage (the image URL answers 200), replacing the image gives a new file name, and deleting the certificate leaves the `certificates` bucket empty and no row behind (checked with the doctor's client, not with the public URL: Supabase's CDN keeps answering 200 for a deleted file for a while); making another service featured keeps exactly one ⭐.
+- **Still not tested:** the profile photo upload, the `?err=1` message, and editing every section (statistics, testimonials, clinics, hours, blog, SEO, profile cards) one by one.
 - Notes for planner:
   - The Supabase variables are now `optional: true` in `astro.config.mjs`, so a missing variable no longer crashes every page at start-up (the earlier note in task 16 about 500 on all pages no longer applies); the private pages throw a clear error instead.
   - Profile fallbacks: only for the fields the doctor cannot leave empty (names, specialty, intro, statement lines, bio, languages, WhatsApp, default message). Education, experience, phone, email, photo and social accounts are NOT replaced when empty, because the dashboard lets the doctor clear them on purpose. The task text said "every empty column"; tell me if you want the others to fall back too.
