@@ -52,3 +52,6 @@ The owner tested these in the browser inspector. Apply them in `src/styles/dashb
 - Remove `border-color` from `.sec-vis.is-on`; keep its light-green background.
 - If the hidden state (`.sec-vis` without `.is-on`) now has no visible background at all, give it the yellow notice background `#fff8e1`, so hidden vs shown stays clear without borders.
 - Acceptance: the notices and the section visibility bars have no borders, and the shown/hidden states are still easy to tell apart.
+
+## Extra (from the task 19 review): remove the old dev banner
+The dashboard still shows the yellow banner "البيانات مؤقتة حتى ربط قاعدة البيانات (المهمة 17)", but task 17 is done and the data is in Supabase. Remove the banner from `DashboardLayout.astro` and its CSS. If Supabase isn't configured (the memory repo is active in DEV), show instead a small banner: "وضع التطوير: البيانات تجريبية في الذاكرة". It must never appear when Supabase is in use.

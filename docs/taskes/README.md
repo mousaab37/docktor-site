@@ -64,7 +64,7 @@ n## Phase 4 — Owner requests after the database
 
 | # | File | What it delivers | Owner action needed | Status |
 |---|---|---|---|---|
-| 19 | [task19.md](task19.md) | Show/hide **every** public section from the dashboard (profile always shown); hidden sections also leave nav, JSON-LD, llms.txt, sitemap; blog hidden = 404 | Re-run `db/01-setup.sql` (adds `site_sections`), then `03-check.sql` = 12/12 | todo |
+| 19 | [task19.md](task19.md) | Show/hide **every** public section from the dashboard (profile always shown); hidden sections also leave nav, JSON-LD, llms.txt, sitemap; blog hidden = 404 | Re-run `db/01-setup.sql` (adds `site_sections`), then `03-check.sql` = 12/12 | ✅ PR #15 (merge pending) |
 | 20 | [task20.md](task20.md) | Social icons in the hero (under the CTAs) and in the mobile menu, so visitors see them immediately | — | todo |
 
 Security model: content tables are readable by the public only when active/published. **All writes require `public.is_dashboard_user()`**, which means being logged in **and** listed in `dashboard_users`. This is protection in addition to "signups disabled".
