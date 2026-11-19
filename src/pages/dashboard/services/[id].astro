@@ -1,12 +1,12 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import ServiceForm from "@/components/dashboard/ServiceForm.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { applyImageChange } from "@/lib/dashboard/images";
 import { serviceInput } from "@/lib/validation/service";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const row = await repo.services.get(Astro.params.id ?? "");
 if (!row) return new Response("Not found", { status: 404 });
 
@@ -23,8 +23,7 @@ if (Astro.request.method === "POST") {
   const result = parseForm(serviceInput, fd);
   if (result.ok) {
     // The current image comes from the stored row, never from the form.
-    // task 17: own bucket for service images
-    const image = await applyImageChange(repo, "certificates", fd, "image", row.image_path);
+    const image = await applyImageChange(repo, "services", fd, "image", row.image_path);
     if (!image.error) {
       await repo.services.update(row.id, { ...result.data, image_path: image.path });
       if (image.oldToRemove) await repo.images.remove("certificates", image.oldToRemove);

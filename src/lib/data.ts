@@ -1,84 +1,130 @@
-// Data access for the public site. It reads the content repository (in memory today, Supabase in task 17)
-// and applies the public filters (active / published) and the ordering here, in code.
-import { getRepo } from "./repo";
+// Data access for the public site. It reads the public repo (Supabase with the anon client, so RLS already hides
+// inactive and draft rows; the sample data in DEV without Supabase) and applies the public filters and the ordering again, in code.
+// Image paths are turned into URLs here, so every public page, OG image and JSON-LD gets a loadable URL.
+// A failed query never crashes the page: the error is logged and the section gets an empty list (empty sections hide themselves).
+import { getPublicRepo } from "./repo";
+import { onboardingProfile } from "./repo/profile-defaults";
+import { publicImageUrl } from "./storage";
 import type { Article, Certificate, ClinicWithHours, Faq, Profile, SeoScope, SeoSetting, Service, Statistic, Testimonial } from "./types";
 
 const byOrder = <T extends { display_order: number }>(a: T, b: T) => a.display_order - b.display_order;
 
+/** Runs a query; on an error logs it and returns the fallback. */
+async function safe<T>(name: string, fallback: T, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    console.error(`[data] ${name} failed:`, error);
+    return fallback;
+  }
+}
+
 export async function getActiveStatistics(): Promise<Statistic[]> {
-  const rows = await getRepo().statistics.list();
-  return rows.filter((s) => s.is_active).sort(byOrder);
+  return safe("statistics", [], async () => {
+    const rows = await getPublicRepo().statistics.list();
+    return rows.filter((s) => s.is_active).sort(byOrder);
+  });
 }
 
 export async function getActiveClinicsWithHours(): Promise<ClinicWithHours[]> {
-  const repo = getRepo();
-  const clinics = (await repo.clinics.list()).filter((c) => c.is_active);
-  return Promise.all(
-    clinics.map(async (c) => ({
-      ...c,
-      working_hours: (await repo.workingHours.listByClinic(c.id)).sort(
-        (a, b) => a.weekday - b.weekday || a.interval_order - b.interval_order,
-      ),
-    })),
-  );
+  return safe("clinics", [], async () => {
+    const repo = getPublicRepo();
+    const clinics = (await repo.clinics.list()).filter((c) => c.is_active);
+    return Promise.all(
+      clinics.map(async (c) => ({
+        ...c,
+        working_hours: (await repo.workingHours.listByClinic(c.id)).sort(
+          (a, b) => a.weekday - b.weekday || a.interval_order - b.interval_order,
+        ),
+      })),
+    );
+  });
 }
 
 export async function getActiveCertificates(): Promise<Certificate[]> {
-  const rows = await getRepo().certificates.list();
-  return rows.filter((c) => c.is_active).sort(byOrder);
+  return safe("certificates", [], async () => {
+    const rows = await getPublicRepo().certificates.list();
+    return rows
+      .filter((c) => c.is_active)
+      .sort(byOrder)
+      .map((c) => ({ ...c, image_path: publicImageUrl(c.image_path, "certificates") }));
+  });
 }
 
 export async function getPublishedTestimonials(): Promise<Testimonial[]> {
-  const rows = await getRepo().testimonials.list();
-  return rows.filter((t) => t.is_published).sort(byOrder);
+  return safe("testimonials", [], async () => {
+    const rows = await getPublicRepo().testimonials.list();
+    return rows.filter((t) => t.is_published).sort(byOrder);
+  });
 }
 
 export async function getPublishedFaqs(): Promise<Faq[]> {
-  const rows = await getRepo().faqs.list();
-  return rows.filter((f) => f.is_published).sort(byOrder);
+  return safe("faqs", [], async () => {
+    const rows = await getPublicRepo().faqs.list();
+    return rows.filter((f) => f.is_published).sort(byOrder);
+  });
 }
 
+const withArticleImage = (a: Article): Article => ({ ...a, featured_image: publicImageUrl(a.featured_image, "articles") });
+
+const newestFirst = (a: Article, b: Article) => (b.published_at ?? "").localeCompare(a.published_at ?? "");
+
 export async function getLatestArticles(limit: number): Promise<Article[]> {
-  const rows = await getRepo().articles.list();
-  return rows
-    .filter((a) => a.status === "published" && a.published_at !== null)
-    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""))
-    .slice(0, limit);
+  const all = await getPublishedArticles();
+  return all.slice(0, limit);
 }
 
 /** How many clinics the public site shows (used for the singular/plural wording). */
 export async function getActiveClinicCount(): Promise<number> {
-  const rows = await getRepo().clinics.list();
-  return rows.filter((c) => c.is_active).length;
+  return safe("clinic count", 0, async () => {
+    const rows = await getPublicRepo().clinics.list();
+    return rows.filter((c) => c.is_active).length;
+  });
 }
 
 /** All published articles, newest first (the public blog list and the sitemap). */
 export async function getPublishedArticles(): Promise<Article[]> {
-  const rows = await getRepo().articles.list();
-  return rows
-    .filter((a) => a.status === "published" && a.published_at !== null)
-    .sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""));
+  return safe("articles", [], async () => {
+    const rows = await getPublicRepo().articles.list();
+    return rows
+      .filter((a) => a.status === "published" && a.published_at !== null)
+      .sort(newestFirst)
+      .map(withArticleImage);
+  });
 }
 
 /** A published article by slug. A missing slug and a draft both give null (the page answers 404). */
 export async function getPublishedArticleBySlug(slug: string): Promise<Article | null> {
-  const rows = await getRepo().articles.list();
-  return rows.find((a) => a.slug === slug && a.status === "published") ?? null;
+  return safe("article", null, async () => {
+    const rows = await getPublicRepo().articles.list();
+    const row = rows.find((a) => a.slug === slug && a.status === "published");
+    return row ? withArticleImage(row) : null;
+  });
 }
 
 /** The editable SEO fields of one page, or null when nothing is stored. */
 export async function getSeoSetting(scope: SeoScope): Promise<SeoSetting | null> {
-  const rows = await getRepo().seo.list();
-  return rows.find((r) => r.scope === scope) ?? null;
+  return safe("seo", null, async () => {
+    const rows = await getPublicRepo().seo.list();
+    return rows.find((r) => r.scope === scope) ?? null;
+  });
 }
 
-/** The doctor's profile and contact details (editable in "ملفي"). */
+/** The doctor's profile and contact details (editable in "ملفي"). On an error: the onboarding values of the config. */
 export async function getProfile(): Promise<Profile> {
-  return getRepo().profile.get();
+  return safe("profile", onboardingProfile(), async () => {
+    const row = await getPublicRepo().profile.get();
+    return { ...row, photo_path: publicImageUrl(row.photo_path, "profile") };
+  });
 }
 
 /** The visible services, in the dashboard order. */
 export async function getActiveServices(): Promise<Service[]> {
-  const rows = await getRepo().services.list();
-  return rows.filter((s) => s.is_active).sort(byOrder);
+  return safe("services", [], async () => {
+    const rows = await getPublicRepo().services.list();
+    return rows
+      .filter((s) => s.is_active)
+      .sort(byOrder)
+      .map((s) => ({ ...s, image_path: publicImageUrl(s.image_path, "services") }));
+  });
 }

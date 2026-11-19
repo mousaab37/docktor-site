@@ -36,7 +36,7 @@ export interface Orderable {
   move(id: string, direction: "up" | "down"): Promise<void>;
 }
 
-export type ImageBucket = "certificates" | "articles";
+export type ImageBucket = "certificates" | "articles" | "profile" | "services";
 
 export interface ContentRepo {
   statistics: CrudTable<Statistic, StatisticInput> & Orderable;

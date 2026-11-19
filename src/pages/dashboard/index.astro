@@ -1,9 +1,9 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const [articles, clinics, certificates, testimonials, statistics, services, profile, faqs] = await Promise.all([
   repo.articles.list(),
   repo.clinics.list(),

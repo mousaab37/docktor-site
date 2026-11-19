@@ -1,7 +1,7 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import FaqForm from "@/components/dashboard/FaqForm.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { faqInput } from "@/lib/validation/faq";
 
@@ -12,7 +12,7 @@ let errors: Record<string, string> = {};
 if (Astro.request.method === "POST") {
   const result = parseForm(faqInput, await Astro.request.formData());
   if (result.ok) {
-    await getRepo().faqs.create(result.data);
+    await getDashboardRepo(Astro.locals).faqs.create(result.data);
     return Astro.redirect("/dashboard/faq?ok=saved", 303);
   }
   values = result.values;

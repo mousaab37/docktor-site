@@ -4,12 +4,12 @@ import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import Card from "@/components/dashboard/Card.astro";
 import Field from "@/components/dashboard/Field.astro";
 import Flash from "@/components/dashboard/Flash.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import type { SeoScope } from "@/lib/types";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { seoInput } from "@/lib/validation/seo";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const { site } = doctorConfig;
 
 // One card per scope. `path` is only used for the preview URL line.

@@ -9,7 +9,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "seo:check": "node scripts/seo-check.mjs"
+    "seo:check": "node scripts/seo-check.mjs",
+    "verify:security": "tsx scripts/verify-security.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.6",
@@ -32,6 +33,7 @@
     "@tailwindcss/vite": "^4.3.5",
     "@types/leaflet": "^1.9.22",
     "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "wrangler": "^4.158.0"
   }

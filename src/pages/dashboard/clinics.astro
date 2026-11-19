@@ -5,9 +5,9 @@ import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
 import { hoursSummary } from "@/lib/hours";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();

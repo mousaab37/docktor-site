@@ -5,9 +5,10 @@ import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
+import { publicImageUrl } from "@/lib/storage";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
@@ -27,7 +28,7 @@ if (Astro.request.method === "POST") {
   if (intent === "delete") {
     // Deleting a service also removes its image.
     const row = await repo.services.get(id);
-    if (row?.image_path) await repo.images.remove("certificates", row.image_path);
+    if (row?.image_path) await repo.images.remove("services", row.image_path);
     await repo.services.remove(id);
     return Astro.redirect(Astro.url.pathname + "?ok=deleted", 303);
   }
@@ -48,7 +49,7 @@ const rows = await repo.services.list();
       {rows.map((c, i) => (
         <li class="d-card cert-card">
           <div class="cert-thumb ph">
-            {c.image_path && <img src={c.image_path} alt="" loading="lazy" />}
+            {c.image_path && <img src={publicImageUrl(c.image_path, "services")} alt="" loading="lazy" />}
           </div>
           <div class="cert-body">
             <div class="cert-head">

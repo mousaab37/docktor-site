@@ -5,9 +5,10 @@ import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
+import { publicImageUrl } from "@/lib/storage";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
@@ -42,7 +43,7 @@ const year = (iso: string | null) => (iso ? String(new Date(iso).getUTCFullYear(
       {rows.map((c, i) => (
         <li class="d-card cert-card">
           <div class="cert-thumb ph">
-            {c.image_path && <img src={c.image_path} alt="" loading="lazy" />}
+            {c.image_path && <img src={publicImageUrl(c.image_path, "certificates")} alt="" loading="lazy" />}
           </div>
           <div class="cert-body">
             <div class="cert-head">

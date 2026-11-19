@@ -9,7 +9,7 @@ import PhoneField from "@/components/dashboard/PhoneField.astro";
 import { doctorConfig } from "@/config";
 import { applyImageChange } from "@/lib/dashboard/images";
 import { COUNTRY_CODES, callingCode, splitPhone, type PhoneCountry } from "@/lib/phone";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { readBackground, readContact, readIdentity, readSocials, type CardTyped } from "@/lib/validation/profile";
 
 type CardName = "identity" | "background" | "contact" | "socials";
@@ -19,7 +19,7 @@ interface Failed {
   errors: Record<string, string>;
 }
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 let profile = await repo.profile.get();
 
 // When a card is refused: which card, what the person typed, and the Arabic messages.
@@ -40,8 +40,7 @@ if (Astro.request.method === "POST") {
     if (!result.ok) fail("identity", typed, result.errors);
     else {
       // The current photo comes from the stored profile, never from the form.
-      // task 17: own bucket
-      const image = await applyImageChange(repo, "certificates", fd, "photo", profile.photo_path);
+      const image = await applyImageChange(repo, "profile", fd, "photo", profile.photo_path);
       if (image.error) fail("identity", typed, { photo: image.error });
       else {
         await repo.profile.update({ ...result.data, photo_path: image.path });
@@ -130,7 +129,7 @@ const platforms = [
     <form method="post" class="d-form" enctype="multipart/form-data" novalidate id="card-identity">
       <input type="hidden" name="intent" value="save-identity" />
       <h2 class="d-h2">الصورة والاسم</h2>
-      <ImageUpload name="photo" label="الصورة الشخصية" value={profile.photo_path} bucket="certificates" error={idErr.photo} />
+      <ImageUpload name="photo" label="الصورة الشخصية" value={profile.photo_path} bucket="profile" error={idErr.photo} />
       <div class="d-form-row">
         <Field idPrefix="identity" name="honorific" label="اللقب" value={t("identity", "honorific", profile.honorific)} error={idErr.honorific} required maxlength={20} hint="مثل: د." />
         <Field idPrefix="identity" name="full_name" label="الاسم الكامل" value={t("identity", "full_name", profile.full_name)} error={idErr.full_name} required maxlength={80} />

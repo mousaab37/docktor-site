@@ -1,11 +1,11 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
 import FaqForm from "@/components/dashboard/FaqForm.astro";
-import { getRepo } from "@/lib/repo";
+import { getDashboardRepo } from "@/lib/repo";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { faqInput } from "@/lib/validation/faq";
 
-const repo = getRepo();
+const repo = getDashboardRepo(Astro.locals);
 const row = await repo.faqs.get(Astro.params.id ?? "");
 if (!row) return new Response("Not found", { status: 404 });
 
