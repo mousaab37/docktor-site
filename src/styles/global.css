@@ -427,6 +427,16 @@
   .social-links a { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid currentColor; color: inherit; text-decoration: none; transition: background-color .2s, color .2s, border-color .2s; }
   .social-links a:hover { background: var(--color-lime); border-color: var(--color-lime); color: var(--color-ink); text-decoration: none; }
   .foot .social-links a { border-color: rgb(255 255 255 / .35); }
+  /* Hero: a "follow us" row under the call-to-action buttons (task 20) */
+  .hero-socials { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 20px; }
+  .hero-socials-label { font-size: 14px; color: var(--color-ink-2); }
+  .hero-socials .social-links a { background: #fff; border-color: var(--color-line); color: var(--color-ink); transition: background-color .3s var(--ease-soft), border-color .3s var(--ease-soft), transform .45s var(--ease-soft); }
+  .hero-socials .social-links a:hover { background: var(--color-lime); border-color: var(--color-lime); transform: translateY(-2px); }
+  @media (prefers-reduced-motion: reduce) { .hero-socials .social-links a { transition: none; } .hero-socials .social-links a:hover { transform: none; } }
+  /* Mobile menu: white outline icons on the forest background */
+  .menu-foot .social-links { flex-basis: 100%; }
+  .menu-foot .social-links a { color: #fff; border-color: rgb(255 255 255 / .55); }
+  .menu-foot .social-links a:hover { background: var(--color-lime); border-color: var(--color-lime); color: var(--color-ink); }
   .foot .social-links a:hover { border-color: var(--color-lime); }
   .legal {
     display: flex;
