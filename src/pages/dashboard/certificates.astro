@@ -5,13 +5,20 @@ import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import SectionVisibility from "@/components/dashboard/SectionVisibility.astro";
+import { saveSectionVisibility } from "@/lib/dashboard/sections";
 import { getDashboardRepo } from "@/lib/repo";
 import { publicImageUrl } from "@/lib/storage";
 
 const repo = getDashboardRepo(Astro.locals);
+const sections = await repo.sections.getAll();
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
+  if (fd.get("intent") === "section-visibility") {
+    await saveSectionVisibility(repo, fd);
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
   const intent = fd.get("intent");
   const id = String(fd.get("id") ?? "");
   if (intent === "move") {
@@ -32,6 +39,7 @@ const year = (iso: string | null) => (iso ? String(new Date(iso).getUTCFullYear(
 ---
 <DashboardLayout title="الشهادات" description="شهادات ودورات تظهر في الصفحة الرئيسية.">
   <Flash />
+  <SectionVisibility sectionKey="certificates" visible={sections.certificates} />
   <div class="d-toolbar">
     <span></span>
     <a class="btn btn-sm" href="/dashboard/certificates/new">إضافة شهادة</a>
@@ -41,7 +49,7 @@ const year = (iso: string | null) => (iso ? String(new Date(iso).getUTCFullYear(
   ) : (
     <ul class="cert-grid">
       {rows.map((c, i) => (
-        <li class="d-card cert-card">
+        <li class="d-card cert-card wide">
           <div class="cert-thumb ph">
             {c.image_path && <img src={publicImageUrl(c.image_path, "certificates")} alt="" loading="lazy" />}
           </div>

@@ -4,12 +4,19 @@ import Card from "@/components/dashboard/Card.astro";
 import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import SectionVisibility from "@/components/dashboard/SectionVisibility.astro";
+import { saveSectionVisibility } from "@/lib/dashboard/sections";
 import { getDashboardRepo } from "@/lib/repo";
 
 const repo = getDashboardRepo(Astro.locals);
+const sections = await repo.sections.getAll();
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
+  if (fd.get("intent") === "section-visibility") {
+    await saveSectionVisibility(repo, fd);
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
   if (fd.get("intent") === "delete") {
     // Deleting an article also removes its featured image.
     const id = String(fd.get("id") ?? "");
@@ -34,6 +41,7 @@ const tabs = [
 ---
 <DashboardLayout title="المدونة" description="مقالات تظهر في الصفحة الرئيسية وفي صفحة المقالات.">
   <Flash />
+  <SectionVisibility sectionKey="blog" visible={sections.blog} />
   <div class="d-toolbar">
     <nav class="d-tabs" aria-label="تصفية المقالات">
       {tabs.map((t) => <a class="d-tab" href={t.href} aria-current={t.key === status ? "page" : undefined}>{t.label}</a>)}

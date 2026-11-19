@@ -5,13 +5,20 @@ import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
+import SectionVisibility from "@/components/dashboard/SectionVisibility.astro";
+import { saveSectionVisibility } from "@/lib/dashboard/sections";
 import { getDashboardRepo } from "@/lib/repo";
 import { publicImageUrl } from "@/lib/storage";
 
 const repo = getDashboardRepo(Astro.locals);
+const sections = await repo.sections.getAll();
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
+  if (fd.get("intent") === "section-visibility") {
+    await saveSectionVisibility(repo, fd);
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
   const intent = fd.get("intent");
   const id = String(fd.get("id") ?? "");
   if (intent === "move") {
@@ -38,6 +45,7 @@ const rows = await repo.services.list();
 ---
 <DashboardLayout title="خدماتي" description="الخدمات التي تظهر في الصفحة الرئيسية وفي القائمة العلوية.">
   <Flash />
+  <SectionVisibility sectionKey="services" visible={sections.services} />
   <div class="d-toolbar">
     <span></span>
     <a class="btn btn-sm" href="/dashboard/services/new">إضافة خدمة</a>

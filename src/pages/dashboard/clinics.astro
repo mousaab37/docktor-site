@@ -5,12 +5,19 @@ import EmptyState from "@/components/dashboard/EmptyState.astro";
 import Flash from "@/components/dashboard/Flash.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
 import { hoursSummary } from "@/lib/hours";
+import SectionVisibility from "@/components/dashboard/SectionVisibility.astro";
+import { saveSectionVisibility } from "@/lib/dashboard/sections";
 import { getDashboardRepo } from "@/lib/repo";
 
 const repo = getDashboardRepo(Astro.locals);
+const sections = await repo.sections.getAll();
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
+  if (fd.get("intent") === "section-visibility") {
+    await saveSectionVisibility(repo, fd);
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
   if (fd.get("intent") === "delete") {
     // The repo removes the clinic's working hours too.
     await repo.clinics.remove(String(fd.get("id") ?? ""));
@@ -26,6 +33,7 @@ const rows = await Promise.all(
 ---
 <DashboardLayout title="العيادات" description="العيادات التي تظهر في الصفحة الرئيسية مع خريطتها.">
   <Flash />
+  <SectionVisibility sectionKey="clinics" visible={sections.clinics} />
   <div class="d-toolbar">
     <span></span>
     <a class="btn btn-sm" href="/dashboard/clinics/new">إضافة عيادة</a>

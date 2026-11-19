@@ -4,6 +4,8 @@ import type {
   Clinic,
   Profile,
   SeoScope,
+  SectionKey,
+  SiteSections,
   SeoSetting,
   Service,
   Statistic,
@@ -62,6 +64,11 @@ export interface ContentRepo {
   };
   testimonials: CrudTable<Testimonial, TestimonialInput> & Orderable;
   faqs: CrudTable<Faq, FaqInput> & Orderable;
+  /** Show or hide the public sections. A missing row counts as visible. */
+  sections: {
+    getAll(): Promise<SiteSections>;
+    set(key: SectionKey, visible: boolean): Promise<void>;
+  };
   seo: {
     list(): Promise<SeoSetting[]>;
     update(scope: SeoScope, input: SeoInput): Promise<SeoSetting>;

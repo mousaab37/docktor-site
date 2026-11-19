@@ -1,5 +1,10 @@
 // SEO check for a running site. Usage: npm run seo:check [-- http://localhost:4321]
+// With SEO_CHECK_SECTIONS=1 it expects the blog section to be hidden (/blog must be 404) instead of checking the blog pages.
 // Uses only fetch and regular expressions. Exits with 1 when anything fails.
+function blogHiddenTypes() {
+  // Only the types that exist when every other section is visible.
+  return ["WebSite", "Physician", "MedicalClinic", "Service", "FAQPage"];
+}
 const base = (process.argv[2] ?? "http://localhost:4321").replace(/\/$/, "");
 let failed = 0;
 const ok = (pass, label) => {
@@ -48,12 +53,21 @@ async function checkPage(label, path, expectedTypes) {
   return html;
 }
 
-const home = await checkPage("Home", "/", ["WebSite", "Physician", "MedicalClinic", "Service", "FAQPage"]);
+const home = await checkPage("Home", "/", blogHiddenTypes());
 void home;
-const blog = await checkPage("Blog", "/blog", ["BreadcrumbList"]);
-const slug = attr(blog, /href="(\/blog\/[a-z0-9-]+)"/);
-if (slug) await checkPage("First article", slug, ["BlogPosting", "BreadcrumbList", "Physician"]);
-else ok(false, "the blog lists at least one article");
+// SEO_CHECK_SECTIONS=1 means "the blog section is hidden in the dashboard": the blog must answer 404 and be out of the sitemap.
+const blogHidden = Boolean(process.env.SEO_CHECK_SECTIONS);
+let slug = "";
+if (blogHidden) {
+  console.log("Blog is hidden (SEO_CHECK_SECTIONS is set)");
+  const blogPage = await get("/blog");
+  ok(blogPage.status === 404, `/blog returns 404 (got ${blogPage.status})`);
+} else {
+  const blog = await checkPage("Blog", "/blog", ["BreadcrumbList"]);
+  slug = attr(blog, /href="(\/blog\/[a-z0-9-]+)"/);
+  if (slug) await checkPage("First article", slug, ["BlogPosting", "BreadcrumbList", "Physician"]);
+  else ok(false, "the blog lists at least one article");
+}
 await checkPage("Contact", "/contact", ["BreadcrumbList"]);
 
 console.log("\nrobots.txt");
@@ -65,7 +79,8 @@ ok(/Sitemap: https?:\/\//.test(robots.text), "sitemap line present");
 console.log("\nsitemap.xml");
 const sitemap = await get("/sitemap.xml");
 ok(sitemap.status === 200, "status 200");
-ok(slug !== "" && sitemap.text.includes(slug), "lists the article");
+if (blogHidden) ok(!sitemap.text.includes("/blog"), "the sitemap has no /blog URL");
+else ok(slug !== "" && sitemap.text.includes(slug), "lists the article");
 ok(count(sitemap.text, /<lastmod>/g) === count(sitemap.text, /<url>/g), "every URL has lastmod");
 
 console.log("\nllms.txt");

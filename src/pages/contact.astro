@@ -3,13 +3,20 @@ import BookingNotice from "@/components/public/BookingNotice.astro";
 import ContactCtaCard from "@/components/public/ContactCtaCard.astro";
 import { doctorConfig } from "@/config";
 import PublicLayout from "@/layouts/PublicLayout.astro";
-import { getProfile, getSeoSetting } from "@/lib/data";
+import { getActiveClinicCount, getProfile, getSeoSetting, getSiteSections } from "@/lib/data";
 import { breadcrumbNode } from "@/lib/jsonld";
 import { waLink } from "@/lib/whatsapp";
 import SocialIcon from "@/components/public/SocialIcon.astro";
 import { SOCIAL_NAMES } from "@/lib/services";
 
-const [profile, seo] = await Promise.all([getProfile(), getSeoSetting("contact")]);
+const [profile, seo, sections, clinicCount] = await Promise.all([
+  getProfile(),
+  getSeoSetting("contact"),
+  Astro.locals.sections ?? getSiteSections(),
+  getActiveClinicCount(),
+]);
+// The link to the clinics only makes sense when that section is shown.
+const showClinics = sections.clinics && clinicCount > 0;
 const name = `${profile.honorific} ${profile.full_name}`;
 const description = seo?.seo_description || `طرق التواصل مع ${name}: واتساب والهاتف والبريد، وروابط مواعيد العيادات وأماكنها.`;
 ---
@@ -51,7 +58,7 @@ const description = seo?.seo_description || `طرق التواصل مع ${name}:
         <ContactCtaCard profile={profile} />
       </div>
 
-      <p class="lead" style="margin-top:28px"><a href="/#clinics">مواعيد العيادات وأماكنها</a></p>
+      {showClinics && <p class="lead" style="margin-top:28px"><a href="/#clinics">مواعيد العيادات وأماكنها</a></p>}
       <div style="margin-top:20px"><BookingNotice /></div>
     </div>
   </section>

@@ -4,7 +4,7 @@ import Header from "@/components/public/Header.astro";
 import Footer from "@/components/public/Footer.astro";
 import CompareButton from "@/components/dev/CompareButton.astro";
 import { doctorConfig } from "@/config";
-import { getActiveCertificates, getActiveClinicsWithHours, getActiveServices, getProfile } from "@/lib/data";
+import { getActiveCertificates, getActiveClinicsWithHours, getActiveServices, getProfile, getSiteSections } from "@/lib/data";
 import { buildBaseGraph, graphOf, serializeJsonLd, type JsonLdNode } from "@/lib/jsonld";
 import { buildMeta, cityFromAddress } from "@/lib/seo";
 
@@ -25,12 +25,18 @@ interface Props {
 const { title, fullTitle, description, ogImage, ogType, publishedTime, modifiedTime, noindex = false, graph = [] } = Astro.props;
 const { site } = doctorConfig;
 // Loaded once per page and passed down.
-const [clinics, profile, services, certificates] = await Promise.all([
+// The visible sections come from the middleware (one query per request); the other loads run together.
+const [allClinics, profile, allServices, allCertificates, sections] = await Promise.all([
   getActiveClinicsWithHours(),
   getProfile(),
   getActiveServices(),
   getActiveCertificates(),
+  Astro.locals.sections ?? getSiteSections(),
 ]);
+// A hidden section is left out of the navigation, the counts and the structured data.
+const clinics = sections.clinics ? allClinics : [];
+const services = sections.services ? allServices : [];
+const certificates = sections.certificates ? allCertificates : [];
 const city = cityFromAddress(clinics[0]?.address) || site.city;
 const path = Astro.url.pathname.replace(/\/+$/, "") || "/";
 const meta = buildMeta(
@@ -42,9 +48,9 @@ const jsonLd = serializeJsonLd(graphOf(nodes));
 ---
 <BaseLayout meta={meta} preloadImage={path === "/" ? profile.photo_path : null}>
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd}></script>
-  <Header clinicCount={clinics.length} profile={profile} services={services} />
+  <Header clinicCount={clinics.length} profile={profile} services={services} sections={sections} />
   <main id="main"><slot /></main>
-  <Footer clinicCount={clinics.length} profile={profile} />
+  <Footer clinicCount={clinics.length} profile={profile} sections={sections} />
   <CompareButton to="old" />
   <script>
     import "@/scripts/motion";

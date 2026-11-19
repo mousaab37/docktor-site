@@ -23,7 +23,7 @@ const year = (iso: string | null) => (iso ? String(new Date(iso).getUTCFullYear(
           <figure class="doc rv" style={i > 0 ? `margin:0;--d:${i}` : "margin:0"}>
             <div class="ph clip" style={i > 0 ? `--d:${i}` : undefined}>
               {year(c.issue_date) && <span class="days"><bdi>{year(c.issue_date)}</bdi></span>}
-              {c.image_path && <img src={c.image_path} alt={c.title} width="800" height="1200" loading="lazy" />}
+              {c.image_path && <img src={c.image_path} alt={c.title} width="1600" height="900" loading="lazy" />}
             </div>
             <figcaption>
               <h3>{c.title}</h3>

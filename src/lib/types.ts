@@ -140,3 +140,12 @@ export interface Faq {
   created_at: string;
   updated_at: string;
 }
+
+/** The public sections the doctor can show or hide (the keys of the `site_sections` table). */
+export const SECTION_KEYS = ["statistics", "services", "faq", "certificates", "clinics", "testimonials", "blog", "how_to_book", "band"] as const;
+export type SectionKey = (typeof SECTION_KEYS)[number];
+export type SiteSections = Record<SectionKey, boolean>;
+
+/** Every section visible (the default, and what a missing row means). */
+export const allSectionsVisible = (): SiteSections =>
+  Object.fromEntries(SECTION_KEYS.map((k) => [k, true])) as SiteSections;

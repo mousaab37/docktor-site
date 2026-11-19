@@ -4,17 +4,18 @@ import { SOCIAL_NAMES } from "@/lib/services";
 import { doctorConfig } from "@/config";
 import { getSectionLinks, isCurrentLink } from "@/lib/nav";
 import { profileView } from "@/lib/profile-view";
-import type { Profile } from "@/lib/types";
+import type { Profile, SiteSections } from "@/lib/types";
 import { waLink } from "@/lib/whatsapp";
 import Logo from "./Logo.astro";
 
 interface Props {
   clinicCount: number;
+  sections: SiteSections;
   profile: Profile;
 }
 
-const { clinicCount, profile } = Astro.props;
-const sectionLinks = getSectionLinks(clinicCount);
+const { clinicCount, profile, sections } = Astro.props;
+const sectionLinks = getSectionLinks(clinicCount, sections);
 const current = (href: string) => (isCurrentLink(href, Astro.url.pathname) ? "page" : undefined);
 const { brand } = doctorConfig;
 const doctor = profileView(profile);

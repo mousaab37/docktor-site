@@ -10,6 +10,7 @@ import { parseForm, type FormValues } from "@/lib/validation/form";
 import { seoInput } from "@/lib/validation/seo";
 
 const repo = getDashboardRepo(Astro.locals);
+const sections = await repo.sections.getAll();
 const { site } = doctorConfig;
 
 // One card per scope. `path` is only used for the preview URL line.
@@ -56,6 +57,7 @@ const url = (path: string) => new URL(path, site.url).href.replace(/^https?:\/\/
           <input type="hidden" name="intent" value="save" />
           <input type="hidden" name="scope" value={scope} />
           <h2 class="d-box-title">{label}</h2>
+          {scope === "blog" && !sections.blog && <p class="sec-vis-warn" role="note">القسم مخفي: صفحة المقالات لا تظهر للزوار الآن.</p>}
           <Field idPrefix={scope} name="seo_title" label="عنوان SEO" value={String(v.seo_title ?? "")} error={errors.seo_title} maxlength={70} hint="إن تُرك فارغًا يُستخدم العنوان الافتراضي." />
           <Field idPrefix={scope} as="textarea" name="seo_description" label="وصف SEO" value={String(v.seo_description ?? "")} error={errors.seo_description} maxlength={160} rows={2} hint="إن تُرك فارغًا يُستخدم الوصف الافتراضي." />
           <Field idPrefix={scope} name="og_image" label="صورة المشاركة (OG)" value={String(v.og_image ?? "")} error={errors.og_image} maxlength={500} dir="ltr" hint="اتركه فارغًا لاستخدام الصورة الافتراضية" />

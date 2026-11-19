@@ -1,0 +1,25 @@
+# Task 19 — Result
+- Branch / PR: `task/19-section-visibility` (PR link in the final message)
+- Commit: `task19: show/hide every public section from the dashboard`
+- Status: done
+- Files changed:
+  - Data: `src/lib/types.ts` (`SECTION_KEYS`, `SectionKey`, `SiteSections`), `src/lib/validation/section.ts`, `src/lib/repo/{types,memory,supabase,index}.ts` (`sections.getAll/set`), `src/lib/data.ts` (`getSiteSections`), `src/middleware.ts` (loads the sections once per public request into `locals.sections`), `src/env.d.ts`
+  - Dashboard: `src/components/dashboard/SectionVisibility.astro`, `src/lib/dashboard/sections.ts`, the 7 tab pages (statistics, services, faq, certificates, clinics, blog, testimonials), `index.astro` (card "أقسام الموقع" with all 9 switches), `seo.astro` ("القسم مخفي" on the blog card), `DashboardLayout.astro` (account card, hidden dots), `ImageUpload.astro`, `CertificateForm.astro`, `src/styles/dashboard.css`
+  - Public: `src/lib/nav.ts` (`getSectionLinks(count, sections)`), `PublicLayout.astro`, `Header.astro`, `Footer.astro`, `index.astro`, `HeroSection.astro`, `AboutSection.astro`, `contact.astro`, `blog/index.astro`, `blog/[slug].astro`, `llms.txt.ts`, `sitemap.xml.ts`, `CertificatesSection.astro`, `src/styles/global.css`
+  - `scripts/seo-check.mjs` (new `SEO_CHECK_SECTIONS` mode)
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅, `npm run verify:security` ✅ 16/16, `npm run seo:check` ✅ (all sections visible), `SEO_CHECK_SECTIONS=1 npm run seo:check` ✅ (blog hidden)
+- How to verify: `/dashboard`, "أقسام الموقع" card, or the bar at the top of each tab. Toggle and reload `/`.
+- Tested (dev server, owner's Supabase project, logged in as the doctor in the browser pane): each of the 9 sections hidden then shown again.
+  - hiding removes the section from `/`; `services`, `faq`, `clinics` and `how_to_book` also drop their nav link; `services` removes the mega menu and `Service` JSON-LD; `faq` removes `FAQPage` and the llms.txt part; `certificates` removes `hasCredential`; `clinics` removes the hero badge, `MedicalClinic` and the llms.txt part, and `/contact` still answers 200
+  - hiding `blog` makes `/blog` and an article answer 404, removes `/blog` from the sitemap and the llms.txt part, and drops the nav link
+  - showing a section brings it back with its items; the state is in `site_sections` (read back from Supabase)
+  - `/contact`, hero, about, contact CTA and footer never disappear
+  - 375px: the visibility bar is a full-width row with a 44px switch; certificates are 16:9 (ratio 1.78) in one column with no horizontal scroll
+- Notes for planner:
+  - **`SEO_CHECK_SECTIONS`:** `npm run seo:check` checks the blog pages normally. With `SEO_CHECK_SECTIONS=1` it expects the blog to be hidden: `/blog` must be 404 and the sitemap must have no `/blog` URL, and it skips the blog and article checks. Without the variable nothing about sections is checked.
+  - The "كيف تحجز" nav link is also dropped when `how_to_book` is hidden (its anchor would lead nowhere). Hero and About "العيادات والمواعيد" buttons, the article page button and the contact page link to `/#clinics` are hidden when the clinics section is hidden or empty.
+  - The visibility of each section is read once per public request by the middleware (`locals.sections`) and shared with the layout, the page, `llms.txt` and the sitemap. The dashboard layout reads it plus the profile for the sidebar (two extra queries per dashboard page).
+  - `.doc .ph` is now 16:9 for certificates (the sample images are portraits and are cropped). The team grid is 3 columns on desktop, 2 below 1024px, 1 below 640px.
+  - The banner at the top of the dashboard still says "البيانات مؤقتة حتى ربط قاعدة البيانات (المهمة 17)" although task 17 is done. I left it alone because it is outside this task; it can go.
+  - The hidden-section dot in the sidebar covers the 7 tabs; `how_to_book` and `band` have no tab, so only the Overview card shows them.
+  - Not tested: the switch without JavaScript (the "حفظ" button inside `<noscript>`), and the mobile drawer with the new account card (I checked the card at 1280px and the pages at 375px).

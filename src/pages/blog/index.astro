@@ -2,9 +2,12 @@
 import { doctorConfig } from "@/config";
 import { breadcrumbNode } from "@/lib/jsonld";
 import PublicLayout from "@/layouts/PublicLayout.astro";
-import { getProfile, getPublishedArticles, getSeoSetting } from "@/lib/data";
+import { getProfile, getPublishedArticles, getSeoSetting, getSiteSections } from "@/lib/data";
 
 const { site } = doctorConfig;
+// The doctor can hide the whole blog: then /blog answers a real 404.
+const sections = Astro.locals.sections ?? (await getSiteSections());
+if (!sections.blog) return Astro.rewrite("/404");
 const [articles, seo, profile] = await Promise.all([getPublishedArticles(), getSeoSetting("blog"), getProfile()]);
 const description = seo?.seo_description || `مقالات صحية مبسّطة يكتبها ${profile.honorific} ${profile.full_name} في ${profile.specialty}.`;
 const dateFmt = new Intl.DateTimeFormat("ar", { dateStyle: "long" });

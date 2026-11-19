@@ -7,11 +7,14 @@ import FormDialog from "@/components/dashboard/FormDialog.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
 import FaqForm from "@/components/dashboard/FaqForm.astro";
+import SectionVisibility from "@/components/dashboard/SectionVisibility.astro";
+import { saveSectionVisibility } from "@/lib/dashboard/sections";
 import { getDashboardRepo } from "@/lib/repo";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { faqInput } from "@/lib/validation/faq";
 
 const repo = getDashboardRepo(Astro.locals);
+const sections = await repo.sections.getAll();
 
 // Dialog state: closed by default, opened again by the server after a validation error.
 let dialogOpen = false;
@@ -22,6 +25,10 @@ let errors: Record<string, string> = {};
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
+  if (fd.get("intent") === "section-visibility") {
+    await saveSectionVisibility(repo, fd);
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
   const intent = fd.get("intent");
   const id = String(fd.get("id") ?? "");
   if (intent === "move") {
@@ -72,6 +79,7 @@ const editAttrs = (t: (typeof rows)[number]) => ({
 ---
 <DashboardLayout title="الأسئلة الشائعة" description="أسئلة وأجوبة تظهر في الصفحة الرئيسية وتُرسَل لمحركات البحث.">
   <Flash />
+  <SectionVisibility sectionKey="faq" visible={sections.faq} />
   <div class="d-notice" role="note">اكتب السؤال كما يكتبه المريض في جوجل، وابدأ الجواب بإجابة مباشرة في الجملة الأولى ثم التفاصيل. هذا يساعد جوجل ومحركات الذكاء الاصطناعي على عرض إجاباتك.</div>
   <div class="d-toolbar">
     <span></span>

@@ -3,17 +3,20 @@ import PublicLayout from "@/layouts/PublicLayout.astro";
 import BookingNotice from "@/components/public/BookingNotice.astro";
 import WhatsAppButton from "@/components/public/WhatsAppButton.astro";
 import { doctorConfig } from "@/config";
-import { getLatestArticles, getProfile, getPublishedArticleBySlug } from "@/lib/data";
+import { getActiveClinicsWithHours, getLatestArticles, getProfile, getPublishedArticleBySlug, getSiteSections } from "@/lib/data";
 import { articleNode, breadcrumbNode } from "@/lib/jsonld";
 import { profileView } from "@/lib/profile-view";
 import { sanitizeArticleHtml } from "@/lib/sanitize";
 import { absoluteImage, clip } from "@/lib/seo";
 
-// A missing slug and a draft both answer 404.
+// A hidden blog, a missing slug and a draft all answer 404.
+const sections = Astro.locals.sections ?? (await getSiteSections());
+if (!sections.blog) return Astro.rewrite("/404");
 const article = await getPublishedArticleBySlug(Astro.params.slug ?? "");
 if (!article) return Astro.rewrite("/404");
 
-const [profile, latest] = await Promise.all([getProfile(), getLatestArticles(4)]);
+const [profile, latest, clinicsList] = await Promise.all([getProfile(), getLatestArticles(4), getActiveClinicsWithHours()]);
+const showClinics = sections.clinics && clinicsList.length > 0;
 const doctor = profileView(profile);
 const related = latest.filter((a) => a.id !== article.id).slice(0, 3);
 const { site } = doctorConfig;
@@ -79,7 +82,7 @@ const graph = [
       <div class="prose-ar" set:html={html}></div>
       <div class="article-end">
         <WhatsAppButton />
-        <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="مواعيد العيادات وأماكنها">مواعيد العيادات وأماكنها</span></span></a>
+        {showClinics && <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="مواعيد العيادات وأماكنها">مواعيد العيادات وأماكنها</span></span></a>}
         <BookingNotice />
       </div>
 

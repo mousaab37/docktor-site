@@ -7,11 +7,14 @@ import FormDialog from "@/components/dashboard/FormDialog.astro";
 import RowActions from "@/components/dashboard/RowActions.astro";
 import StatusBadge from "@/components/dashboard/StatusBadge.astro";
 import TestimonialForm from "@/components/dashboard/TestimonialForm.astro";
+import SectionVisibility from "@/components/dashboard/SectionVisibility.astro";
+import { saveSectionVisibility } from "@/lib/dashboard/sections";
 import { getDashboardRepo } from "@/lib/repo";
 import { parseForm, type FormValues } from "@/lib/validation/form";
 import { testimonialInput } from "@/lib/validation/testimonial";
 
 const repo = getDashboardRepo(Astro.locals);
+const sections = await repo.sections.getAll();
 
 // Dialog state: closed by default, opened again by the server after a validation error.
 let dialogOpen = false;
@@ -22,6 +25,10 @@ let errors: Record<string, string> = {};
 
 if (Astro.request.method === "POST") {
   const fd = await Astro.request.formData();
+  if (fd.get("intent") === "section-visibility") {
+    await saveSectionVisibility(repo, fd);
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
   const intent = fd.get("intent");
   const id = String(fd.get("id") ?? "");
   if (intent === "move") {
@@ -74,6 +81,7 @@ const editAttrs = (t: (typeof rows)[number]) => ({
 ---
 <DashboardLayout title="آراء المرضى" description="آراء تظهر في قسم الآراء بالصفحة الرئيسية.">
   <Flash />
+  <SectionVisibility sectionKey="testimonials" visible={sections.testimonials} />
   <div class="d-toolbar">
     <p class="d-note">انشر رأي المريض فقط بعد أخذ إذنه.</p>
     <a class="btn btn-sm" href="/dashboard/testimonials/new" {...addAttrs}>إضافة رأي</a>

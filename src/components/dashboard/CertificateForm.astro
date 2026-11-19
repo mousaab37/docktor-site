@@ -22,7 +22,7 @@ const { values, errors = {}, currentImage = null, cancelHref } = Astro.props;
     <Field name="title" label="اسم الشهادة" value={String(values.title ?? "")} error={errors.title} required maxlength={150} />
     <Field name="issuing_organization" label="الجهة المانحة (اختياري)" value={String(values.issuing_organization ?? "")} error={errors.issuing_organization} maxlength={150} />
     <Field name="issue_date" type="date" label="تاريخ الإصدار (اختياري)" value={String(values.issue_date ?? "")} error={errors.issue_date} dir="ltr" />
-    <ImageUpload name="image" label="صورة الشهادة (اختياري)" value={currentImage} bucket="certificates" error={errors.image} />
+    <ImageUpload name="image" label="صورة الشهادة (اختياري)" value={currentImage} bucket="certificates" error={errors.image} ratio="16:9" hint="يُفضَّل صورة أفقية بنسبة 16:9، مثل 1600×900" />
     <Toggle name="is_active" label="ظاهر في الموقع" checked={values.is_active === true} />
     <FormActions cancelHref={cancelHref} />
   </form>

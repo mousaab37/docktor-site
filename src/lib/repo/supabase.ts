@@ -9,11 +9,13 @@ import type {
   Faq,
   Profile,
   SeoSetting,
+  SiteSections,
   Service,
   Statistic,
   Testimonial,
   WorkingHour,
 } from "../types";
+import { allSectionsVisible, type SectionKey } from "../types";
 import { withProfileDefaults } from "./profile-defaults";
 import type { ContentRepo, CrudTable, ImageBucket, Orderable } from "./types";
 
@@ -208,6 +210,18 @@ export function createSupabaseRepo(client: SupabaseClient): ContentRepo {
       },
       async remove(id) {
         check(await client.from("articles").delete().eq("id", id));
+      },
+    },
+
+    sections: {
+      async getAll() {
+        const rows = check(await client.from("site_sections").select("key, is_visible")) as { key: string; is_visible: boolean }[];
+        const all = allSectionsVisible(); // a missing row counts as visible
+        for (const r of rows) if (r.key in all) all[r.key as SectionKey] = r.is_visible;
+        return all as SiteSections;
+      },
+      async set(key, visible) {
+        check(await client.from("site_sections").update({ is_visible: visible }).eq("key", key));
       },
     },
 
