@@ -75,3 +75,14 @@ Rebuild it in `DashboardLayout.astro` and `dashboard.css` as one tidy **account 
 - Every text meets **WCAG AA contrast** on the forest background. Focus rings use the lime color.
 - Mobile drawer: the same card at the bottom of the drawer.
 - Acceptance: the footer reads clearly at 1280px and 375px, and logout still works (POST, then `/login`).
+
+## Extra (owner feedback): certificate images in 16:9
+Certificate images must use a **16:9** frame everywhere.
+- **Public** (`CertificatesSection.astro` and its CSS): the image box `.ph` changes from the portrait 4:5 ratio (copied from the doctors' cards) to `aspect-ratio: 16 / 9`, with `object-fit: cover` and `object-position: center`. Keep the clip-reveal animation, the hover zoom and the year badge.
+  - Grid: since 16:9 cards are wide, use **3 columns on desktop** (≥ 1024px), 2 on tablet, 1 on mobile. Check that the titles under the images stay aligned.
+- **Dashboard**:
+  - the certificate list row thumbnail is 16:9 (for example 160×90)
+  - the `ImageUpload` preview in the certificate form is 16:9 (full width, max 480px)
+  - add the hint under the upload: "يُفضَّل صورة أفقية بنسبة 16:9، مثل 1600×900"
+- The sample images (portraits) will be cropped. That's fine for now; note it in the result file.
+- Acceptance: certificates show in 16:9 on `/` (desktop and 375px) and in the dashboard list and form, with no stretched images.
