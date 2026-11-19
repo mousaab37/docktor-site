@@ -1,4 +1,5 @@
 import { defineMiddleware, sequence } from "astro:middleware";
+import { getSiteSections } from "@/lib/data";
 import { RepoError } from "@/lib/repo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -53,6 +54,15 @@ const auth = defineMiddleware(async (context, next) => {
   return response;
 });
 
+// Public pages (and llms.txt / sitemap.xml): which sections are visible, loaded once per request and shared through
+// `locals.sections`, so the layout, the page and the SEO files do not each query it again.
+const publicData = defineMiddleware(async (context, next) => {
+  if (!isPrivate(context.url.pathname) && context.url.pathname !== "/robots.txt") {
+    context.locals.sections = await getSiteSections();
+  }
+  return next();
+});
+
 // Public pages: cached at the edge for 5 minutes, and served stale for a day while they refresh.
 const publicCache = defineMiddleware(async (context, next) => {
   const response = await next();
@@ -68,4 +78,4 @@ const publicCache = defineMiddleware(async (context, next) => {
   return response;
 });
 
-export const onRequest = sequence(auth, publicCache);
+export const onRequest = sequence(auth, publicData, publicCache);

@@ -9,20 +9,25 @@ interface Props {
   bucket: "certificates" | "articles" | "profile" | "services";
   label: string;
   error?: string;
+  /** A wide frame for the preview (certificates). */
+  ratio?: "16:9";
+  /** An extra hint under the upload. */
+  hint?: string;
 }
 
-const { name, value = null, bucket, label, error } = Astro.props;
+const { name, value = null, bucket, label, error, ratio, hint } = Astro.props;
 // `value` is the stored path (what the form keeps); the preview needs a URL.
 const previewSrc = publicImageUrl(value, bucket);
 const id = `f-${name}-file`;
 ---
 <div class:list={["field", "img-upload", error && "has-error"]} data-image-upload data-bucket={bucket}>
   <label for={id}>{label}</label>
-  <div class="img-preview ph" data-image-preview>
+  <div class:list={["img-preview", "ph", ratio === "16:9" && "ratio-16-9"]} data-image-preview>
     {previewSrc && <img src={previewSrc} alt="" data-image-current />}
   </div>
   <input id={id} type="file" name={`${name}_file`} accept="image/jpeg,image/png,image/webp" data-image-input />
   <p class="hint">JPG أو PNG أو WebP، وبحجم أقل من 2 ميغابايت.</p>
+  {hint && <p class="hint">{hint}</p>}
   {value && (
     <label class="img-remove">
       <input type="checkbox" name={`${name}_remove`} data-image-remove />

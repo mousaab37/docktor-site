@@ -969,9 +969,9 @@
   @media (prefers-reduced-motion: reduce) { .map-hint { transition: none; } }
 
   /* Certificates (clip-reveal cards) */
-  .team { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-  .doc .ph { aspect-ratio: 4 / 5; border-radius: 22px; }
-  .doc .ph img { transition: transform 1.2s var(--ease-soft); object-position: 50% 30%; }
+  .team { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .doc .ph { aspect-ratio: 16 / 9; border-radius: 22px; }
+  .doc .ph img { transition: transform 1.2s var(--ease-soft); object-position: center; }
   .doc:hover .ph img { transform: scale(1.05); }
   .days {
     position: absolute;
@@ -1079,7 +1079,7 @@
     .book-grid { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 640px) {
-    .team { gap: 14px; }
+    .team { grid-template-columns: minmax(0, 1fr); gap: 18px; }
     .doc h3 { font-size: 17px; }
     .doc p { font-size: 14px; }
     .days { font-size: 12px; padding: 7px 10px; inset-inline-start: 8px; bottom: 8px; }

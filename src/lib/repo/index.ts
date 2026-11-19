@@ -1,4 +1,5 @@
 import { getPublicClient } from "../supabase/public";
+import { allSectionsVisible } from "../types";
 import { onboardingProfile } from "./profile-defaults";
 import { memoryRepo } from "./memory";
 import { createSupabaseRepo } from "./supabase";
@@ -36,6 +37,7 @@ function emptyRepo(): ContentRepo {
     articles: { ...table, slugExists: async () => false },
     profile: { get: async () => onboardingProfile(), update: readOnly },
     workingHours: { listByClinic: async () => [], replaceDay: readOnly, replaceWeek: readOnly },
+    sections: { getAll: async () => allSectionsVisible(), set: readOnly },
     seo: { list: async () => [], update: readOnly },
     images: { upload: readOnly, remove: readOnly },
   } as unknown as ContentRepo;

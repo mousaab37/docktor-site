@@ -4,6 +4,7 @@ import {
   getActiveClinicsWithHours,
   getActiveServices,
   getProfile,
+  getSiteSections,
   getPublishedArticles,
   getPublishedFaqs,
 } from "@/lib/data";
@@ -12,16 +13,22 @@ import { waLink } from "@/lib/whatsapp";
 
 // llms.txt (https://llmstxt.org): a plain-text summary for AI assistants.
 // Only public data: active clinics and services, published FAQs and articles. No drafts, no hidden items.
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ locals }) => {
   const base = doctorConfig.site.url;
   const abs = (path: string) => new URL(path, base).href;
-  const [profile, clinics, services, faqs, articles] = await Promise.all([
+  const [profile, allClinics, allServices, allFaqs, allArticles, sections] = await Promise.all([
     getProfile(),
     getActiveClinicsWithHours(),
     getActiveServices(),
     getPublishedFaqs(),
     getPublishedArticles(),
+    locals.sections ?? getSiteSections(),
   ]);
+  // Hidden sections are left out, so AI assistants never see hidden content.
+  const clinics = sections.clinics ? allClinics : [];
+  const services = sections.services ? allServices : [];
+  const faqs = sections.faq ? allFaqs : [];
+  const articles = sections.blog ? allArticles : [];
   const name = `${profile.honorific} ${profile.full_name}`;
 
   const hoursText = (c: (typeof clinics)[number]) =>

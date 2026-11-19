@@ -11,12 +11,14 @@ import {
   sampleStatistics,
   sampleTestimonials,
 } from "../sample-data";
+import { allSectionsVisible } from "../types";
 import type {
   Article,
   Certificate,
   Clinic,
   Faq,
   Profile,
+  SiteSections,
   SeoScope,
   SeoSetting,
   Service,
@@ -34,6 +36,7 @@ interface Store {
   articles: Article[];
   testimonials: Testimonial[];
   faqs: Faq[];
+  sections: SiteSections;
   seo: SeoSetting[];
   profile: Profile;
   services: Service[];
@@ -66,6 +69,7 @@ function seed(): Store {
     articles: structuredClone(sampleArticles),
     testimonials: structuredClone(sampleTestimonials),
     faqs: structuredClone(sampleFaqs),
+    sections: allSectionsVisible(),
     profile: {
       honorific: doctor.honorific,
       full_name: doctor.fullName,
@@ -404,6 +408,15 @@ export const memoryRepo: ContentRepo = {
       updated_at: now(),
     }),
   ),
+
+  sections: {
+    async getAll() {
+      return { ...db().sections };
+    },
+    async set(key, visible) {
+      db().sections[key] = visible;
+    },
+  },
 
   seo: {
     async list() {

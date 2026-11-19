@@ -1,10 +1,22 @@
 ---
 import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import Flash from "@/components/dashboard/Flash.astro";
 import Card from "@/components/dashboard/Card.astro";
+import SectionVisibility from "@/components/dashboard/SectionVisibility.astro";
+import { saveSectionVisibility } from "@/lib/dashboard/sections";
 import { getDashboardRepo } from "@/lib/repo";
+import { SECTION_KEYS } from "@/lib/types";
 
 const repo = getDashboardRepo(Astro.locals);
-const [articles, clinics, certificates, testimonials, statistics, services, profile, faqs] = await Promise.all([
+
+if (Astro.request.method === "POST") {
+  const fd = await Astro.request.formData();
+  if (fd.get("intent") === "section-visibility") {
+    await saveSectionVisibility(repo, fd);
+    return Astro.redirect(Astro.url.pathname + "?ok=saved", 303);
+  }
+}
+const [articles, clinics, certificates, testimonials, statistics, services, profile, faqs, sections] = await Promise.all([
   repo.articles.list(),
   repo.clinics.list(),
   repo.certificates.list(),
@@ -13,6 +25,7 @@ const [articles, clinics, certificates, testimonials, statistics, services, prof
   repo.services.list(),
   repo.profile.get(),
   repo.faqs.list(),
+  repo.sections.getAll(),
 ]);
 
 // Content counts (PRD §5.1), not medical metrics.
@@ -38,6 +51,7 @@ const checklist = [
 ];
 ---
 <DashboardLayout title="لوحة التحكم" description="نظرة سريعة على محتوى موقعك.">
+  <Flash />
   <div class="d-counts">
     {counts.map((c) => (
       <a class="d-count" href={c.href}>
@@ -47,6 +61,16 @@ const checklist = [
       </a>
     ))}
   </div>
+
+  <Card>
+    <h2 style="font-size:20px;font-weight:600">أقسام الموقع</h2>
+    <p class="d-note">أخفِ أي قسم عن زوار الموقع وأظهره متى شئت. محتوى القسم المخفي يبقى محفوظًا. الملف الشخصي والتواصل يظهران دائمًا.</p>
+    <ul class="sec-vis-list">
+      {SECTION_KEYS.map((k) => (
+        <li><SectionVisibility sectionKey={k} visible={sections[k]} compact action="/dashboard" /></li>
+      ))}
+    </ul>
+  </Card>
 
   <Card>
     <h2 style="font-size:20px;font-weight:600">ابدأ من هنا</h2>

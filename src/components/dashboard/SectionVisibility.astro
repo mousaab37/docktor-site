@@ -1,0 +1,44 @@
+---
+import { SECTION_INFO } from "@/lib/dashboard/sections";
+import type { SectionKey } from "@/lib/types";
+
+interface Props {
+  sectionKey: SectionKey;
+  visible: boolean;
+  /** Overrides the Arabic name of the section. */
+  label?: string;
+  /** The small form used inside the Overview list. */
+  compact?: boolean;
+  /** The page that handles the post (the current page by default). */
+  action?: string;
+}
+
+const { sectionKey, visible, label, compact = false, action } = Astro.props;
+const info = SECTION_INFO[sectionKey];
+const name = label ?? info.label;
+---
+<div class:list={["sec-vis", visible ? "is-on" : "is-off", compact && "compact"]} data-section-visibility>
+  <form method="post" action={action} class="sec-vis-form">
+    <input type="hidden" name="intent" value="section-visibility" />
+    <input type="hidden" name="key" value={sectionKey} />
+    <label class="toggle">
+      <input type="checkbox" name="visible" checked={visible} role="switch" data-section-switch />
+      <span class="toggle-track" aria-hidden="true"></span>
+      <span>{compact ? name : "القسم ظاهر في الموقع"}</span>
+    </label>
+    <noscript><button class="btn btn-sm" type="submit">حفظ</button></noscript>
+    {!compact && visible && info.preview && <a class="sec-vis-link" href={info.preview} target="_blank" rel="noopener">معاينة ↗</a>}
+    {compact && info.tab && <a class="sec-vis-link" href={info.tab}>فتح</a>}
+    {compact && !visible && <span class="sec-vis-tag">مخفي</span>}
+  </form>
+  {!compact && !visible && (
+    <p class="sec-vis-warn" role="note">هذا القسم مخفي عن زوار الموقع. محتواه محفوظ ويمكنك إظهاره في أي وقت.</p>
+  )}
+</div>
+
+<script>
+  // Saves right away when the switch changes (without JavaScript the "حفظ" button does it).
+  document.querySelectorAll<HTMLInputElement>("[data-section-switch]").forEach((box) => {
+    box.addEventListener("change", () => box.form?.requestSubmit());
+  });
+</script>

@@ -34,7 +34,7 @@ const facts = statistics.slice(0, 3);
         <p class="lead">{doctor.shortIntro}</p>
         <div class="cta-row">
           <WhatsAppButton />
-          <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t={`${clinicsWord(clinics.length)} والمواعيد`}>{clinicsWord(clinics.length)} والمواعيد</span></span></a>
+          {clinics.length > 0 && <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t={`${clinicsWord(clinics.length)} والمواعيد`}>{clinicsWord(clinics.length)} والمواعيد</span></span></a>}
         </div>
         <BookingNotice compact />
         {facts.length > 0 && (

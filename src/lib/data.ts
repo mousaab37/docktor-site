@@ -5,6 +5,7 @@
 import { getPublicRepo } from "./repo";
 import { onboardingProfile } from "./repo/profile-defaults";
 import { publicImageUrl } from "./storage";
+import { allSectionsVisible, type SiteSections } from "./types";
 import type { Article, Certificate, ClinicWithHours, Faq, Profile, SeoScope, SeoSetting, Service, Statistic, Testimonial } from "./types";
 
 const byOrder = <T extends { display_order: number }>(a: T, b: T) => a.display_order - b.display_order;
@@ -127,4 +128,9 @@ export async function getActiveServices(): Promise<Service[]> {
       .sort(byOrder)
       .map((s) => ({ ...s, image_path: publicImageUrl(s.image_path, "services") }));
   });
+}
+
+/** Which sections are shown. On an error everything is shown (the sections hide themselves when empty). */
+export async function getSiteSections(): Promise<SiteSections> {
+  return safe("sections", allSectionsVisible(), () => getPublicRepo().sections.getAll());
 }

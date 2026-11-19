@@ -16,6 +16,10 @@ import "@/styles/dashboard.css";
 import BaseLayout from "./BaseLayout.astro";
 import Logo from "@/components/public/Logo.astro";
 import { dashboardNav } from "@/lib/dashboard-nav";
+import { SECTION_INFO } from "@/lib/dashboard/sections";
+import { getDashboardRepo } from "@/lib/repo";
+import { publicImageUrl } from "@/lib/storage";
+import { allSectionsVisible, SECTION_KEYS } from "@/lib/types";
 
 interface Props {
   /** The page heading. */
@@ -24,6 +28,23 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+// The sidebar needs the profile (account card) and which sections are hidden (a small dot). A failure never blocks the page.
+let sections = allSectionsVisible();
+let doctorName = "";
+let photo: string | null = null;
+try {
+  const repo = getDashboardRepo(Astro.locals);
+  const [s, profile] = await Promise.all([repo.sections.getAll(), repo.profile.get()]);
+  sections = s;
+  doctorName = `${profile.honorific} ${profile.full_name}`.trim();
+  photo = publicImageUrl(profile.photo_path, "profile");
+} catch {
+  // keep the defaults
+}
+const hiddenTabs = new Set(SECTION_KEYS.filter((k) => !sections[k]).map((k) => SECTION_INFO[k].tab));
+const email = Astro.locals.user?.email ?? "";
+// Initials for the avatar when there is no photo: the first letters of the first two words after the title.
+const initials = doctorName.replace(/^د\.\s*/, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => Array.from(w)[0]).join("") || "د";
 const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
 const isCurrent = (path: string) => (path === "/dashboard" ? current === path : current === path || current.startsWith(path + "/"));
 ---
@@ -50,15 +71,30 @@ const isCurrent = (path: string) => (path === "/dashboard" ? current === path : 
               <a href={item.path} aria-current={isCurrent(item.path) ? "page" : undefined}>
                 <svg viewBox="0 0 24 24" aria-hidden="true" set:html={item.icon} />
                 {item.label}
+                {hiddenTabs.has(item.path) && <><span class="dash-hidden-dot" aria-hidden="true"></span><span class="sr-only">(القسم مخفي)</span></>}
               </a>
             </li>
           ))}
         </ul>
       </nav>
-      <a class="dash-view" href="/" target="_blank" rel="noopener">عرض الموقع ↗</a>
-      <div class="dash-user">
-        {Astro.locals.user?.email && <p class="dash-user-email" dir="ltr">{Astro.locals.user.email}</p>}
-        <form method="post" action="/logout"><button class="btn btn-ghost btn-sm" type="submit">تسجيل الخروج</button></form>
+      <div class="dash-account">
+        <div class="dash-acc-top">
+          <span class="dash-avatar" aria-hidden="true">{photo ? <img src={photo} alt="" width="40" height="40" /> : initials}</span>
+          <div class="dash-acc-text">
+            {doctorName && <p class="dash-acc-name">{doctorName}</p>}
+            {email && <p class="dash-acc-email" dir="ltr" title={email}>{email}</p>}
+          </div>
+        </div>
+        <a class="dash-acc-btn dash-acc-view" href="/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="rtl:-scale-x-100"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>
+          عرض الموقع
+        </a>
+        <form method="post" action="/logout">
+          <button class="dash-acc-btn dash-acc-out" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="rtl:-scale-x-100"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9" /></svg>
+            تسجيل الخروج
+          </button>
+        </form>
       </div>
     </aside>
 

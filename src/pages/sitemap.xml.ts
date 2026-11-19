@@ -6,6 +6,7 @@ import {
   getActiveServices,
   getActiveStatistics,
   getProfile,
+  getSiteSections,
   getPublishedArticles,
   getPublishedFaqs,
   getPublishedTestimonials,
@@ -17,10 +18,10 @@ const latest = (dates: (string | null | undefined)[]) => dates.filter((d): d is 
 
 // The home page, the blog, the contact and privacy pages and every published article (drafts never appear).
 // `lastmod` is the latest `updated_at` of the data each page shows.
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ locals }) => {
   const base = doctorConfig.site.url;
   const abs = (path: string) => new URL(path, base).href;
-  const [profile, clinics, services, certificates, statistics, testimonials, faqs, articles] = await Promise.all([
+  const [profile, allClinics, allServices, allCertificates, allStatistics, allTestimonials, allFaqs, allArticles, sections] = await Promise.all([
     getProfile(),
     getActiveClinicsWithHours(),
     getActiveServices(),
@@ -29,7 +30,16 @@ export const GET: APIRoute = async () => {
     getPublishedTestimonials(),
     getPublishedFaqs(),
     getPublishedArticles(),
+    locals.sections ?? getSiteSections(),
   ]);
+  // Hidden sections do not count for `lastmod`, and a hidden blog is not listed at all (it answers 404).
+  const clinics = sections.clinics ? allClinics : [];
+  const services = sections.services ? allServices : [];
+  const certificates = sections.certificates ? allCertificates : [];
+  const statistics = sections.statistics ? allStatistics : [];
+  const testimonials = sections.testimonials ? allTestimonials : [];
+  const faqs = sections.faq ? allFaqs : [];
+  const articles = sections.blog ? allArticles : [];
 
   const homeMod = latest([
     profile.updated_at,
@@ -50,7 +60,7 @@ export const GET: APIRoute = async () => {
 
   const urls = [
     url("/", homeMod),
-    url("/blog", blogMod),
+    ...(sections.blog ? [url("/blog", blogMod)] : []),
     url("/contact", contactMod),
     url("/privacy", privacyMod),
     ...articles.map((a) => {
