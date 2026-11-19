@@ -15,7 +15,7 @@ with
 content_tables(name) as (
   values ('statistics'), ('certificates'), ('clinics'), ('working_hours'),
          ('articles'), ('testimonials'), ('seo_settings'), ('dashboard_users'),
-         ('profile'), ('services'), ('faqs')
+         ('profile'), ('services'), ('faqs'), ('site_sections')
 ),
 tbl as (
   select ct.name,
@@ -24,19 +24,19 @@ tbl as (
                    where c.oid = to_regclass('public.' || ct.name)), false) as relrowsecurity
   from content_tables ct
 )
-select '1. all 11 tables exist' as check_name,
-       (select count(*) from tbl where oid is not null)::text || ' / 11' as result,
-       (select count(*) from tbl where oid is not null) = 11 as ok
+select '1. all 12 tables exist' as check_name,
+       (select count(*) from tbl where oid is not null)::text || ' / 12' as result,
+       (select count(*) from tbl where oid is not null) = 12 as ok
 
 union all
 select '2. RLS is ON for every table',
-       (select count(*) from tbl where relrowsecurity)::text || ' / 11',
-       (select count(*) from tbl where relrowsecurity) = 11
+       (select count(*) from tbl where relrowsecurity)::text || ' / 12',
+       (select count(*) from tbl where relrowsecurity) = 12
 
 union all
-select '3. table policies (expected 36)',
+select '3. table policies (expected 38)',
        (select count(*) from pg_policies where schemaname = 'public')::text,
-       (select count(*) from pg_policies where schemaname = 'public') = 36
+       (select count(*) from pg_policies where schemaname = 'public') = 38
 
 union all
 select '4. no write policy without is_dashboard_user()',

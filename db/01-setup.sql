@@ -11,7 +11,7 @@
 --   Run it again after updating this file to apply new rules.
 --
 -- WHAT IT CREATES
---   11 tables, constraints, indexes, triggers, Row Level Security policies,
+--   12 tables, constraints, indexes, triggers, Row Level Security policies,
 --   4 public image buckets (certificates, articles, profile, services) with upload rules.
 --
 -- SECURITY MODEL
@@ -193,6 +193,23 @@ create table if not exists public.services (
   constraint services_featured_must_be_visible check (not is_featured or is_active)
 );
 
+-- Which public sections are shown. Profile information (hero, about, contact) is always shown and has no row here.
+create table if not exists public.site_sections (
+  key        text primary key,
+  is_visible boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_sections drop constraint if exists site_sections_key_check;
+alter table public.site_sections add constraint site_sections_key_check
+  check (key in ('statistics', 'services', 'how_to_book', 'band', 'certificates',
+                 'clinics', 'testimonials', 'blog', 'faq'));
+
+insert into public.site_sections (key) values
+  ('statistics'), ('services'), ('how_to_book'), ('band'), ('certificates'),
+  ('clinics'), ('testimonials'), ('blog'), ('faq')
+on conflict (key) do nothing;
+
 create table if not exists public.faqs (
   id            uuid primary key default gen_random_uuid(),
   question      text not null check (char_length(question) between 5 and 200),
@@ -235,7 +252,7 @@ declare
   t text;
 begin
   foreach t in array array['statistics','certificates','clinics','working_hours','articles','testimonials','seo_settings',
-                           'profile','services','faqs']
+                           'profile','services','faqs','site_sections']
   loop
     execute format('drop trigger if exists %I_set_updated_at on public.%I', t, t);
     execute format(
@@ -272,12 +289,12 @@ grant usage on schema public to anon, authenticated;
 -- Start from zero (Supabase's defaults grant ALL, including TRUNCATE), then open only what is needed.
 revoke all on public.statistics, public.certificates, public.clinics, public.working_hours,
               public.articles, public.testimonials, public.seo_settings,
-              public.profile, public.services, public.faqs
+              public.profile, public.services, public.faqs, public.site_sections
   from anon, authenticated;
 
 grant select on public.statistics, public.certificates, public.clinics, public.working_hours,
                 public.articles, public.testimonials, public.seo_settings,
-                public.profile, public.services, public.faqs
+                public.profile, public.services, public.faqs, public.site_sections
   to anon, authenticated;
 
 grant insert, update, delete on public.statistics, public.certificates, public.clinics,
@@ -285,7 +302,7 @@ grant insert, update, delete on public.statistics, public.certificates, public.c
                                 public.services, public.faqs
   to authenticated;
 
-grant update on public.seo_settings, public.profile to authenticated;
+grant update on public.seo_settings, public.profile, public.site_sections to authenticated;
 
 -- ---------------------------------------------------------------------
 -- 6. Row Level Security
@@ -301,6 +318,7 @@ alter table public.seo_settings  enable row level security;
 alter table public.profile       enable row level security;
 alter table public.services      enable row level security;
 alter table public.faqs          enable row level security;
+alter table public.site_sections enable row level security;
 
 -- statistics
 drop policy if exists statistics_select on public.statistics;
@@ -432,6 +450,15 @@ create policy faqs_update on public.faqs for update to authenticated
 drop policy if exists faqs_delete on public.faqs;
 create policy faqs_delete on public.faqs for delete to authenticated
   using ((select public.is_dashboard_user()));
+
+-- ---------------------------------------------------------------------
+-- site_sections (fixed rows: read by everyone, update by the doctor only)
+drop policy if exists site_sections_select on public.site_sections;
+create policy site_sections_select on public.site_sections for select to anon, authenticated
+  using (true);
+drop policy if exists site_sections_update on public.site_sections;
+create policy site_sections_update on public.site_sections for update to authenticated
+  using ((select public.is_dashboard_user())) with check ((select public.is_dashboard_user()));
 
 -- ---------------------------------------------------------------------
 -- 7. Storage: four public image buckets, max 2 MB, JPEG / PNG / WebP only

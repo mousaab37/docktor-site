@@ -56,10 +56,15 @@ The owner asked to build the dashboard **before** the database and login. Every 
 | # | File | What it delivers | Owner action needed | Status |
 |---|---|---|---|---|
 | — | [db/](../../db/README.md) | **Written and tested by the planner:** `01-setup.sql` (schema, RLS, storage), `02-add-doctor.sql`, `03-check.sql`, Arabic guide | Owner follows `db/README.md` per client (copy and paste, about 10 min) | ✅ ready |
-| 15 | [task15.md](task15.md) | `db/90-sample-data.sql` (dev seed, same rows as `sample-data.ts`) | — | todo |
-| 16 | [task16.md](task16.md) | Login/logout; server-side auth replaces the dev gate | Dev Supabase project set up with `db/README.md` + `.env` filled | todo |
-| 17 | [task17.md](task17.md) | Supabase repo for public pages, dashboard writes and image Storage | Run `db/90-sample-data.sql` on the dev project | todo |
-| 18 | [task18.md](task18.md) | `npm run verify:security`: 16 automated RLS/storage checks (PRD §7.4) | `.env.test.local` with the doctor's test login | todo |
+| 15 | [task15.md](task15.md) | `db/90-sample-data.sql` (dev seed, same rows as `sample-data.ts`) | — | ✅ done |
+| 16 | [task16.md](task16.md) | Login/logout; server-side auth replaces the dev gate | Dev Supabase project set up with `db/README.md` + `.env` filled | ✅ done |
+| 17 | [task17.md](task17.md) | Supabase repo for public pages, dashboard writes and image Storage | Run `db/90-sample-data.sql` on the dev project | ✅ done |
+| 18 | [task18.md](task18.md) | `npm run verify:security`: 16 automated RLS/storage checks (PRD §7.4) | `.env.test.local` with the doctor's test login | ✅ done |
+n## Phase 4 — Owner requests after the database
+
+| # | File | What it delivers | Owner action needed | Status |
+|---|---|---|---|---|
+| 19 | [task19.md](task19.md) | Show/hide **every** public section from the dashboard (profile always shown); hidden sections also leave nav, JSON-LD, llms.txt, sitemap; blog hidden = 404 | Re-run `db/01-setup.sql` (adds `site_sections`), then `03-check.sql` = 12/12 | todo |
 
 Security model: content tables are readable by the public only when active/published. **All writes require `public.is_dashboard_user()`**, which means being logged in **and** listed in `dashboard_users`. This is protection in addition to "signups disabled".
 
