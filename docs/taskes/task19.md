@@ -60,3 +60,18 @@
 - [ ] 375px: the visibility bar is easy to tap.
 - [ ] `npm run check` reports 0 errors, and `npm run build` passes.
 - [ ] One commit, a pushed branch, a PR: `task19: show/hide every public section from the dashboard`.
+
+## Extra (owner feedback): redesign the sidebar footer
+Today the bottom of the dashboard sidebar looks unreadable and ugly: "عرض الموقع ↗" floats alone, the email is plain text, and the "تسجيل الخروج" button is almost invisible (dark text and border on the dark green).
+
+Rebuild it in `DashboardLayout.astro` and `dashboard.css` as one tidy **account card** pinned to the bottom of the sidebar:
+- A rounded card (`--radius-card`, background `rgba(255,255,255,.06)`, 1px border `rgba(255,255,255,.12)`, padding 14px), separated from the nav by a thin divider.
+- **Top row**: a round avatar (40px) using the profile photo (or the doctor's initials on the lime color with ink text), then two lines:
+  - `{honorific} {full_name}` in white, 15px, weight 600
+  - the email in `rgba(255,255,255,.7)`, 13px, `dir="ltr"`, truncated with an ellipsis (`title` = the full email)
+- **Below it**, two full-width buttons stacked, 40px high, with 10px gap:
+  1. **"عرض الموقع"** with an external-link icon (flipped for RTL): lime background, ink text, opens `/` in a new tab
+  2. **"تسجيل الخروج"** with a logout icon: transparent background, white text, 1px border `rgba(255,255,255,.35)`. On hover, white background and ink text. It's still the `POST /logout` form.
+- Every text meets **WCAG AA contrast** on the forest background. Focus rings use the lime color.
+- Mobile drawer: the same card at the bottom of the drawer.
+- Acceptance: the footer reads clearly at 1280px and 375px, and logout still works (POST, then `/login`).
