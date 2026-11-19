@@ -17,6 +17,7 @@ import BaseLayout from "./BaseLayout.astro";
 import Logo from "@/components/public/Logo.astro";
 import { dashboardNav } from "@/lib/dashboard-nav";
 import { SECTION_INFO } from "@/lib/dashboard/sections";
+import { getSecret, SUPABASE_URL } from "astro:env/server";
 import { getDashboardRepo } from "@/lib/repo";
 import { publicImageUrl } from "@/lib/storage";
 import { allSectionsVisible, SECTION_KEYS } from "@/lib/types";
@@ -28,6 +29,8 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+// The sample data in memory is only used in DEV when Supabase is not configured; never when Supabase is in use.
+const usingMemory = import.meta.env.DEV && (!SUPABASE_URL || !getSecret("SUPABASE_KEY"));
 // The sidebar needs the profile (account card) and which sections are hidden (a small dot). A failure never blocks the page.
 let sections = allSectionsVisible();
 let doctorName = "";
@@ -49,9 +52,7 @@ const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
 const isCurrent = (path: string) => (path === "/dashboard" ? current === path : current === path || current.startsWith(path + "/"));
 ---
 <BaseLayout title={title === "لوحة التحكم" ? title : `${title} | لوحة التحكم`} noindex>
-  <div class="dash-banner" role="note">
-    البيانات مؤقتة حتى ربط قاعدة البيانات (المهمة 17).
-  </div>
+  {usingMemory && <div class="dash-dev-note" role="note">وضع التطوير: البيانات تجريبية في الذاكرة</div>}
 
   <div class="dash-wrap">
     <div class="dash-top">

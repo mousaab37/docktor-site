@@ -1,15 +1,7 @@
 /* Dashboard styles. Uses the tokens from global.css. */
 
-.dash-banner {
-  padding: 10px var(--gut);
-  background: #fde68a;
-  color: #4a3500;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.6;
-  text-align: center;
-  border-bottom: 1px solid #e9c64c;
-}
+/* Only shown in DEV when Supabase is not configured (the data is the sample data in memory). */
+.dash-dev-note { padding: 8px var(--gut); background: #fff8e1; color: #4a3500; font-size: 13px; font-weight: 600; text-align: center; }
 
 .dash-wrap {
   display: grid;
@@ -243,7 +235,7 @@
 .d-count small { color: var(--color-ink-2); font-size: 13px; opacity: .85; }
 .d-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .d-note { color: var(--color-ink-2); font-size: 14px; line-height: 1.7; }
-.d-notice { padding: 14px 18px; border-radius: 14px; background: #fff8e1; border: 1px solid #f0d98a; color: #4a3500; font-weight: 500; }
+.d-notice { padding: 14px 18px; border-radius: 14px; background: #fff8e1; color: #4a3500; font-weight: 500; }
 .d-list { display: grid; margin: 0; padding: 0; list-style: none; }
 .d-item {
   display: grid;
@@ -466,14 +458,15 @@
 .pw-toggle { min-width: 64px; min-height: 44px; padding: 0 14px; border: 1px solid var(--color-line, #d0d5dd); border-radius: 12px; background: #fff; font: inherit; cursor: pointer; }
 
 /* Section visibility bar (task 19) */
-.sec-vis { border: 1px solid var(--color-line); border-radius: 16px; background: #fff; padding: 12px 16px; }
-.sec-vis.is-on { border-color: #b7e4c7; background: #f1faf4; }
-.sec-vis.is-off { background: #f3f4f1; }
+.sec-vis { border-radius: 16px; padding: 12px 16px; }
+.sec-vis.is-on { background: #f1faf4; }
+/* Hidden: the yellow notice colour, so hidden and shown stay easy to tell apart without borders. */
+.sec-vis.is-off { background: #fff8e1; }
 .sec-vis-form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; min-height: 44px; }
 .sec-vis .toggle { min-height: 44px; }
 .sec-vis.is-off .toggle-track { background: #9aa39d; }
 .sec-vis-link { margin-inline-start: auto; text-decoration: underline; text-underline-offset: 4px; min-height: 44px; display: inline-flex; align-items: center; }
-.sec-vis-warn { margin: 8px 0 0; padding: 10px 14px; border-radius: 12px; background: #fff8e1; border: 1px solid #f0d98a; color: #4a3500; font-size: 14px; font-weight: 500; }
+.sec-vis-warn { margin: 8px 0 0; color: #4a3500; font-size: 14px; font-weight: 500; }
 .sec-vis-tag { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #e5e7e3; color: #3f564d; }
 .sec-vis.compact { padding: 6px 12px; border-radius: 12px; }
 .sec-vis.compact .sec-vis-link { font-size: 14px; }

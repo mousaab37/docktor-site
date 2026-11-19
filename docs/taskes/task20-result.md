@@ -1,0 +1,17 @@
+# Task 20 — Result
+- Branch / PR: `task/20-hero-socials` (PR link in the final message)
+- Commit: `task20: social icons in hero and mobile menu`
+- Status: done
+- **Important:** task 19 was **not merged yet** when I started (PR #15 was still open), but this task needs its CSS and layout code (`.sec-vis`, the dashboard layout). So this branch is stacked on `task/19-section-visibility`: until PR #15 is merged, this PR also shows task 19's commit. Merge #15 first; the diff of this PR then shrinks to task 20 only.
+- Files changed: `src/components/public/HeroSocials.astro` (new), `HeroSection.astro`, `Header.astro` (mobile menu), `src/styles/global.css`, `src/styles/dashboard.css`, `src/layouts/DashboardLayout.astro`
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅, `npm run seo:check` ✅ (all checks passed)
+- How to verify: open `/` (hero shows "تابعنا" and the icon row under the buttons), open the mobile menu (icons next to the phone and WhatsApp). In "ملفي" remove all social accounts: both disappear.
+- Tested (dev server, browser pane):
+  - 1280px: the row is at y≈489 of a 768px viewport (visible without scrolling); 375px: y≈553 of 812; icons are 40px, `rel="noopener me"`, `target="_blank"`, `aria-label` "إنستغرام", href the profile URL; no horizontal scroll at 375px
+  - mobile menu: the icon is white (outline), 40px, inside the viewport
+  - the dashboard no longer shows the old banner; `.d-notice` and `.sec-vis` have `border: 0`, `.sec-vis.is-on` is light green
+- Notes for planner:
+  - Not tested: the zero-socials case (the component renders nothing when `socials` is empty, by `socials.length > 0`), the hover lift, and reduced motion. The row uses the existing `.rv` reveal, so it fades in with the hero text.
+  - Hidden section bar: yellow `#fff8e1` background; I also removed the border and the background box from the small warning inside it (`.sec-vis-warn`), so there is no yellow-on-yellow box.
+  - Old banner: `.dash-banner` is removed. A small `.dash-dev-note` ("وضع التطوير: البيانات تجريبية في الذاكرة") shows only when `import.meta.env.DEV` and Supabase is not configured. In practice the dashboard needs Supabase to log in, so it will almost never show.
+  - `git status` had untracked skill folders and a changed `skills-lock.json` from the start; they are not in the commit.

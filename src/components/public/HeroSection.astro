@@ -3,6 +3,7 @@ import { profileView } from "@/lib/profile-view";
 import type { ClinicWithHours, Profile, Statistic } from "@/lib/types";
 import { clinicsPhrase, clinicsWord } from "@/lib/arabic";
 import BookingNotice from "./BookingNotice.astro";
+import HeroSocials from "./HeroSocials.astro";
 import WhatsAppButton from "./WhatsAppButton.astro";
 
 interface Props {
@@ -36,6 +37,7 @@ const facts = statistics.slice(0, 3);
           <WhatsAppButton />
           {clinics.length > 0 && <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t={`${clinicsWord(clinics.length)} والمواعيد`}>{clinicsWord(clinics.length)} والمواعيد</span></span></a>}
         </div>
+        <HeroSocials socials={profile.socials} />
         <BookingNotice compact />
         {facts.length > 0 && (
           <ul class="facts">
