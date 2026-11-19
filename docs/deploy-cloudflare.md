@@ -10,7 +10,7 @@
 
 | المطلوب | ملاحظة |
 |---|---|
-| استمارة الطبيب مكتملة مع الصور | `docs/onboarding/doctor-intake-form.md` |
+| استمارة الطبيب مكتملة مع الصور | `docs/onboarding/doctor-intake-form.docx` |
 | مشروع Supabase جاهز للطبيب | اتبع `db/README.md`. يجب أن يكون `03-check.sql` كله `true`. **لا تشغّل** `90-sample-data.sql` على مشروع حقيقي |
 | حساب Cloudflare | الأفضل أن يكون **باسم الطبيب** ويضيفك عضوًا (**Manage Account ← Members ← Invite**) |
 | الدومين | يمكن البدء بدون دومين على رابط `*.workers.dev` المجاني |
