@@ -25,3 +25,30 @@
 - [ ] No layout shift in the hero, and no horizontal scroll at 375px.
 - [ ] `npm run check` reports 0 errors, `npm run build` passes, and `npm run seo:check` is still all ✅.
 - [ ] One commit, a pushed branch, a PR: `task20: social icons in hero and mobile menu`.
+
+## Extra (owner feedback): no borders on the dashboard notice and visibility bars
+The owner tested these in the browser inspector. Apply them in `src/styles/dashboard.css`:
+```css
+.d-notice {
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #fff8e1;
+  /* border removed */
+  color: #4a3500;
+  font-weight: 500;
+}
+.sec-vis {
+  /* no border, no white background */
+  border-radius: 16px;
+  padding: 12px 16px;
+}
+.sec-vis.is-on {
+  /* no border-color */
+  background: #f1faf4;
+}
+```
+- Remove the `border` line from `.d-notice`.
+- Remove `border` and `background: #fff` from `.sec-vis`.
+- Remove `border-color` from `.sec-vis.is-on`; keep its light-green background.
+- If the hidden state (`.sec-vis` without `.is-on`) now has no visible background at all, give it the yellow notice background `#fff8e1`, so hidden vs shown stays clear without borders.
+- Acceptance: the notices and the section visibility bars have no borders, and the shown/hidden states are still easy to tell apart.
