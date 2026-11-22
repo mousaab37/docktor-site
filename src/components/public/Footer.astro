@@ -6,6 +6,7 @@ import { getSectionLinks, isCurrentLink } from "@/lib/nav";
 import { profileView } from "@/lib/profile-view";
 import type { Profile, SiteSections } from "@/lib/types";
 import { waLink } from "@/lib/whatsapp";
+import BookingNotice from "./BookingNotice.astro";
 import Logo from "./Logo.astro";
 
 interface Props {
@@ -51,6 +52,7 @@ const tel = profile.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : null
         )}
       </div>
     </div>
+    <div class="foot-notice"><BookingNotice /></div>
     <div class="legal">
       <p>© <bdi>{year}</bdi> {doctor.honorific} {doctor.fullName}</p>
       <ul><li><a href="/privacy">سياسة الخصوصية</a></li></ul>

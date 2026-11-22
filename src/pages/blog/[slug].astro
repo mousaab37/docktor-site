@@ -1,6 +1,5 @@
 ---
 import PublicLayout from "@/layouts/PublicLayout.astro";
-import BookingNotice from "@/components/public/BookingNotice.astro";
 import WhatsAppButton from "@/components/public/WhatsAppButton.astro";
 import { doctorConfig } from "@/config";
 import { getActiveClinicsWithHours, getLatestArticles, getProfile, getPublishedArticleBySlug, getSiteSections } from "@/lib/data";
@@ -83,7 +82,6 @@ const graph = [
       <div class="article-end">
         <WhatsAppButton />
         {showClinics && <a class="btn btn-ghost" href="/#clinics"><span class="roll"><span data-t="مواعيد العيادات وأماكنها">مواعيد العيادات وأماكنها</span></span></a>}
-        <BookingNotice />
       </div>
 
       {related.length > 0 && (

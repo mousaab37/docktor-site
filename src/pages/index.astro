@@ -11,7 +11,6 @@ import ClinicsSection from "@/components/public/ClinicsSection.astro";
 import TestimonialsSection from "@/components/public/TestimonialsSection.astro";
 import ArticlesSection from "@/components/public/ArticlesSection.astro";
 import FaqSection from "@/components/public/FaqSection.astro";
-import ContactSection from "@/components/public/ContactSection.astro";
 import { faqNode } from "@/lib/jsonld";
 import {
   getActiveCertificates,
@@ -60,5 +59,4 @@ const faqs = sections.faq ? allFaqs : [];
   {sections.testimonials && <TestimonialsSection testimonials={testimonials} />}
   {sections.blog && <ArticlesSection articles={articles} />}
   {sections.faq && <FaqSection faqs={faqs} />}
-  <ContactSection />
 </PublicLayout>

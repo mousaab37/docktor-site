@@ -1,0 +1,52 @@
+---
+import { formatTime, groupHours } from "@/lib/hours";
+import type { ClinicWithHours } from "@/lib/types";
+
+interface Props {
+  clinics: ClinicWithHours[];
+}
+
+const { clinics } = Astro.props;
+// The first active clinic that has working hours stored. Today is picked in the browser (the server runs in UTC).
+const clinic = clinics.find((c) => c.working_hours.length > 0);
+// "9:00 ص – 1:00 م|4:00 م – 9:00 م" per weekday (0 = Sunday); an empty value means closed.
+const days = clinic
+  ? Object.fromEntries(
+      groupHours(clinic.working_hours).map((d) => [
+        `data-d${d.weekday}`,
+        d.closed ? "" : d.intervals.map((iv) => `${formatTime(iv.from)} – ${formatTime(iv.to)}`).join("|"),
+      ]),
+    )
+  : {};
+---
+{clinic && (
+  <p class="hero-today" hidden data-hero-today data-name={clinic.name} {...days}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+    <span data-today-text></span>
+    {clinics.length > 1 && <a href="/#clinics">كل العيادات ←</a>}
+  </p>
+)}
+
+<script>
+  // Picks today's line from the 7 data attributes. Without JavaScript the strip stays hidden.
+  document.querySelectorAll<HTMLElement>("[data-hero-today]").forEach((el) => {
+    const out = el.querySelector<HTMLElement>("[data-today-text]");
+    if (!out) return;
+    const hours = el.getAttribute(`data-d${new Date().getDay()}`) ?? "";
+    const name = el.dataset.name ?? "";
+    out.textContent = "";
+    if (hours === "") {
+      out.append(`مغلق اليوم — ${name}`);
+    } else {
+      out.append("اليوم: ");
+      hours.split("|").forEach((range, i) => {
+        if (i > 0) out.append(" و ");
+        const b = document.createElement("bdi");
+        b.textContent = range;
+        out.append(b);
+      });
+      out.append(` — ${name}`);
+    }
+    el.hidden = false;
+  });
+</script>

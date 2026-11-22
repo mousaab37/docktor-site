@@ -1,0 +1,41 @@
+---
+// A round "back to top" button. Hidden at the top; appears after one screen of scrolling (see the script).
+---
+<button class="to-top" type="button" aria-label="العودة إلى الأعلى" data-to-top hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+</button>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>("[data-to-top]");
+  if (btn) {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let shown = false;
+    const update = () => {
+      const show = window.scrollY > window.innerHeight;
+      if (show === shown) return;
+      shown = show;
+      if (show) {
+        btn.hidden = false;
+        // One frame later, so the transition runs from the hidden state.
+        requestAnimationFrame(() => btn.classList.add("show"));
+      } else {
+        btn.classList.remove("show");
+        // Hidden for assistive technology and the tab order once the fade is over.
+        window.setTimeout(() => {
+          if (!shown) btn.hidden = true;
+        }, reduce ? 0 : 400);
+      }
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+    btn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+      // Focus goes to the start of the page: the skip link when there is one, otherwise <main>.
+      const target = document.querySelector<HTMLElement>(".skip") ?? document.querySelector<HTMLElement>("#main");
+      if (target) {
+        if (!target.hasAttribute("tabindex") && target.tagName !== "A") target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
+      }
+    });
+  }
+</script>
