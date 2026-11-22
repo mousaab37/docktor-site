@@ -1,3 +1,5 @@
+> The original template was removed in task 21; this file is kept as history.
+
 # Animation & interaction inventory (original Averin → Arabic site)
 
 **The owner's top priority is matching the original's animations and simplicity.** Every row must end up working in the Arabic site, mirrored for RTL where it makes sense.

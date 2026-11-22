@@ -1,4 +1,4 @@
-// Client-side motion engine. Ported from public/site.js (Averin template).
+// Client-side motion engine (reveal, count-up, split headings, sticky header, menus, parallax).
 // Same math and timings as the original; only RTL needs are changed.
 // Respects prefers-reduced-motion.
 

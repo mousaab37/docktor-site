@@ -2,7 +2,7 @@
 import BaseLayout from "./BaseLayout.astro";
 import Header from "@/components/public/Header.astro";
 import Footer from "@/components/public/Footer.astro";
-import CompareButton from "@/components/dev/CompareButton.astro";
+import BackToTop from "@/components/public/BackToTop.astro";
 import { doctorConfig } from "@/config";
 import { getActiveCertificates, getActiveClinicsWithHours, getActiveServices, getProfile, getSiteSections } from "@/lib/data";
 import { buildBaseGraph, graphOf, serializeJsonLd, type JsonLdNode } from "@/lib/jsonld";
@@ -51,7 +51,7 @@ const jsonLd = serializeJsonLd(graphOf(nodes));
   <Header clinicCount={clinics.length} profile={profile} services={services} sections={sections} />
   <main id="main"><slot /></main>
   <Footer clinicCount={clinics.length} profile={profile} sections={sections} />
-  <CompareButton to="old" />
+  <BackToTop />
   <script>
     import "@/scripts/motion";
   </script>

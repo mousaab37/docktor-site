@@ -1,7 +1,6 @@
 ---
 import { clinicsWord } from "@/lib/arabic";
 import type { ClinicWithHours, Profile } from "@/lib/types";
-import BookingNotice from "./BookingNotice.astro";
 import ClinicCard from "./ClinicCard.astro";
 
 interface Props {
@@ -25,8 +24,6 @@ const { clinics, profile } = Astro.props;
       <div class="clinics-grid">
         {clinics.map((c, i) => <ClinicCard clinic={c} fallbackNumber={profile.whatsapp} index={i} />)}
       </div>
-
-      <div style="margin-top:20px"><BookingNotice /></div>
     </div>
   </section>
 )}

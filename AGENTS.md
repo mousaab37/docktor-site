@@ -29,7 +29,7 @@ The public site is **one landing page** (`/`) made of sections (hero, about, sta
 - `/contact` (all contact details, each clinic with hours and map), `/privacy` and the 404 page
 - `/login` and `/dashboard/*`, which are private
 
-Do **not** create separate About, Services, Clinics or Booking pages. Those are sections of the landing page. `#contact` on `/` is only a short call to action that links to `/contact`. The repo started as the English "Averin" clinic template (`src/components/Section*.astro`, `src/content.json`, `public/site.css`, `public/site.js`). Those files are the **visual reference** being ported to Arabic RTL; they are not the final architecture.
+Do **not** create separate About, Services, Clinics or Booking pages. Those are sections of the landing page. `#contact` on `/` is only a short call to action that links to `/contact`. The visual source of truth is the current Arabic site (the English template it started from was removed in task 21).
 
 ## 4. Hard rules (never break)
 

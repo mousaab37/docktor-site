@@ -1,0 +1,23 @@
+# Task 21 — Result
+- Branch / PR: `task/21-ui-cleanup` (PR link in the final message)
+- Commit: `task21: ui cleanup (back-to-top, hero today hours, single notice, remove reference)`
+- Status: done
+- Files changed:
+  - New: `src/components/public/BackToTop.astro`, `src/components/public/HeroToday.astro`
+  - Edited: `PublicLayout.astro` (back-to-top instead of the compare button), `Header` menu socials CSS and the other styles in `src/styles/global.css` (`.to-top`, `.hero-today`, `.foot-notice`, removed `.dev-float`), `HeroSection.astro` (facts row removed, "today" strip added), `Footer.astro` (the single notice), `HowToBookSection.astro`, `ClinicsSection.astro`, `contact.astro`, `blog/[slug].astro` (notice removed), `index.astro` (no contact section), `src/scripts/motion.ts` (comment), `AGENTS.md` §3, `docs/taskes/animation-inventory.md` (history line)
+  - Deleted (all by the exact paths of the task): `src/pages/dev/reference.astro`, `src/components/dev/CompareButton.astro`, the 12 `src/components/Section*.astro`, `src/layouts/Base.astro`, `src/content.json`, `public/site.css`, `public/site.js`, `public/fonts/` (2 licence files and 6 Latin `.woff2`; grep showed nothing imports them), and `src/components/public/ContactSection.astro` (nothing else used it)
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅, `npm run seo:check` ✅ (all checks passed), `npm run verify:security` ✅ 16/16. `grep -rni "averin\|CompareButton" src` returns nothing; `BookingNotice` appears only in `Footer.astro` (and its own file).
+- How to verify: `/` (hero has the "اليوم" strip, no statistics row, no contact section), scroll down for the round button at the bottom-left, open the mobile menu (icons centred), look at the footer on `/`, `/contact` and an article (the notice once), `/dev/reference` is 404.
+- Tested (dev server, browser pane):
+  - the sentence "إرسال رسالة عبر واتساب لا يعني تأكيد الموعد" appears exactly once on `/`, `/contact` and `/blog/family-nutrition`; `id="contact"` does not exist on any of them
+  - the hero strip showed today's real hours (Sunday: "اليوم: 9:00 ص – 5:00 م — عيادة المثال - الرياض", computed in the browser from the 7 data attributes) and the statistics row is gone from the hero
+  - the back-to-top button is hidden at the top, shows after scrolling one screen (opacity 1), sits 16px from the bottom and 16px from the left edge (48px, 44px under 640px), and clicking it scrolled to 0 and moved focus to the skip link
+  - mobile menu socials: icon centre = viewport centre at 375px (188) and 414px (207); no horizontal scroll
+- Notes for planner:
+  - **Not tested:** the "مغلق اليوم" text and changing a clinic's hours in the dashboard (today was a Sunday with hours; closed days render an empty `data-dN` attribute, which the script reads as closed), the strip hiding when the clinics section is hidden (it gets an empty clinics list, so it renders nothing), the button on a real phone with the safe-area inset, and reduced motion.
+  - The task says "bottom inline-start corner (the left in RTL)". In RTL `inline-start` is the **right**, so I used `inset-inline-end`, which is the left, as the text intends.
+  - The strip shows the first active clinic that has working hours stored (clinics without any stored hours are skipped, so they are not announced as "closed today").
+  - Two sentences close to the notice remain: the "كيف تحجز" step "ننتظر تأكيد العيادة" and the sample FAQ "كيف أحجز عبر واتساب؟" (its answer says the message alone does not confirm the appointment). They are different wording, so I left them. Tell me if you want them shortened too.
+  - The hero still receives the `statistics` prop (unused now); I left the prop to keep the call in `index.astro` unchanged.
+  - `docs/system-design.md` still describes the removed template files; I did not change it (outside the task).
+  - `git status` had untracked skill folders and a changed `skills-lock.json` from the start; they are not in the commit.

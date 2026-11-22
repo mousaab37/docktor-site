@@ -1,5 +1,4 @@
 ---
-import BookingNotice from "@/components/public/BookingNotice.astro";
 import ContactCtaCard from "@/components/public/ContactCtaCard.astro";
 import { doctorConfig } from "@/config";
 import PublicLayout from "@/layouts/PublicLayout.astro";
@@ -59,7 +58,6 @@ const description = seo?.seo_description || `طرق التواصل مع ${name}:
       </div>
 
       {showClinics && <p class="lead" style="margin-top:28px"><a href="/#clinics">مواعيد العيادات وأماكنها</a></p>}
-      <div style="margin-top:20px"><BookingNotice /></div>
     </div>
   </section>
 </PublicLayout>
