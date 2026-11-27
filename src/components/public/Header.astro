@@ -82,7 +82,7 @@ const tel = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : null;
 </header>
 <nav class="menu" id="menu" aria-label="قائمة الموقع">
   <div class="menu-list">
-    <ul>
+    <ul class="menu-links">
       {sectionLinks.map((l) => <li><a href={l.href} aria-current={current(l.href)}>{l.label}</a></li>)}
     </ul>
     <div class="menu-foot">
