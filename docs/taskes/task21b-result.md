@@ -1,0 +1,17 @@
+# Task 21b — Result
+- Branch / PR: `task/21b-menu-socials` (PR link in the final message)
+- Commit: `task21b: center mobile menu socials`
+- Status: done
+- Files changed: `src/styles/global.css`, `src/components/public/Header.astro`
+- Commands run and outcome: `npx astro check` ✅ (0 errors), `npm run build` ✅
+- How to verify: open the mobile menu at 360, 375 and 414px: the social icons sit in the horizontal centre with no line under them.
+- What changed:
+  - The nav links list now has the class `menu-links`, and the big-link rules (`border-bottom`, font size, padding, slide-in transform, transition delays) are scoped to `.menu-links`. Nothing in `.menu-foot` matches them any more (this was the root cause).
+  - `.menu-foot` is centred (`justify-content: center; text-align: center`); the socials row is on its own line, gap 12px, icons 44px, no underline.
+- Tested (dev server, browser pane at the real viewport width, with 3 icons made by cloning the first one):
+  - 360px: 102px free on the left and 102px on the right; 375px: 166 / 165 (1px is the half pixel of one icon; with 3 icons it is exact); 414px: 185 / 185
+  - the `li` around the icons has no bottom border; the menu links keep their 30px font and their fade-in
+- Not tested: the footer, hero and contact-page icons side by side (I did not touch their CSS; the only rule I added for icons is `.menu-foot .social-links a`), and the same menu with a real phone keyboard or in landscape.
+- Notes for planner:
+  - I first measured in an `iframe`, which showed a 16px offset at 360 and 375px caused by the iframe's own scrollbar in RTL; the real viewport measurements above are the ones that count.
+  - `git status` had untracked skill folders and a changed `skills-lock.json` from the start; they are not in the commit.
